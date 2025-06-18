@@ -1,0 +1,94 @@
+Design Brief: AI Chat Assistant Platform
+1. Project Overview
+The project is a web application that enables businesses to build, customize, and deploy their own AI-powered chat assistants. The primary goal is to provide a user-friendly platform for business owners, particularly those with limited technical expertise, to automate customer support, answer inquiries, and save time. The final product should be an intuitive, scalable, and professional tool.
+
+2. Target Audience
+The primary users are small to medium-sized business (SMB) owners and managers. These users are typically busy, may not be technically savvy, and are looking for a straightforward, "do-it-yourself" solution to improve customer engagement and efficiency.
+
+3. Core Features & Screens
+The application requires four main screens, each with specific functionalities.
+
+a. Dashboard Screen
+This is the main landing page after a user logs in. It should provide a high-level, at-a-glance overview of the chat assistant's performance.
+
+Key Metrics: Display essential analytics like:
+
+Total Conversations
+
+New Inquiries (Today / This Week)
+
+Successfully Resolved Questions
+
+Most Frequently Asked Questions (as a list or word cloud)
+
+Recent Activity: A feed showing snippets of the latest conversations.
+
+Navigation: Clear links to the other main sections of the app (Chat, Setup, Account).
+
+Layout: Use clean cards and charts to present data in an easily digestible format.
+
+b. Chat Screen
+This screen allows users to review the conversations their AI assistant is having with customers.
+
+Conversation List: A scrollable pane on the left listing all conversations, showing the customer's name/ID and the timestamp of the last message.
+
+Chat Transcript View: The main area displays the full transcript of the selected conversation.
+
+Conversation Management: Although the AI handles most replies, the user should have the ability to:
+
+View all conversations (ongoing and completed).
+
+Filter conversations (e.g., by date, status).
+
+(Optional future feature: Manually take over a chat from the AI).
+
+c. Setup Screen
+This is the most critical section where users configure and train their AI assistant. It should be organized into clear sub-sections, perhaps using tabs or a nested menu.
+
+Sub-section 1: AI Assistant
+
+Customization: Input fields for the assistant's name, role (e.g., "Support Agent"), and company name.
+
+Personality/Tone: A simple way to define the bot's communication style (e.g., dropdown menu with options like "Formal," "Friendly," "Witty").
+
+Avatar: An option to upload a custom avatar for the assistant.
+
+Sub-section 2: Business Knowledge
+
+This is the "brain" of the assistant. The UI must make it simple to add information.
+
+File Upload: Allow users to upload documents (.pdf, .docx, .txt) containing business information (e.g., product catalogs, policy documents).
+
+Website Scraping: An input field where a user can paste a URL (e.g., their homepage or FAQ page) for the AI to learn from.
+
+Manual Entry: A simple text editor or Q&A interface where users can add specific frequently asked questions and their answers.
+
+Sub-section 3: Channels
+
+This section is for deploying the chat assistant.
+
+Website Widget: The primary channel. Provide a simple code snippet (<script>...) that users can copy and paste into their website's HTML to embed the chat widget.
+
+Customization Preview: Show a live preview of how the chat widget will look on a website. Include options to customize the widget's color scheme to match the user's brand.
+
+d. Account Screen
+This is a standard screen for user account management.
+
+Profile: Fields to edit user name, email, and password.
+
+Billing & Subscription: A section to manage the user's subscription plan (even if it's just a placeholder for a single plan initially).
+
+Settings: General application settings, like notifications.
+
+Logout: A clear and accessible logout button.
+
+4. Design Aesthetics & User Experience (UX)
+Tone: Professional, clean, and trustworthy. The UI should inspire confidence.
+
+Simplicity: Prioritize ease of use. Avoid clutter. Use generous white space, clear headings, and intuitive icons.
+
+Guidance: Incorporate tooltips or brief helper text to guide users, especially in the "Setup" screen.
+
+Responsiveness: The application must be fully responsive and work seamlessly on desktop, tablet, and mobile devices.
+
+Color Palette: A modern and minimalist color scheme. Use a primary brand color for interactive elements (buttons, links) and stick to neutral colors (grays, whites) for the background and text.
