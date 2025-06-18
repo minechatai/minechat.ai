@@ -112,7 +112,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Clean price field - remove commas and convert to proper decimal
       if (validatedData.price) {
         const cleanPrice = validatedData.price.toString().replace(/,/g, '');
-        validatedData.price = parseFloat(cleanPrice);
+        validatedData.price = cleanPrice;
       }
       
       const product = await storage.createProduct(userId, { ...validatedData, userId });
@@ -120,6 +120,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating product:", error);
       res.status(500).json({ message: "Failed to create product" });
+    }
+  });
+
+  // Product image upload route
+  app.post('/api/products/upload-image', isAuthenticated, upload.single('image'), async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      if (!req.file) {
+        return res.status(400).json({ message: "No image uploaded" });
+      }
+
+      // Generate unique filename
+      const fileExt = req.file.originalname.split('.').pop();
+      const fileName = `product-${Date.now()}.${fileExt}`;
+      const imageUrl = `/uploads/${fileName}`;
+
+      res.json({ imageUrl });
+    } catch (error) {
+      console.error("Error uploading product image:", error);
+      res.status(500).json({ message: "Failed to upload image" });
     }
   });
 
