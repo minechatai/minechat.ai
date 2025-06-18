@@ -60,7 +60,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const validatedData = insertBusinessSchema.parse(req.body);
-      const business = await storage.upsertBusiness(userId, validatedData);
+      const business = await storage.upsertBusiness(userId, { ...validatedData, userId });
       res.json(business);
     } catch (error) {
       console.error("Error saving business:", error);
@@ -84,7 +84,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const validatedData = insertAiAssistantSchema.parse(req.body);
-      const assistant = await storage.upsertAiAssistant(userId, validatedData);
+      const assistant = await storage.upsertAiAssistant(userId, { ...validatedData, userId });
       res.json(assistant);
     } catch (error) {
       console.error("Error saving AI assistant:", error);
@@ -108,7 +108,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const validatedData = insertProductSchema.parse(req.body);
-      const product = await storage.createProduct(userId, validatedData);
+      const product = await storage.createProduct(userId, { ...validatedData, userId });
       res.json(product);
     } catch (error) {
       console.error("Error creating product:", error);
@@ -254,7 +254,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         embedCode,
       };
 
-      const channel = await storage.upsertChannel(userId, channelData);
+      const channel = await storage.upsertChannel(userId, { ...channelData, userId });
       res.json(channel);
     } catch (error) {
       console.error("Error saving channel:", error);

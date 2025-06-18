@@ -245,25 +245,21 @@ export class DatabaseStorage implements IStorage {
 
   // Analytics operations
   async getAnalytics(userId: string): Promise<Analytics | undefined> {
-    const [analytics] = await db
+    const [analyticsRecord] = await db
       .select()
       .from(analytics)
       .where(eq(analytics.userId, userId))
       .orderBy(desc(analytics.date))
       .limit(1);
-    return analytics;
+    return analyticsRecord;
   }
 
   async upsertAnalytics(userId: string, analyticsData: InsertAnalytics): Promise<Analytics> {
-    const [analytics] = await db
+    const [analyticsRecord] = await db
       .insert(analytics)
       .values({ ...analyticsData, userId })
-      .onConflictDoUpdate({
-        target: [analytics.userId, analytics.date],
-        set: analyticsData,
-      })
       .returning();
-    return analytics;
+    return analyticsRecord;
   }
 
   // Channel operations
