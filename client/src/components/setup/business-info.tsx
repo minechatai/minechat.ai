@@ -32,6 +32,7 @@ const productSchema = z.object({
   policy: z.string().optional(),
   additionalNotes: z.string().optional(),
   thankYouMessage: z.string().optional(),
+  imageUrl: z.string().optional(),
 });
 
 type BusinessFormData = z.infer<typeof businessSchema>;
@@ -212,6 +213,51 @@ export default function BusinessInfo() {
 
   const onProductSubmit = (data: ProductFormData) => {
     productMutation.mutate(data);
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Error",
+        description: "Please select a valid image file",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploadingImage(true);
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const response = await fetch('/api/products/upload-image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const data = await response.json();
+      productForm.setValue('imageUrl', data.imageUrl);
+      
+      toast({
+        title: "Success",
+        description: "Product image uploaded successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to upload image",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   if (businessLoading || documentsLoading || productsLoading) {
