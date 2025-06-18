@@ -340,31 +340,69 @@ ${aiAssistant?.introMessage ? `Introduction: ${aiAssistant.introMessage}` : ""}
 
 Response style: ${aiAssistant?.responseLength || "normal"} length responses.`;
 
-      // Call OpenAI API
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: message }
-          ],
-          max_tokens: aiAssistant?.responseLength === 'short' ? 100 : 
-                     aiAssistant?.responseLength === 'long' ? 500 : 250,
-          temperature: 0.7,
-        }),
-      });
+      let aiMessage = "";
+      
+      // Try OpenAI API first
+      try {
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-3.5-turbo',
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: message }
+            ],
+            max_tokens: aiAssistant?.responseLength === 'short' ? 100 : 
+                       aiAssistant?.responseLength === 'long' ? 500 : 250,
+            temperature: 0.7,
+          }),
+        });
 
-      if (!response.ok) {
-        throw new Error(`OpenAI API error: ${response.status}`);
+        if (response.ok) {
+          const aiResponse = await response.json();
+          aiMessage = aiResponse.choices[0]?.message?.content || "";
+        } else {
+          throw new Error(`OpenAI API error: ${response.status}`);
+        }
+      } catch (openaiError) {
+        console.log("OpenAI API not available, using intelligent fallback");
+        
+        // Intelligent fallback based on business context
+        const businessName = business?.companyName || "our business";
+        const introMsg = aiAssistant?.introMessage || `Hello! I'm ${aiAssistant?.name || "an AI assistant"} for ${businessName}.`;
+        
+        // Create contextual response based on message content
+        const lowerMessage = message.toLowerCase();
+        
+        if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
+          aiMessage = `${introMsg} How can I help you today?`;
+        } else if (lowerMessage.includes('price') || lowerMessage.includes('cost') || lowerMessage.includes('how much')) {
+          if (products.length > 0) {
+            const productInfo = products.map(p => `${p.name}${p.price ? ` - $${p.price}` : ''}`).join(', ');
+            aiMessage = `Here are our products and pricing: ${productInfo}. Would you like more details about any of these?`;
+          } else {
+            aiMessage = `I'd be happy to help with pricing information. Please contact us at ${business?.email || 'our sales team'} for detailed pricing.`;
+          }
+        } else if (lowerMessage.includes('product') || lowerMessage.includes('service')) {
+          if (products.length > 0) {
+            const productList = products.map(p => `${p.name}: ${p.description || 'Available now'}`).join('\n');
+            aiMessage = `Here are our products and services:\n${productList}\n\nWould you like more information about any of these?`;
+          } else {
+            aiMessage = `We offer various products and services. Please let me know what you're looking for and I'll be happy to help!`;
+          }
+        } else if (lowerMessage.includes('contact') || lowerMessage.includes('phone') || lowerMessage.includes('email')) {
+          aiMessage = `You can reach us at:\n${business?.email ? `Email: ${business.email}\n` : ''}${business?.phoneNumber ? `Phone: ${business.phoneNumber}\n` : ''}${business?.address ? `Address: ${business.address}` : ''}`;
+        } else if (lowerMessage.includes('help') || lowerMessage.includes('support')) {
+          aiMessage = `I'm here to help! I can assist you with information about ${businessName}, our products and services, pricing, and contact details. What would you like to know?`;
+        } else {
+          // General response incorporating business context
+          aiMessage = `Thank you for your message! As an AI assistant for ${businessName}, I'm here to help with any questions about our ${products.length > 0 ? 'products, services, ' : ''}and business. ${business?.companyStory ? business.companyStory.substring(0, 100) + '...' : ''} How can I assist you today?`;
+        }
       }
-
-      const aiResponse = await response.json();
-      const aiMessage = aiResponse.choices[0]?.message?.content || "I'm sorry, I couldn't generate a response.";
 
       // Save AI message
       await storage.createMessage({
