@@ -33,9 +33,9 @@ export default function Charts({ messagesData, hourlyData, faqData }: ChartsProp
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Messages Sent Chart */}
-        <Card className="bg-white shadow-sm border border-gray-200">
+        <Card className="bg-white dark:bg-gray-900 shadow-sm border border-gray-200 dark:border-gray-700">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-lg font-semibold text-gray-900">Messages Sent</CardTitle>
+            <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">Messages Sent</CardTitle>
             <ExternalLink className="w-4 h-4 text-gray-400" />
           </CardHeader>
           <CardContent>
@@ -70,13 +70,13 @@ export default function Charts({ messagesData, hourlyData, faqData }: ChartsProp
               <div className="space-y-3">
                 <div className="flex items-center space-x-3">
                   <div className="w-3 h-3 bg-primary rounded-full"></div>
-                  <span className="text-sm text-gray-600">Human</span>
-                  <span className="text-sm font-semibold text-gray-900">{humanPercentage}%</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Human</span>
+                  <span className="text-sm font-semibold text-gray-900 dark:text-white">{humanPercentage}%</span>
                 </div>
                 <div className="flex items-center space-x-3">
                   <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
-                  <span className="text-sm text-gray-600">AI</span>
-                  <span className="text-sm font-semibold text-gray-900">{aiPercentage}%</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">AI</span>
+                  <span className="text-sm font-semibold text-gray-900 dark:text-white">{aiPercentage}%</span>
                 </div>
               </div>
             </div>
@@ -84,18 +84,18 @@ export default function Charts({ messagesData, hourlyData, faqData }: ChartsProp
         </Card>
 
         {/* Most Asked Questions */}
-        <Card className="bg-white shadow-sm border border-gray-200">
+        <Card className="bg-white dark:bg-gray-900 shadow-sm border border-gray-200 dark:border-gray-700">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-lg font-semibold text-gray-900">Most Asked Questions</CardTitle>
-            <ExternalLink className="w-4 h-4 text-gray-400" />
+            <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">Most Asked Questions</CardTitle>
+            <ExternalLink className="w-4 h-4 text-gray-400 dark:text-gray-500" />
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {faqData.length > 0 ? (
                 faqData.map((item, index) => (
                   <div key={index} className="flex items-center space-x-3">
-                    <TrendingUp className="w-4 h-4 text-gray-400" />
-                    <span className="flex-1 text-sm text-gray-700">
+                    <TrendingUp className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                    <span className="flex-1 text-sm text-gray-700 dark:text-gray-400">
                       {item.question}({item.count})
                     </span>
                   </div>
@@ -111,9 +111,9 @@ export default function Charts({ messagesData, hourlyData, faqData }: ChartsProp
       </div>
 
       {/* Messages Per Hour Chart */}
-      <Card className="bg-white shadow-sm border border-gray-200">
+      <Card className="bg-white dark:bg-gray-900 shadow-sm border border-gray-200 dark:border-gray-700">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold text-gray-900">Messages Received Per Hour</CardTitle>
+          <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">Messages Received Per Hour</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-64">
