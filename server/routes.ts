@@ -126,6 +126,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const documentData = {
+        userId,
         filename: req.file.filename,
         originalName: req.file.originalname,
         fileType: req.file.mimetype,
@@ -252,13 +253,156 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const channelData = {
         ...validatedData,
         embedCode,
+        userId,
       };
 
-      const channel = await storage.upsertChannel(userId, { ...channelData, userId });
+      const channel = await storage.upsertChannel(userId, channelData);
       res.json(channel);
     } catch (error) {
       console.error("Error saving channel:", error);
       res.status(500).json({ message: "Failed to save channel" });
+    }
+  });
+
+  // AI Chat endpoint
+  app.post('/api/chat', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { message, conversationId } = req.body;
+
+      if (!message) {
+        return res.status(400).json({ message: "Message is required" });
+      }
+
+      // Get or create conversation
+      let conversation;
+      if (conversationId) {
+        conversation = await storage.getConversation(conversationId);
+      } else {
+        conversation = await storage.createConversation(userId, {
+          userId,
+          customerName: "Test User",
+          customerEmail: "test@example.com",
+          status: "active"
+        });
+      }
+
+      if (!conversation) {
+        return res.status(404).json({ message: "Conversation not found" });
+      }
+
+      // Save user message
+      await storage.createMessage({
+        conversationId: conversation.id,
+        senderId: userId,
+        senderType: "user",
+        content: message,
+        messageType: "text"
+      });
+
+      // Get AI assistant configuration
+      const aiAssistant = await storage.getAiAssistant(userId);
+      const business = await storage.getBusiness(userId);
+      const products = await storage.getProducts(userId);
+      const documents = await storage.getDocuments(userId);
+
+      // Build AI context
+      let context = "";
+      if (business) {
+        context += `Business: ${business.companyName}\n`;
+        context += `Story: ${business.companyStory}\n`;
+        context += `Contact: ${business.email}, ${business.phoneNumber}\n\n`;
+      }
+      
+      if (products.length > 0) {
+        context += "Products/Services:\n";
+        products.forEach(product => {
+          context += `- ${product.name}: ${product.description}\n`;
+          if (product.price) context += `  Price: $${product.price}\n`;
+          if (product.faqs) context += `  FAQs: ${product.faqs}\n`;
+        });
+        context += "\n";
+      }
+
+      if (documents.length > 0) {
+        context += `Available documents: ${documents.map(d => d.originalName).join(", ")}\n\n`;
+      }
+
+      const systemPrompt = `You are an AI assistant for ${business?.companyName || "this business"}. 
+${aiAssistant?.description || "You help customers with their questions and provide information about products and services."}
+
+${aiAssistant?.guidelines || "Be helpful, professional, and friendly."}
+
+Context about the business:
+${context}
+
+${aiAssistant?.introMessage ? `Introduction: ${aiAssistant.introMessage}` : ""}
+
+Response style: ${aiAssistant?.responseLength || "normal"} length responses.`;
+
+      // Call OpenAI API
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-3.5-turbo',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: message }
+          ],
+          max_tokens: aiAssistant?.responseLength === 'short' ? 100 : 
+                     aiAssistant?.responseLength === 'long' ? 500 : 250,
+          temperature: 0.7,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`OpenAI API error: ${response.status}`);
+      }
+
+      const aiResponse = await response.json();
+      const aiMessage = aiResponse.choices[0]?.message?.content || "I'm sorry, I couldn't generate a response.";
+
+      // Save AI message
+      await storage.createMessage({
+        conversationId: conversation.id,
+        senderId: "ai",
+        senderType: "ai",
+        content: aiMessage,
+        messageType: "text"
+      });
+
+      // Update analytics
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const existingAnalytics = await storage.getAnalytics(userId);
+      const analyticsData = {
+        userId,
+        date: today,
+        unreadMessages: (existingAnalytics?.unreadMessages || 0) + 1,
+        messagesHuman: (existingAnalytics?.messagesHuman || 0) + 1,
+        messagesAi: (existingAnalytics?.messagesAi || 0) + 1,
+        moneySaved: existingAnalytics?.moneySaved || "25.00", // Example calculation
+        leads: existingAnalytics?.leads || 0,
+        opportunities: existingAnalytics?.opportunities || 0,
+        followUps: existingAnalytics?.followUps || 0,
+        hourlyData: existingAnalytics?.hourlyData || {}
+      };
+
+      await storage.upsertAnalytics(userId, analyticsData);
+
+      res.json({
+        message: aiMessage,
+        conversationId: conversation.id
+      });
+
+    } catch (error) {
+      console.error("Error in chat:", error);
+      res.status(500).json({ message: "Failed to process chat message" });
     }
   });
 
