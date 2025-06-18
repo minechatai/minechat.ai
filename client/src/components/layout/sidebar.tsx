@@ -30,14 +30,16 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="w-64 bg-white shadow-sm border-r border-gray-200 flex flex-col h-full">
+    <div className="w-64 bg-white dark:bg-gray-900 shadow-sm border-r border-gray-200 dark:border-gray-700 flex flex-col h-full">
       {/* Logo */}
-      <div className="p-6 border-b border-gray-200">
+      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <MessageSquare className="w-4 h-4 text-white" />
-          </div>
-          <span className="text-xl font-bold text-gray-900">minechat.ai</span>
+          <img 
+            src="/attached_assets/Colored Logo Black_1750266947131.png" 
+            alt="Minechat AI" 
+            className="w-8 h-8 object-contain"
+          />
+          <span className="text-xl font-bold text-gray-900 dark:text-white">minechat.ai</span>
         </div>
       </div>
 

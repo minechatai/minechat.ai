@@ -108,6 +108,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const validatedData = insertProductSchema.parse(req.body);
+      
+      // Clean price field - remove commas and convert to proper decimal
+      if (validatedData.price) {
+        const cleanPrice = validatedData.price.toString().replace(/,/g, '');
+        validatedData.price = parseFloat(cleanPrice);
+      }
+      
       const product = await storage.createProduct(userId, { ...validatedData, userId });
       res.json(product);
     } catch (error) {
