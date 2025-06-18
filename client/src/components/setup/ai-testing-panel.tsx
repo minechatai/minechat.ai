@@ -1,0 +1,169 @@
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Bot, Paperclip, Image, Mic, Send } from "lucide-react";
+
+interface Message {
+  id: string;
+  content: string;
+  isUser: boolean;
+  timestamp: Date;
+}
+
+export default function AiTestingPanel() {
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!message.trim()) return;
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      content: message,
+      isUser: true,
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    setMessage("");
+    setIsLoading(true);
+
+    // Simulate AI response
+    setTimeout(() => {
+      const aiMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: "Thank you for your message! This is a test response from the AI assistant. In a real implementation, this would connect to your configured AI model.",
+        isUser: false,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, aiMessage]);
+      setIsLoading(false);
+    }, 1000);
+  };
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      hour12: true 
+    });
+  };
+
+  return (
+    <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
+      {/* Header */}
+      <div className="p-4 border-b border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-900">AI Testing</h3>
+      </div>
+
+      {/* Messages Area */}
+      <div className="flex-1 p-4 overflow-y-auto custom-scrollbar">
+        {messages.length === 0 ? (
+          <div className="text-center text-gray-500 mt-8">
+            <Bot className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+            <p className="text-sm">Test your AI assistant here</p>
+            <p className="text-xs text-gray-400 mt-1">Send a message to start testing</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {messages.map((msg) => (
+              <div key={msg.id} className={`flex ${msg.isUser ? 'justify-end' : 'justify-start'}`}>
+                {msg.isUser ? (
+                  <div className="max-w-xs">
+                    <div className="bg-primary text-white p-3 rounded-lg shadow-sm">
+                      <p className="text-sm">{msg.content}</p>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1 text-right">{formatTime(msg.timestamp)}</p>
+                  </div>
+                ) : (
+                  <div className="flex space-x-2 max-w-xs">
+                    <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                      <Bot className="w-3 h-3 text-white" />
+                    </div>
+                    <div>
+                      <div className="bg-gray-100 p-3 rounded-lg shadow-sm">
+                        <p className="text-sm text-gray-900">{msg.content}</p>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">{formatTime(msg.timestamp)}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="flex space-x-2 max-w-xs">
+                  <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <Bot className="w-3 h-3 text-white" />
+                  </div>
+                  <div className="bg-gray-100 p-3 rounded-lg shadow-sm">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Input Area */}
+      <div className="p-4 border-t border-gray-200">
+        <form onSubmit={handleSendMessage} className="flex items-center space-x-2">
+          <div className="flex-1 relative">
+            <Input
+              type="text"
+              placeholder="Send a message"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              className="pr-20 text-sm"
+              disabled={isLoading}
+            />
+            <div className="absolute right-3 top-2.5 flex items-center space-x-1">
+              <Button 
+                type="button" 
+                variant="ghost" 
+                size="sm" 
+                className="p-0 w-4 h-4 hover:bg-transparent"
+                disabled={isLoading}
+              >
+                <Paperclip className="w-3 h-3 text-gray-400" />
+              </Button>
+              <Button 
+                type="button" 
+                variant="ghost" 
+                size="sm" 
+                className="p-0 w-4 h-4 hover:bg-transparent"
+                disabled={isLoading}
+              >
+                <Image className="w-3 h-3 text-gray-400" />
+              </Button>
+              <Button 
+                type="button" 
+                variant="ghost" 
+                size="sm" 
+                className="p-0 w-4 h-4 hover:bg-transparent"
+                disabled={isLoading}
+              >
+                <Mic className="w-3 h-3 text-gray-400" />
+              </Button>
+            </div>
+          </div>
+          <Button 
+            type="submit" 
+            size="sm"
+            className="bg-primary hover:bg-primary-dark p-2"
+            disabled={!message.trim() || isLoading}
+          >
+            <Send className="w-4 h-4" />
+          </Button>
+        </form>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,298 @@
+import {
+  users,
+  businesses,
+  aiAssistants,
+  products,
+  documents,
+  conversations,
+  messages,
+  analytics,
+  channels,
+  type User,
+  type UpsertUser,
+  type Business,
+  type InsertBusiness,
+  type AiAssistant,
+  type InsertAiAssistant,
+  type Product,
+  type InsertProduct,
+  type Document,
+  type InsertDocument,
+  type Conversation,
+  type InsertConversation,
+  type Message,
+  type InsertMessage,
+  type Analytics,
+  type InsertAnalytics,
+  type Channel,
+  type InsertChannel,
+} from "@shared/schema";
+import { db } from "./db";
+import { eq, desc, and } from "drizzle-orm";
+
+export interface IStorage {
+  // User operations (required for Replit Auth)
+  getUser(id: string): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
+
+  // Business operations
+  getBusiness(userId: string): Promise<Business | undefined>;
+  upsertBusiness(userId: string, business: InsertBusiness): Promise<Business>;
+
+  // AI Assistant operations
+  getAiAssistant(userId: string): Promise<AiAssistant | undefined>;
+  upsertAiAssistant(userId: string, assistant: InsertAiAssistant): Promise<AiAssistant>;
+
+  // Product operations
+  getProducts(userId: string): Promise<Product[]>;
+  createProduct(userId: string, product: InsertProduct): Promise<Product>;
+  updateProduct(id: number, product: Partial<InsertProduct>): Promise<Product>;
+  deleteProduct(id: number): Promise<void>;
+
+  // Document operations
+  getDocuments(userId: string): Promise<Document[]>;
+  createDocument(userId: string, document: InsertDocument): Promise<Document>;
+  deleteDocument(id: number): Promise<void>;
+
+  // Conversation operations
+  getConversations(userId: string): Promise<Conversation[]>;
+  getConversation(id: number): Promise<Conversation | undefined>;
+  createConversation(userId: string, conversation: InsertConversation): Promise<Conversation>;
+
+  // Message operations
+  getMessages(conversationId: number): Promise<Message[]>;
+  createMessage(message: InsertMessage): Promise<Message>;
+
+  // Analytics operations
+  getAnalytics(userId: string): Promise<Analytics | undefined>;
+  upsertAnalytics(userId: string, analytics: InsertAnalytics): Promise<Analytics>;
+
+  // Channel operations
+  getChannel(userId: string): Promise<Channel | undefined>;
+  upsertChannel(userId: string, channel: InsertChannel): Promise<Channel>;
+}
+
+export class DatabaseStorage implements IStorage {
+  // User operations
+  async getUser(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return user;
+  }
+
+  // Business operations
+  async getBusiness(userId: string): Promise<Business | undefined> {
+    const [business] = await db
+      .select()
+      .from(businesses)
+      .where(eq(businesses.userId, userId));
+    return business;
+  }
+
+  async upsertBusiness(userId: string, businessData: InsertBusiness): Promise<Business> {
+    const existing = await this.getBusiness(userId);
+    
+    if (existing) {
+      const [business] = await db
+        .update(businesses)
+        .set({ ...businessData, updatedAt: new Date() })
+        .where(eq(businesses.id, existing.id))
+        .returning();
+      return business;
+    } else {
+      const [business] = await db
+        .insert(businesses)
+        .values({ ...businessData, userId })
+        .returning();
+      return business;
+    }
+  }
+
+  // AI Assistant operations
+  async getAiAssistant(userId: string): Promise<AiAssistant | undefined> {
+    const [assistant] = await db
+      .select()
+      .from(aiAssistants)
+      .where(eq(aiAssistants.userId, userId));
+    return assistant;
+  }
+
+  async upsertAiAssistant(userId: string, assistantData: InsertAiAssistant): Promise<AiAssistant> {
+    const existing = await this.getAiAssistant(userId);
+    
+    if (existing) {
+      const [assistant] = await db
+        .update(aiAssistants)
+        .set({ ...assistantData, updatedAt: new Date() })
+        .where(eq(aiAssistants.id, existing.id))
+        .returning();
+      return assistant;
+    } else {
+      const [assistant] = await db
+        .insert(aiAssistants)
+        .values({ ...assistantData, userId })
+        .returning();
+      return assistant;
+    }
+  }
+
+  // Product operations
+  async getProducts(userId: string): Promise<Product[]> {
+    return await db
+      .select()
+      .from(products)
+      .where(eq(products.userId, userId))
+      .orderBy(desc(products.createdAt));
+  }
+
+  async createProduct(userId: string, productData: InsertProduct): Promise<Product> {
+    const [product] = await db
+      .insert(products)
+      .values({ ...productData, userId })
+      .returning();
+    return product;
+  }
+
+  async updateProduct(id: number, productData: Partial<InsertProduct>): Promise<Product> {
+    const [product] = await db
+      .update(products)
+      .set({ ...productData, updatedAt: new Date() })
+      .where(eq(products.id, id))
+      .returning();
+    return product;
+  }
+
+  async deleteProduct(id: number): Promise<void> {
+    await db.delete(products).where(eq(products.id, id));
+  }
+
+  // Document operations
+  async getDocuments(userId: string): Promise<Document[]> {
+    return await db
+      .select()
+      .from(documents)
+      .where(eq(documents.userId, userId))
+      .orderBy(desc(documents.createdAt));
+  }
+
+  async createDocument(userId: string, documentData: InsertDocument): Promise<Document> {
+    const [document] = await db
+      .insert(documents)
+      .values({ ...documentData, userId })
+      .returning();
+    return document;
+  }
+
+  async deleteDocument(id: number): Promise<void> {
+    await db.delete(documents).where(eq(documents.id, id));
+  }
+
+  // Conversation operations
+  async getConversations(userId: string): Promise<Conversation[]> {
+    return await db
+      .select()
+      .from(conversations)
+      .where(eq(conversations.userId, userId))
+      .orderBy(desc(conversations.lastMessageAt));
+  }
+
+  async getConversation(id: number): Promise<Conversation | undefined> {
+    const [conversation] = await db
+      .select()
+      .from(conversations)
+      .where(eq(conversations.id, id));
+    return conversation;
+  }
+
+  async createConversation(userId: string, conversationData: InsertConversation): Promise<Conversation> {
+    const [conversation] = await db
+      .insert(conversations)
+      .values({ ...conversationData, userId })
+      .returning();
+    return conversation;
+  }
+
+  // Message operations
+  async getMessages(conversationId: number): Promise<Message[]> {
+    return await db
+      .select()
+      .from(messages)
+      .where(eq(messages.conversationId, conversationId))
+      .orderBy(messages.createdAt);
+  }
+
+  async createMessage(messageData: InsertMessage): Promise<Message> {
+    const [message] = await db
+      .insert(messages)
+      .values(messageData)
+      .returning();
+    return message;
+  }
+
+  // Analytics operations
+  async getAnalytics(userId: string): Promise<Analytics | undefined> {
+    const [analytics] = await db
+      .select()
+      .from(analytics)
+      .where(eq(analytics.userId, userId))
+      .orderBy(desc(analytics.date))
+      .limit(1);
+    return analytics;
+  }
+
+  async upsertAnalytics(userId: string, analyticsData: InsertAnalytics): Promise<Analytics> {
+    const [analytics] = await db
+      .insert(analytics)
+      .values({ ...analyticsData, userId })
+      .onConflictDoUpdate({
+        target: [analytics.userId, analytics.date],
+        set: analyticsData,
+      })
+      .returning();
+    return analytics;
+  }
+
+  // Channel operations
+  async getChannel(userId: string): Promise<Channel | undefined> {
+    const [channel] = await db
+      .select()
+      .from(channels)
+      .where(eq(channels.userId, userId));
+    return channel;
+  }
+
+  async upsertChannel(userId: string, channelData: InsertChannel): Promise<Channel> {
+    const existing = await this.getChannel(userId);
+    
+    if (existing) {
+      const [channel] = await db
+        .update(channels)
+        .set({ ...channelData, updatedAt: new Date() })
+        .where(eq(channels.id, existing.id))
+        .returning();
+      return channel;
+    } else {
+      const [channel] = await db
+        .insert(channels)
+        .values({ ...channelData, userId })
+        .returning();
+      return channel;
+    }
+  }
+}
+
+export const storage = new DatabaseStorage();
