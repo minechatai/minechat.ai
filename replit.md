@@ -97,6 +97,7 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Added official Minechat AI logo to sidebar
   - Updated dark mode colors to match design specifications
   - Enhanced dashboard components with proper dark/light mode styling
+- June 19, 2025: Updated to new Minechat AI logo icon design
 
 # User Preferences
 
