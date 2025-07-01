@@ -103,7 +103,6 @@ export default function Setup() {
                   <ChevronRight className="w-4 h-4 mx-2" />
                   <span className="text-gray-900">{getSectionTitle(currentSection)}</span>
                 </nav>
-                <h1 className="text-2xl font-semibold text-gray-900">Setup</h1>
               </div>
               <Button className="bg-primary text-white hover:bg-primary-dark">
                 Save
