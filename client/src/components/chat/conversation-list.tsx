@@ -127,31 +127,37 @@ export default function ConversationList({ selectedConversation, onSelectConvers
           </Button>
         </div>
         
-        <div className="relative">
-          <Input
-            type="text"
-            placeholder="Search"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-12"
-          />
-          <Search className="w-4 h-4 absolute left-3 top-3 text-gray-400" />
+        <div className="flex items-center gap-3">
+          <div className="relative flex-1">
+            <Input
+              type="text"
+              placeholder="Search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+            <Search className="w-4 h-4 absolute left-3 top-3 text-gray-400" />
+          </div>
+          
+          {/* Facebook Messenger Integration */}
           <button
             onClick={handleFacebookConnect}
             disabled={connectFacebookMutation.isPending}
-            className="absolute right-3 top-2.5 p-1 rounded-full hover:bg-gray-100 disabled:opacity-50"
+            className={`p-2 rounded-full hover:bg-gray-100 disabled:opacity-50 transition-colors ${
+              facebookConnection?.isConnected ? 'bg-blue-50' : ''
+            }`}
             title={facebookConnection?.isConnected ? "Facebook Messenger Connected" : "Connect Facebook Messenger"}
           >
             <svg
-              className={`w-5 h-5 ${facebookConnection?.isConnected ? 'text-blue-600' : 'text-blue-500'}`}
+              className={`w-6 h-6 ${facebookConnection?.isConnected ? 'text-blue-600' : 'text-blue-500'}`}
               viewBox="0 0 24 24"
               fill="currentColor"
             >
-              <path d="M0 12.067C0 18.033 4.333 22.994 10 24v-8.667H7V12h3V9.333C10 6.333 11.933 4.667 14.667 4.667c1.467 0 3 .267 3 .267V8h-1.667C15.467 8 15 8.533 15 9.067V12h2.667l-.467 3.333H15V24c5.667-1.006 10-5.967 10-11.933C25 5.378 19.622 0 12.067 0S0 5.378 0 12.067z"/>
+              <path d="M12 0C5.373 0 0 4.975 0 11.111c0 3.497 1.745 6.616 4.472 8.652V24l4.086-2.242c1.09.301 2.246.464 3.442.464 6.627 0 12-4.974 12-11.111C24 4.975 18.627 0 12 0zm1.191 14.963l-3.055-3.26-5.963 3.26L10.732 8.1l3.13 3.26L19.764 8.1l-6.573 6.863z"/>
             </svg>
             {connectFacebookMutation.isPending && (
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
               </div>
             )}
           </button>
