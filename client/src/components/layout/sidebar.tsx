@@ -23,9 +23,9 @@ const navigation = [
     href: "/setup", 
     icon: Settings,
     submenu: [
-      { name: "AI Assistant", href: "/setup" },
-      { name: "Business Information", href: "/setup?tab=business" },
-      { name: "Channels", href: "/setup?tab=channels" },
+      { name: "AI Assistant", href: "/setup/ai-assistant" },
+      { name: "Business Information", href: "/setup/business-info" },
+      { name: "Channels", href: "/setup/channels" },
     ]
   },
   { name: "CRM", href: "/crm", icon: BarChart3 },
@@ -103,19 +103,19 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                   {setupExpanded && (
                     <div className="ml-6 mt-1 space-y-1">
                       {item.submenu.map((subItem) => {
-                        const isSubActive = location.includes(subItem.href);
+                        const isSubActive = location === subItem.href || location.startsWith(subItem.href);
                         return (
                           <Link key={subItem.name} href={subItem.href}>
-                            <a
+                            <span
                               className={cn(
-                                "block px-3 py-2 text-sm rounded-lg transition-colors",
+                                "block px-3 py-2 text-sm rounded-lg transition-colors cursor-pointer",
                                 isSubActive
-                                  ? "text-gray-900 font-medium"
-                                  : "text-gray-500 hover:text-gray-700"
+                                  ? "text-gray-900 font-medium bg-gray-100"
+                                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
                               )}
                             >
                               {subItem.name}
-                            </a>
+                            </span>
                           </Link>
                         );
                       })}
