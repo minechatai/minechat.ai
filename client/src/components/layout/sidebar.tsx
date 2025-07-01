@@ -7,19 +7,29 @@ import {
   FileText, 
   Users, 
   HelpCircle,
-  LogOut
+  LogOut,
+  ChevronDown,
+  ChevronRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: Home },
   { name: "Chat", href: "/chat", icon: MessageSquare },
-  { name: "Setup", href: "/setup", icon: Settings },
-  { name: "Analytics", href: "/analytics", icon: BarChart3 },
-  { name: "Documents", href: "/documents", icon: FileText },
-  { name: "Customers", href: "/customers", icon: Users },
-  { name: "Help", href: "/help", icon: HelpCircle },
+  { 
+    name: "Setup", 
+    href: "/setup", 
+    icon: Settings,
+    submenu: [
+      { name: "AI Assistant", href: "/setup" },
+      { name: "Business Information", href: "/setup?tab=business" },
+      { name: "Channels", href: "/setup?tab=channels" },
+    ]
+  },
+  { name: "CRM", href: "/crm", icon: BarChart3 },
+  { name: "Accounts", href: "/accounts", icon: Users },
 ];
 
 interface SidebarProps {
@@ -29,6 +39,7 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const [location] = useLocation();
+  const [setupExpanded, setSetupExpanded] = useState(true);
 
   const handleLogout = () => {
     window.location.href = "/api/logout";
@@ -59,23 +70,77 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         {/* Navigation */}
         <nav className="flex-1 px-4 py-6 space-y-1">
           {navigation.map((item) => {
-            const isActive = location === item.href;
+            const isActive = location === item.href || (item.submenu && item.submenu.some(sub => location.includes(sub.href)));
+            
+            if (item.submenu) {
+              return (
+                <div key={item.name}>
+                  <button
+                    onClick={() => setSetupExpanded(!setupExpanded)}
+                    className={cn(
+                      "group flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+                      isActive
+                        ? "bg-rose-50 text-rose-600"
+                        : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                    )}
+                  >
+                    <item.icon
+                      className={cn(
+                        "mr-3 h-5 w-5 flex-shrink-0",
+                        isActive
+                          ? "text-rose-600"
+                          : "text-gray-400 group-hover:text-gray-500"
+                      )}
+                    />
+                    {item.name}
+                    {setupExpanded ? (
+                      <ChevronDown className="ml-auto h-4 w-4" />
+                    ) : (
+                      <ChevronRight className="ml-auto h-4 w-4" />
+                    )}
+                  </button>
+                  
+                  {setupExpanded && (
+                    <div className="ml-6 mt-1 space-y-1">
+                      {item.submenu.map((subItem) => {
+                        const isSubActive = location.includes(subItem.href);
+                        return (
+                          <Link key={subItem.name} href={subItem.href}>
+                            <a
+                              className={cn(
+                                "block px-3 py-2 text-sm rounded-lg transition-colors",
+                                isSubActive
+                                  ? "text-gray-900 font-medium"
+                                  : "text-gray-500 hover:text-gray-700"
+                              )}
+                            >
+                              {subItem.name}
+                            </a>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
             return (
               <Link key={item.name} href={item.href}>
                 <a
                   className={cn(
                     "group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
                     isActive
-                      ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
-                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
+                      ? "bg-blue-50 text-blue-600"
+                      : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                   )}
                 >
                   <item.icon
                     className={cn(
                       "mr-3 h-5 w-5 flex-shrink-0",
                       isActive
-                        ? "text-blue-600 dark:text-blue-400"
-                        : "text-gray-400 dark:text-gray-500 group-hover:text-gray-500 dark:group-hover:text-gray-400"
+                        ? "text-blue-600"
+                        : "text-gray-400 group-hover:text-gray-500"
                     )}
                   />
                   {item.name}
