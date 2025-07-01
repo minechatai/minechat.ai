@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -14,36 +15,27 @@ import { Globe, MessageCircle, Instagram, Send, MessageSquare, Slack, Hash, More
 import { FaFacebookMessenger, FaTelegram, FaWhatsapp, FaViber, FaDiscord } from "react-icons/fa";
 
 const channelSchema = z.object({
-  websiteName: z.string().optional(),
-  websiteUrl: z.string().url().optional().or(z.literal("")),
-  primaryColor: z.string().default("#A53860"),
+  pageId: z.string().optional(),
+  facebookAccessToken: z.string().optional(),
 });
 
 type ChannelFormData = z.infer<typeof channelSchema>;
 
 const channelIcons = [
-  { name: "Website", icon: Globe, color: "text-blue-600", bgColor: "bg-blue-100" },
-  { name: "Messenger", icon: FaFacebookMessenger, color: "text-blue-600", bgColor: "bg-blue-100" },
-  { name: "Instagram", icon: Instagram, color: "text-pink-600", bgColor: "bg-pink-100" },
-  { name: "Telegram", icon: FaTelegram, color: "text-blue-500", bgColor: "bg-blue-100" },
-  { name: "WhatsApp", icon: FaWhatsapp, color: "text-green-600", bgColor: "bg-green-100" },
-  { name: "Slack", icon: Slack, color: "text-purple-600", bgColor: "bg-purple-100" },
-  { name: "Viber", icon: FaViber, color: "text-purple-500", bgColor: "bg-purple-100" },
-  { name: "Discord", icon: FaDiscord, color: "text-indigo-600", bgColor: "bg-indigo-100" },
+  { name: "Website", icon: Globe, color: "text-blue-600", bgColor: "bg-blue-50", borderColor: "border-blue-200" },
+  { name: "Messenger", icon: FaFacebookMessenger, color: "text-blue-600", bgColor: "bg-blue-50", borderColor: "border-blue-200" },
+  { name: "Instagram", icon: Instagram, color: "text-pink-600", bgColor: "bg-pink-50", borderColor: "border-pink-200" },
+  { name: "Telegram", icon: FaTelegram, color: "text-sky-500", bgColor: "bg-sky-50", borderColor: "border-sky-200" },
+  { name: "WhatsApp", icon: FaWhatsapp, color: "text-green-600", bgColor: "bg-green-50", borderColor: "border-green-200" },
+  { name: "Slack", icon: Slack, color: "text-purple-600", bgColor: "bg-purple-50", borderColor: "border-purple-200" },
+  { name: "Viber", icon: FaViber, color: "text-purple-500", bgColor: "bg-purple-50", borderColor: "border-purple-200" },
+  { name: "Discord", icon: FaDiscord, color: "text-indigo-600", bgColor: "bg-indigo-50", borderColor: "border-indigo-200" },
 ];
 
-const colorOptions = [
-  "#DC2626", // red-600
-  "#EAB308", // yellow-500
-  "#7C3AED", // violet-600
-  "#EF4444", // red-500
-  "#3B82F6", // blue-500
-  "#10B981", // green-500
-  "#A53860", // primary
-];
+
 
 export default function Channels() {
-  const [selectedColor, setSelectedColor] = useState("#A53860");
+  const [selectedChannel, setSelectedChannel] = useState("Website");
   const { toast } = useToast();
 
   const { data: channel, isLoading } = useQuery({
@@ -53,26 +45,23 @@ export default function Channels() {
   const form = useForm<ChannelFormData>({
     resolver: zodResolver(channelSchema),
     defaultValues: {
-      websiteName: "",
-      websiteUrl: "",
-      primaryColor: "#A53860",
+      pageId: "",
+      facebookAccessToken: "",
     },
   });
 
   useEffect(() => {
     if (channel) {
       form.reset({
-        websiteName: channel.websiteName || "",
-        websiteUrl: channel.websiteUrl || "",
-        primaryColor: channel.primaryColor || "#A53860",
+        pageId: channel.pageId || "",
+        facebookAccessToken: channel.facebookAccessToken || "",
       });
-      setSelectedColor(channel.primaryColor || "#A53860");
     }
   }, [channel, form]);
 
   const mutation = useMutation({
     mutationFn: async (data: ChannelFormData) => {
-      await apiRequest("POST", "/api/channels", { ...data, primaryColor: selectedColor });
+      await apiRequest("POST", "/api/channels", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/channels"] });
@@ -125,36 +114,44 @@ export default function Channels() {
           <span className="text-sm text-blue-600 cursor-pointer hover:underline">(watch tutorial video)</span>
         </div>
 
-        {/* Channel Icons */}
-        <div className="flex flex-wrap gap-4 mb-8">
-          {channelIcons.map((channel, index) => {
+        {/* Channel Tabs */}
+        <div className="flex flex-wrap gap-2 mb-8">
+          {channelIcons.map((channel) => {
             const IconComponent = channel.icon;
+            const isSelected = selectedChannel === channel.name;
             return (
-              <div 
+              <button
                 key={channel.name}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${
-                  index === 0 ? 'bg-gray-100' : 'border border-gray-200'
+                type="button"
+                onClick={() => setSelectedChannel(channel.name)}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-lg border transition-colors ${
+                  isSelected 
+                    ? `${channel.bgColor} ${channel.borderColor} border` 
+                    : 'border-gray-200 hover:bg-gray-50'
                 }`}
               >
-                <IconComponent className={`w-5 h-5 ${channel.color}`} />
-                <span className="text-sm font-medium">{channel.name}</span>
-              </div>
+                <IconComponent className={`w-4 h-4 ${isSelected ? channel.color : 'text-gray-600'}`} />
+                <span className={`text-sm font-medium ${isSelected ? 'text-gray-900' : 'text-gray-600'}`}>
+                  {channel.name}
+                </span>
+              </button>
             );
           })}
         </div>
 
-        {/* Website Configuration */}
+        {/* Channel Configuration Form */}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={form.control}
-              name="websiteName"
+              name="pageId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Website Name</FormLabel>
+                  <FormLabel className="text-sm font-medium text-gray-900">Page ID</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder="Blissful Retreat"
+                      placeholder="https://blissfulretreat.framer.website/"
+                      className="mt-1"
                       {...field} 
                     />
                   </FormControl>
@@ -165,14 +162,15 @@ export default function Channels() {
 
             <FormField
               control={form.control}
-              name="websiteUrl"
+              name="facebookAccessToken"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Website URL</FormLabel>
+                  <FormLabel className="text-sm font-medium text-gray-900">Facebook Access Token</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="url"
-                      placeholder="https://blissfulretreat.framer.website/"
+                    <Textarea 
+                      placeholder={`<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">`}
+                      className="mt-1 h-20 font-mono text-sm resize-none"
                       {...field} 
                     />
                   </FormControl>
@@ -181,36 +179,7 @@ export default function Channels() {
               )}
             />
 
-            <div>
-              <FormLabel className="text-sm font-medium text-gray-700 mb-3 block">Color Theme</FormLabel>
-              <div className="flex space-x-2">
-                {colorOptions.map((color) => (
-                  <button
-                    key={color}
-                    type="button"
-                    className={`w-8 h-8 rounded cursor-pointer ${
-                      selectedColor === color ? 'ring-2 ring-gray-800 ring-offset-2' : ''
-                    }`}
-                    style={{ backgroundColor: color }}
-                    onClick={() => setSelectedColor(color)}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <FormLabel className="text-sm font-medium text-gray-700 mb-2 block">Embed Code</FormLabel>
-              <div className="bg-gray-50 border border-gray-300 rounded-lg p-4 font-mono text-sm text-gray-700">
-                <code>
-                  {channel?.embedCode || 
-                    `<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">`
-                  }
-                </code>
-              </div>
-            </div>
-
-            <div className="flex justify-end space-x-3">
+            <div className="flex justify-end space-x-3 pt-4">
               <Button 
                 type="button" 
                 variant="outline"
@@ -220,10 +189,10 @@ export default function Channels() {
               </Button>
               <Button 
                 type="submit" 
-                className="bg-primary text-white hover:bg-primary-dark"
+                className="bg-primary text-white hover:bg-primary-dark px-6"
                 disabled={mutation.isPending}
               >
-                {mutation.isPending ? "Saving..." : "Save Changes"}
+                {mutation.isPending ? "Saving..." : "Save Change"}
               </Button>
             </div>
           </form>
