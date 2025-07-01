@@ -1,8 +1,11 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { isUnauthorizedError } from "@/lib/authUtils";
 import { Search, Plus, MessageSquare } from "lucide-react";
 import { Conversation } from "@shared/schema";
 
@@ -14,10 +17,55 @@ interface ConversationListProps {
 export default function ConversationList({ selectedConversation, onSelectConversation }: ConversationListProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("inbox");
+  const { toast } = useToast();
 
   const { data: conversations = [], isLoading } = useQuery({
     queryKey: ["/api/conversations"],
   });
+
+  const { data: facebookConnection, isLoading: facebookLoading } = useQuery({
+    queryKey: ["/api/facebook-connection"],
+  });
+
+  const connectFacebookMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("POST", "/api/facebook/connect");
+      return response;
+    },
+    onSuccess: (data) => {
+      if (data?.authUrl) {
+        window.location.href = data.authUrl;
+      } else {
+        toast({
+          title: "Success",
+          description: "Facebook Messenger connected successfully",
+        });
+        queryClient.invalidateQueries({ queryKey: ["/api/facebook-connection"] });
+      }
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error as Error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to connect Facebook Messenger",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleFacebookConnect = () => {
+    connectFacebookMutation.mutate();
+  };
 
   const filteredConversations = conversations.filter((conversation: Conversation) => {
     if (searchQuery) {
@@ -85,10 +133,28 @@ export default function ConversationList({ selectedConversation, onSelectConvers
             placeholder="Search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-10"
+            className="pl-10 pr-12"
           />
           <Search className="w-4 h-4 absolute left-3 top-3 text-gray-400" />
-          <MessageSquare className="w-4 h-4 absolute right-3 top-3 text-blue-500" />
+          <button
+            onClick={handleFacebookConnect}
+            disabled={connectFacebookMutation.isPending}
+            className="absolute right-3 top-2.5 p-1 rounded-full hover:bg-gray-100 disabled:opacity-50"
+            title={facebookConnection?.isConnected ? "Facebook Messenger Connected" : "Connect Facebook Messenger"}
+          >
+            <svg
+              className={`w-5 h-5 ${facebookConnection?.isConnected ? 'text-blue-600' : 'text-blue-500'}`}
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path d="M12 0C5.374 0 0 5.374 0 12s5.374 12 12 12 12-5.374 12-12S18.626 0 12 0zm0 2.4c5.302 0 9.6 4.298 9.6 9.6s-4.298 9.6-9.6 9.6S2.4 17.302 2.4 12 6.698 2.4 12 2.4zm-1.2 6L9.6 9.6v8.4h2.4v-4.2l2.4 2.4V9.6h-2.4v2.4L10.8 8.4z"/>
+            </svg>
+            {connectFacebookMutation.isPending && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            )}
+          </button>
         </div>
       </div>
 

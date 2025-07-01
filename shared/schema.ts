@@ -144,6 +144,18 @@ export const channels = pgTable("channels", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Facebook Messenger connections
+export const facebookConnections = pgTable("facebook_connections", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  facebookPageId: varchar("facebook_page_id").notNull(),
+  facebookPageName: varchar("facebook_page_name"),
+  accessToken: text("access_token").notNull(),
+  isConnected: boolean("is_connected").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   businesses: many(businesses),
@@ -153,6 +165,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   conversations: many(conversations),
   analytics: many(analytics),
   channels: many(channels),
+  facebookConnections: many(facebookConnections),
 }));
 
 export const businessesRelations = relations(businesses, ({ one }) => ({
@@ -208,6 +221,13 @@ export const analyticsRelations = relations(analytics, ({ one }) => ({
 export const channelsRelations = relations(channels, ({ one }) => ({
   user: one(users, {
     fields: [channels.userId],
+    references: [users.id],
+  }),
+}));
+
+export const facebookConnectionsRelations = relations(facebookConnections, ({ one }) => ({
+  user: one(users, {
+    fields: [facebookConnections.userId],
     references: [users.id],
   }),
 }));
