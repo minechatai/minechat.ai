@@ -149,11 +149,25 @@ export default function ConversationList({ selectedConversation, onSelectConvers
             title={facebookConnection?.isConnected ? "Facebook Messenger Connected" : "Connect Facebook Messenger"}
           >
             <svg
-              className={`w-6 h-6 ${facebookConnection?.isConnected ? 'text-blue-600' : 'text-blue-500'}`}
-              viewBox="0 0 1024 1024"
-              fill="currentColor"
+              className="w-6 h-6"
+              viewBox="0 0 24 24"
+              fill="none"
             >
-              <path d="M512 0C229.12 0 0 229.12 0 512s229.12 512 512 512 512-229.12 512-512S794.88 0 512 0zm0 96c229.76 0 416 186.24 416 416s-186.24 416-416 416S96 741.76 96 512 282.24 96 512 96zm-32 192v96l-32 128 128-32 96 96v64l-96 96-128-32 32 128v96l-64-96-128 32v-96l128-32-96-96h64l96-96 32-128v-96l96 64z"/>
+              <defs>
+                <linearGradient id="messengerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#FF3040" />
+                  <stop offset="50%" stopColor="#9F40FF" />
+                  <stop offset="100%" stopColor="#0099FF" />
+                </linearGradient>
+              </defs>
+              <path 
+                d="M12 2C6.477 2 2 5.999 2 11.111c0 2.848 1.44 5.383 3.69 7.043v3.957l3.676-2.018c.98.27 2.018.396 3.134.396 5.523 0 10-3.999 10-9.111C22.5 5.999 17.523 2 12 2z"
+                fill="url(#messengerGradient)"
+              />
+              <path 
+                d="M7.5 13.5l2.813-4.5 1.875 2.25L15 8.25l-2.813 4.5L10.313 10.5z"
+                fill="white"
+              />
             </svg>
             {connectFacebookMutation.isPending && (
               <div className="absolute inset-0 flex items-center justify-center">
