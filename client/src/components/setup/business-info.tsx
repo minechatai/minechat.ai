@@ -433,11 +433,12 @@ export default function BusinessInfo() {
                   <FormItem>
                     <FormLabel>Company Story or Other Information</FormLabel>
                     <FormControl>
-                      <Textarea 
+                      <RichTextarea 
                         placeholder="Enter company story or other information" 
                         rows={4}
                         className="resize-none"
-                        {...field} 
+                        value={field.value}
+                        onChange={field.onChange}
                       />
                     </FormControl>
                     <FormMessage />
@@ -487,11 +488,12 @@ export default function BusinessInfo() {
                   <FormItem>
                     <FormLabel>Description</FormLabel>
                     <FormControl>
-                      <Textarea 
+                      <RichTextarea 
                         placeholder="Enter Description" 
                         rows={3}
                         className="resize-none"
-                        {...field} 
+                        value={field.value}
+                        onChange={field.onChange}
                       />
                     </FormControl>
                     <FormMessage />
@@ -540,11 +542,12 @@ export default function BusinessInfo() {
                     <FormItem>
                       <FormLabel>FAQs</FormLabel>
                       <FormControl>
-                        <Textarea 
+                        <RichTextarea 
                           placeholder="Enter FAQs" 
                           rows={3}
                           className="resize-none"
-                          {...field} 
+                          value={field.value}
+                          onChange={field.onChange}
                         />
                       </FormControl>
                       <FormMessage />
@@ -597,11 +600,12 @@ export default function BusinessInfo() {
                     <FormItem>
                       <FormLabel>Policy</FormLabel>
                       <FormControl>
-                        <Textarea 
+                        <RichTextarea 
                           placeholder="Enter Policy" 
                           rows={3}
                           className="resize-none"
-                          {...field} 
+                          value={field.value}
+                          onChange={field.onChange}
                         />
                       </FormControl>
                       <FormMessage />
@@ -617,11 +621,12 @@ export default function BusinessInfo() {
                   <FormItem>
                     <FormLabel>Additional Notes</FormLabel>
                     <FormControl>
-                      <Textarea 
+                      <RichTextarea 
                         placeholder="Enter Additional Notes" 
                         rows={3}
                         className="resize-none"
-                        {...field} 
+                        value={field.value}
+                        onChange={field.onChange}
                       />
                     </FormControl>
                     <FormMessage />
@@ -636,11 +641,12 @@ export default function BusinessInfo() {
                   <FormItem>
                     <FormLabel>Thank you message</FormLabel>
                     <FormControl>
-                      <Textarea 
+                      <RichTextarea 
                         placeholder="Enter Thank you message" 
                         rows={3}
                         className="resize-none"
-                        {...field} 
+                        value={field.value}
+                        onChange={field.onChange}
                       />
                     </FormControl>
                     <FormMessage />
