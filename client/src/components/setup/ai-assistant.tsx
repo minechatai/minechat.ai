@@ -6,6 +6,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { RichTextarea } from "@/components/ui/rich-textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -132,11 +133,12 @@ export default function AiAssistant() {
               <FormItem>
                 <FormLabel>Intro Message</FormLabel>
                 <FormControl>
-                  <Textarea 
+                  <RichTextarea 
                     placeholder="Enter Intro Message" 
                     rows={4}
                     className="resize-none"
-                    {...field} 
+                    value={field.value}
+                    onChange={field.onChange}
                   />
                 </FormControl>
                 <FormMessage />
@@ -151,11 +153,12 @@ export default function AiAssistant() {
               <FormItem>
                 <FormLabel>Short Description</FormLabel>
                 <FormControl>
-                  <Textarea 
+                  <RichTextarea 
                     placeholder="Enter Description" 
                     rows={4}
                     className="resize-none"
-                    {...field} 
+                    value={field.value}
+                    onChange={field.onChange}
                   />
                 </FormControl>
                 <FormMessage />
@@ -170,18 +173,13 @@ export default function AiAssistant() {
               <FormItem>
                 <FormLabel>AI Guidelines</FormLabel>
                 <FormControl>
-                  <div className="relative">
-                    <div className="bg-gray-50 border border-gray-300 rounded-lg p-4 min-h-[120px]">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <span className="bg-gray-200 text-gray-600 px-2 py-1 rounded text-sm">1.</span>
-                      </div>
-                      <Textarea 
-                        placeholder="Enter AI guidelines..." 
-                        className="border-0 bg-transparent p-0 resize-none min-h-[80px]"
-                        {...field} 
-                      />
-                    </div>
-                  </div>
+                  <RichTextarea 
+                    placeholder="Enter AI guidelines..." 
+                    rows={6}
+                    className="resize-none"
+                    value={field.value}
+                    onChange={field.onChange}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
