@@ -56,19 +56,19 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     `}>
       <div className="flex-1 flex flex-col min-h-0 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
         {/* Logo */}
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center space-x-3">
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center space-x-2">
             <img 
               src="/logo.png" 
               alt="Minechat AI" 
-              className="w-8 h-8 object-contain"
+              className="w-6 h-6 object-contain"
             />
-            <span className="text-xl font-bold text-gray-900 dark:text-white">minechat.ai</span>
+            <span className="text-lg font-semibold text-gray-900 dark:text-white">minechat.ai</span>
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 py-6 space-y-1">
+        <nav className="flex-1 px-3 py-4 space-y-1">
           {navigation.map((item) => {
             const isActive = location === item.href || (item.submenu && item.submenu.some(sub => location.includes(sub.href)));
             
@@ -81,12 +81,12 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                       "group flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg transition-colors",
                       isActive
                         ? "bg-rose-50 text-rose-600"
-                        : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                     )}
                   >
                     <item.icon
                       className={cn(
-                        "mr-3 h-5 w-5 flex-shrink-0",
+                        "mr-3 h-4 w-4 flex-shrink-0",
                         isActive
                           ? "text-rose-600"
                           : "text-gray-400 group-hover:text-gray-500"
@@ -94,21 +94,21 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                     />
                     {item.name}
                     {setupExpanded ? (
-                      <ChevronDown className="ml-auto h-4 w-4" />
+                      <ChevronDown className="ml-auto h-3 w-3" />
                     ) : (
-                      <ChevronRight className="ml-auto h-4 w-4" />
+                      <ChevronRight className="ml-auto h-3 w-3" />
                     )}
                   </button>
                   
                   {setupExpanded && (
-                    <div className="ml-6 mt-1 space-y-1">
+                    <div className="ml-7 mt-1 space-y-1">
                       {item.submenu.map((subItem) => {
                         const isSubActive = location === subItem.href || location.startsWith(subItem.href);
                         return (
                           <Link key={subItem.name} href={subItem.href}>
                             <span
                               className={cn(
-                                "block px-3 py-2 text-sm rounded-lg transition-colors cursor-pointer",
+                                "block px-3 py-1.5 text-sm rounded-lg transition-colors cursor-pointer",
                                 isSubActive
                                   ? "text-gray-900 font-medium bg-gray-100"
                                   : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
@@ -127,24 +127,24 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
 
             return (
               <Link key={item.name} href={item.href}>
-                <a
+                <span
                   className={cn(
-                    "group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+                    "group flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors cursor-pointer",
                     isActive
-                      ? "bg-blue-50 text-blue-600"
-                      : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                      ? "bg-rose-50 text-rose-600"
+                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                   )}
                 >
                   <item.icon
                     className={cn(
-                      "mr-3 h-5 w-5 flex-shrink-0",
+                      "mr-3 h-4 w-4 flex-shrink-0",
                       isActive
-                        ? "text-blue-600"
+                        ? "text-rose-600"
                         : "text-gray-400 group-hover:text-gray-500"
                     )}
                   />
                   {item.name}
-                </a>
+                </span>
               </Link>
             );
           })}
