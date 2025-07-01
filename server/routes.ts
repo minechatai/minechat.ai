@@ -472,6 +472,71 @@ Response style: ${aiAssistant?.responseLength || "normal"} length responses.`;
     }
   });
 
+  // Facebook integration routes
+  app.get('/api/facebook-connection', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const connection = await storage.getFacebookConnection(userId);
+      res.json(connection || { isConnected: false });
+    } catch (error) {
+      console.error("Error fetching Facebook connection:", error);
+      res.status(500).json({ message: "Failed to fetch Facebook connection" });
+    }
+  });
+
+  app.post('/api/facebook/connect', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // For demo purposes, simulate Facebook OAuth flow
+      // In production, this would redirect to Facebook's OAuth URL
+      const authUrl = `https://www.facebook.com/v18.0/dialog/oauth?client_id=YOUR_APP_ID&redirect_uri=${encodeURIComponent(
+        `${req.protocol}://${req.hostname}/api/facebook/callback`
+      )}&scope=pages_messaging&response_type=code`;
+      
+      res.json({ authUrl });
+    } catch (error) {
+      console.error("Error initiating Facebook connection:", error);
+      res.status(500).json({ message: "Failed to initiate Facebook connection" });
+    }
+  });
+
+  app.get('/api/facebook/callback', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { code } = req.query;
+      
+      if (!code) {
+        return res.status(400).json({ message: "Authorization code not provided" });
+      }
+      
+      // Simulate successful Facebook connection
+      // In production, exchange code for access token and get page info
+      await storage.upsertFacebookConnection(userId, {
+        facebookPageId: "demo_page_id",
+        facebookPageName: "Demo Business Page",
+        accessToken: "demo_access_token",
+        isConnected: true,
+      });
+      
+      res.redirect('/chat?connected=facebook');
+    } catch (error) {
+      console.error("Error completing Facebook connection:", error);
+      res.status(500).json({ message: "Failed to complete Facebook connection" });
+    }
+  });
+
+  app.delete('/api/facebook/disconnect', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      await storage.disconnectFacebook(userId);
+      res.json({ message: "Facebook Messenger disconnected successfully" });
+    } catch (error) {
+      console.error("Error disconnecting Facebook:", error);
+      res.status(500).json({ message: "Failed to disconnect Facebook" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

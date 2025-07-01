@@ -25,12 +25,12 @@ export default function ConversationList({ selectedConversation, onSelectConvers
 
   const { data: facebookConnection, isLoading: facebookLoading } = useQuery({
     queryKey: ["/api/facebook-connection"],
-  });
+  }) as { data: { isConnected?: boolean } | undefined, isLoading: boolean };
 
   const connectFacebookMutation = useMutation({
     mutationFn: async () => {
       const response = await apiRequest("POST", "/api/facebook/connect");
-      return response;
+      return response as { authUrl?: string };
     },
     onSuccess: (data) => {
       if (data?.authUrl) {
@@ -147,7 +147,7 @@ export default function ConversationList({ selectedConversation, onSelectConvers
               viewBox="0 0 24 24"
               fill="currentColor"
             >
-              <path d="M12 0C5.374 0 0 5.374 0 12s5.374 12 12 12 12-5.374 12-12S18.626 0 12 0zm0 2.4c5.302 0 9.6 4.298 9.6 9.6s-4.298 9.6-9.6 9.6S2.4 17.302 2.4 12 6.698 2.4 12 2.4zm-1.2 6L9.6 9.6v8.4h2.4v-4.2l2.4 2.4V9.6h-2.4v2.4L10.8 8.4z"/>
+              <path d="M0 12.067C0 18.033 4.333 22.994 10 24v-8.667H7V12h3V9.333C10 6.333 11.933 4.667 14.667 4.667c1.467 0 3 .267 3 .267V8h-1.667C15.467 8 15 8.533 15 9.067V12h2.667l-.467 3.333H15V24c5.667-1.006 10-5.967 10-11.933C25 5.378 19.622 0 12.067 0S0 5.378 0 12.067z"/>
             </svg>
             {connectFacebookMutation.isPending && (
               <div className="absolute inset-0 flex items-center justify-center">
