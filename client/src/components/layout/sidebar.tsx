@@ -41,7 +41,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       fixed inset-y-0 left-0 z-50 
       w-64 
       transition-transform duration-300 ease-in-out
-      md:static md:z-auto
+      md:relative md:z-auto md:flex md:flex-col
     `}>
       <div className="flex-1 flex flex-col min-h-0 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
         {/* Logo */}
