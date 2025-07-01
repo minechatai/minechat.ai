@@ -22,7 +22,12 @@ const navigation = [
   { name: "Help", href: "/help", icon: HelpCircle },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const [location] = useLocation();
 
   const handleLogout = () => {
@@ -30,7 +35,14 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
+    <div className={`
+      ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+      md:translate-x-0 
+      fixed inset-y-0 left-0 z-50 
+      w-64 
+      transition-transform duration-300 ease-in-out
+      md:static md:z-auto
+    `}>
       <div className="flex-1 flex flex-col min-h-0 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
         {/* Logo */}
         <div className="p-6 border-b border-gray-200 dark:border-gray-700">
