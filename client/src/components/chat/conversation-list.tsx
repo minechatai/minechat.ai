@@ -148,27 +148,11 @@ export default function ConversationList({ selectedConversation, onSelectConvers
             }`}
             title={facebookConnection?.isConnected ? "Facebook Messenger Connected" : "Connect Facebook Messenger"}
           >
-            <svg
-              className="w-6 h-6"
-              viewBox="0 0 24 24"
-              fill="none"
-            >
-              <defs>
-                <linearGradient id="messengerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#FF3040" />
-                  <stop offset="50%" stopColor="#9F40FF" />
-                  <stop offset="100%" stopColor="#0099FF" />
-                </linearGradient>
-              </defs>
-              <path 
-                d="M12 2C6.477 2 2 5.999 2 11.111c0 2.848 1.44 5.383 3.69 7.043v3.957l3.676-2.018c.98.27 2.018.396 3.134.396 5.523 0 10-3.999 10-9.111C22.5 5.999 17.523 2 12 2z"
-                fill="url(#messengerGradient)"
-              />
-              <path 
-                d="M7.5 13.5l2.813-4.5 1.875 2.25L15 8.25l-2.813 4.5L10.313 10.5z"
-                fill="white"
-              />
-            </svg>
+            <img
+              src="/attached_assets/hd-official-new-facebook-messenger-icon-logo-png-701751694787819hlhkutzsan_1751391059794.png"
+              alt="Facebook Messenger"
+              className="w-6 h-6 object-contain"
+            />
             {connectFacebookMutation.isPending && (
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
