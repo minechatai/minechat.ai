@@ -8,6 +8,7 @@ import {
   messages,
   analytics,
   channels,
+  facebookConnections,
   type User,
   type UpsertUser,
   type Business,
@@ -26,6 +27,8 @@ import {
   type InsertAnalytics,
   type Channel,
   type InsertChannel,
+  type FacebookConnection,
+  type InsertFacebookConnection,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and } from "drizzle-orm";
@@ -70,6 +73,11 @@ export interface IStorage {
   // Channel operations
   getChannel(userId: string): Promise<Channel | undefined>;
   upsertChannel(userId: string, channel: InsertChannel): Promise<Channel>;
+
+  // Facebook connection operations
+  getFacebookConnection(userId: string): Promise<FacebookConnection | undefined>;
+  upsertFacebookConnection(userId: string, connection: InsertFacebookConnection): Promise<FacebookConnection>;
+  disconnectFacebook(userId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -288,6 +296,41 @@ export class DatabaseStorage implements IStorage {
         .returning();
       return channel;
     }
+  }
+
+  // Facebook connection operations
+  async getFacebookConnection(userId: string): Promise<FacebookConnection | undefined> {
+    const [connection] = await db
+      .select()
+      .from(facebookConnections)
+      .where(eq(facebookConnections.userId, userId));
+    return connection || undefined;
+  }
+
+  async upsertFacebookConnection(userId: string, connectionData: InsertFacebookConnection): Promise<FacebookConnection> {
+    const existing = await this.getFacebookConnection(userId);
+    
+    if (existing) {
+      const [connection] = await db
+        .update(facebookConnections)
+        .set({ ...connectionData, updatedAt: new Date() })
+        .where(eq(facebookConnections.id, existing.id))
+        .returning();
+      return connection;
+    } else {
+      const [connection] = await db
+        .insert(facebookConnections)
+        .values({ ...connectionData, userId })
+        .returning();
+      return connection;
+    }
+  }
+
+  async disconnectFacebook(userId: string): Promise<void> {
+    await db
+      .update(facebookConnections)
+      .set({ isConnected: false, updatedAt: new Date() })
+      .where(eq(facebookConnections.userId, userId));
   }
 }
 

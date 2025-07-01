@@ -288,3 +288,13 @@ export const insertChannelSchema = createInsertSchema(channels).omit({
   createdAt: true,
   updatedAt: true,
 });
+
+export type InsertFacebookConnection = typeof facebookConnections.$inferInsert;
+export type FacebookConnection = typeof facebookConnections.$inferSelect;
+
+export const insertFacebookConnectionSchema = createInsertSchema(facebookConnections).omit({
+  id: true,
+  userId: true,
+  createdAt: true,
+  updatedAt: true,
+});
