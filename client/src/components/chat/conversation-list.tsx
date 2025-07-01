@@ -149,7 +149,7 @@ export default function ConversationList({ selectedConversation, onSelectConvers
             title={facebookConnection?.isConnected ? "Facebook Messenger Connected" : "Connect Facebook Messenger"}
           >
             <img
-              src="/attached_assets/hd-official-new-facebook-messenger-icon-logo-png-701751694787819hlhkutzsan_1751391059794.png"
+              src="/attached_assets/hd-official-new-facebook-messenger-icon-logo-png-701751694787819hlhkutzsan_1751391472642.png"
               alt="Facebook Messenger"
               className="w-6 h-6 object-contain"
             />
