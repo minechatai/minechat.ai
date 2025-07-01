@@ -30,7 +30,7 @@ export default function ConversationList({ selectedConversation, onSelectConvers
   const connectFacebookMutation = useMutation({
     mutationFn: async () => {
       const response = await apiRequest("POST", "/api/facebook/connect");
-      return response as { authUrl?: string };
+      return await response.json() as { authUrl?: string };
     },
     onSuccess: (data) => {
       if (data?.authUrl) {
@@ -150,10 +150,10 @@ export default function ConversationList({ selectedConversation, onSelectConvers
           >
             <svg
               className={`w-6 h-6 ${facebookConnection?.isConnected ? 'text-blue-600' : 'text-blue-500'}`}
-              viewBox="0 0 24 24"
+              viewBox="0 0 1024 1024"
               fill="currentColor"
             >
-              <path d="M12 0C5.373 0 0 4.975 0 11.111c0 3.497 1.745 6.616 4.472 8.652V24l4.086-2.242c1.09.301 2.246.464 3.442.464 6.627 0 12-4.974 12-11.111C24 4.975 18.627 0 12 0zm1.191 14.963l-3.055-3.26-5.963 3.26L10.732 8.1l3.13 3.26L19.764 8.1l-6.573 6.863z"/>
+              <path d="M512 0C229.12 0 0 229.12 0 512s229.12 512 512 512 512-229.12 512-512S794.88 0 512 0zm0 96c229.76 0 416 186.24 416 416s-186.24 416-416 416S96 741.76 96 512 282.24 96 512 96zm-32 192v96l-32 128 128-32 96 96v64l-96 96-128-32 32 128v96l-64-96-128 32v-96l128-32-96-96h64l96-96 32-128v-96l96 64z"/>
             </svg>
             {connectFacebookMutation.isPending && (
               <div className="absolute inset-0 flex items-center justify-center">
