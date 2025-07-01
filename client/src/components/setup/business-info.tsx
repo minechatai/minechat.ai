@@ -6,14 +6,13 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { RichTextarea } from "@/components/ui/rich-textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import { CloudUpload, FileText, X, RotateCcw, Plus, Camera } from "lucide-react";
+import { CloudUpload, FileText, X, Plus, Camera } from "lucide-react";
 
 const businessSchema = z.object({
   companyName: z.string().optional(),
@@ -41,6 +40,8 @@ type ProductFormData = z.infer<typeof productSchema>;
 
 export default function BusinessInfo() {
   const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [productImages, setProductImages] = useState<string[]>([]);
   const { toast } = useToast();
 
   const { data: business, isLoading: businessLoading } = useQuery({
@@ -138,6 +139,7 @@ export default function BusinessInfo() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       productForm.reset();
+      setProductImages([]);
       toast({
         title: "Success",
         description: "Product saved successfully",
@@ -208,14 +210,6 @@ export default function BusinessInfo() {
     }
   };
 
-  const onBusinessSubmit = (data: BusinessFormData) => {
-    businessMutation.mutate(data);
-  };
-
-  const onProductSubmit = (data: ProductFormData) => {
-    productMutation.mutate(data);
-  };
-
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -244,7 +238,8 @@ export default function BusinessInfo() {
       }
 
       const data = await response.json();
-      productForm.setValue('imageUrl', data.imageUrl);
+      const newImageUrl = data.imageUrl;
+      setProductImages(prev => [...prev, newImageUrl]);
       
       toast({
         title: "Success",
@@ -261,6 +256,17 @@ export default function BusinessInfo() {
     }
   };
 
+  const onBusinessSubmit = (data: BusinessFormData) => {
+    businessMutation.mutate(data);
+  };
+
+  const onProductSubmit = (data: ProductFormData) => {
+    productMutation.mutate({
+      ...data,
+      imageUrl: productImages[0] || "",
+    });
+  };
+
   if (businessLoading || documentsLoading || productsLoading) {
     return (
       <div className="animate-pulse space-y-6">
@@ -274,399 +280,382 @@ export default function BusinessInfo() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Business Information Section */}
-      <Card className="bg-white shadow-sm border border-gray-200">
-        <CardContent className="p-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Business Information</h2>
-            <span className="text-sm text-red-600">(upload business docs)</span>
-          </div>
+      <div>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-semibold text-gray-900">Business Information</h2>
+          <span className="text-sm text-blue-600 cursor-pointer hover:underline">(watch tutorial video)</span>
+        </div>
+        
+        <div className="mb-8">
+          <p className="text-sm text-gray-600 mb-4">Upload files you want to import new business document</p>
           
-          <div className="mb-8">
-            <p className="text-sm text-gray-600 mb-4">Upload files you want to import new business document</p>
-            
-            {/* File Upload Area */}
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center mb-6">
-              <CloudUpload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600 mb-2">Drag & Drop files here</p>
-              <p className="text-sm text-gray-500 mb-4">or</p>
-              <label htmlFor="file-upload">
-                <Button className="bg-primary text-white hover:bg-primary-dark cursor-pointer">
-                  Browse Files
-                </Button>
-                <input
-                  id="file-upload"
-                  type="file"
-                  multiple
-                  accept=".pdf,.docx,.doc,.txt"
-                  className="hidden"
-                  onChange={handleFileUpload}
-                />
-              </label>
-            </div>
-
-            {/* Uploaded Files */}
-            {uploadedFiles.length > 0 && (
-              <div className="space-y-3">
-                {uploadedFiles.map((file) => (
-                  <div key={file.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <FileText className="w-5 h-5 text-blue-500" />
-                      <span className="text-sm font-medium text-gray-700">{file.originalName}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      {file.uploadStatus === 'failed' ? (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            // TODO: Implement retry logic
-                            toast({
-                              title: "Info",
-                              description: "Retry functionality not implemented yet",
-                            });
-                          }}
-                        >
-                          <RotateCcw className="w-4 h-4" />
-                        </Button>
-                      ) : (
-                        <span className="text-xs text-gray-500">
-                          {file.uploadStatus === 'completed' ? 'Complete' : '85%'}
-                        </span>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => deleteDocumentMutation.mutate(file.id)}
-                      >
-                        <X className="w-4 h-4 text-red-500" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+          {/* File Upload Area */}
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center mb-6">
+            <CloudUpload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600 mb-2">Drag & Drop files here</p>
+            <p className="text-sm text-gray-500 mb-4">or</p>
+            <label htmlFor="file-upload">
+              <Button className="bg-primary text-white hover:bg-primary-dark cursor-pointer">
+                CHOOSE FILE
+              </Button>
+              <input
+                id="file-upload"
+                type="file"
+                multiple
+                accept=".pdf,.docx,.doc,.txt"
+                className="hidden"
+                onChange={handleFileUpload}
+              />
+            </label>
           </div>
 
-          {/* Business Details Form */}
-          <Form {...businessForm}>
-            <form onSubmit={businessForm.handleSubmit(onBusinessSubmit)} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={businessForm.control}
-                  name="companyName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Company Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter Company Name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={businessForm.control}
-                  name="phoneNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Phone Number</FormLabel>
-                      <FormControl>
-                        <div className="flex">
-                          <Select defaultValue="+44">
-                            <SelectTrigger className="w-20 rounded-r-none">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="+44">🇬🇧 +44</SelectItem>
-                              <SelectItem value="+1">🇺🇸 +1</SelectItem>
-                              <SelectItem value="+880">🇧🇩 +880</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <Input 
-                            placeholder="XXXX XXX XXXX" 
-                            className="rounded-l-none"
-                            {...field} 
-                          />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+          {/* Uploaded Files */}
+          {uploadedFiles.length > 0 && (
+            <div className="space-y-3 mb-8">
+              {uploadedFiles.map((file) => (
+                <div key={file.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <FileText className="w-5 h-5 text-blue-500" />
+                    <span className="text-sm font-medium text-gray-700">{file.originalName}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs text-gray-500">
+                      {file.uploadStatus === 'completed' ? 'Complete' : 'Processing...'}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => deleteDocumentMutation.mutate(file.id)}
+                    >
+                      <X className="w-4 h-4 text-red-500" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={businessForm.control}
-                  name="address"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Address</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter Address" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={businessForm.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input type="email" placeholder="Enter Email" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
+        {/* Business Details Form */}
+        <Form {...businessForm}>
+          <form onSubmit={businessForm.handleSubmit(onBusinessSubmit)} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={businessForm.control}
-                name="companyStory"
+                name="companyName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Company Story or Other Information</FormLabel>
+                    <FormLabel className="text-sm font-medium text-gray-700">Company Name</FormLabel>
                     <FormControl>
-                      <RichTextarea 
-                        placeholder="Enter company story or other information" 
-                        rows={4}
-                        className="resize-none"
-                        value={field.value}
-                        onChange={field.onChange}
-                      />
+                      <Input placeholder="Enter Company Name" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+              <FormField
+                control={businessForm.control}
+                name="phoneNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">Phone Number</FormLabel>
+                    <FormControl>
+                      <div className="flex">
+                        <Select defaultValue="+44">
+                          <SelectTrigger className="w-20 rounded-r-none">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="+44">🇬🇧 +44</SelectItem>
+                            <SelectItem value="+1">🇺🇸 +1</SelectItem>
+                            <SelectItem value="+880">🇧🇩 +880</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Input 
+                          placeholder="XXXX XXX XXXX" 
+                          className="rounded-l-none"
+                          {...field} 
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-              <div className="flex justify-end">
-                <Button 
-                  type="submit" 
-                  className="bg-primary text-white hover:bg-primary-dark"
-                  disabled={businessMutation.isPending}
-                >
-                  {businessMutation.isPending ? "Saving..." : "Save Business Info"}
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+            <FormField
+              control={businessForm.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">Address</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter Address" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={businessForm.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">Email</FormLabel>
+                  <FormControl>
+                    <Input type="email" placeholder="Enter Email" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={businessForm.control}
+              name="companyStory"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">Company Story or Other Information</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Enter company story or other information" 
+                      rows={4}
+                      className="resize-none"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </form>
+        </Form>
+      </div>
 
       {/* Products and Services Section */}
-      <Card className="bg-white shadow-sm border border-gray-200">
-        <CardContent className="p-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Products and Services</h2>
-          
-          <Form {...productForm}>
-            <form onSubmit={productForm.handleSubmit(onProductSubmit)} className="space-y-6">
-              <FormField
-                control={productForm.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter Name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+      <div>
+        <h2 className="text-xl font-semibold text-gray-900 mb-6">Products and Services</h2>
+        
+        <Form {...productForm}>
+          <form onSubmit={productForm.handleSubmit(onProductSubmit)} className="space-y-6">
+            <FormField
+              control={productForm.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter Name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <FormField
-                control={productForm.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <RichTextarea 
-                        placeholder="Enter Description" 
-                        rows={3}
-                        className="resize-none"
-                        value={field.value}
-                        onChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <FormField
+              control={productForm.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">Description</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Enter Description" 
+                      rows={3}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <FormField
-                control={productForm.control}
-                name="price"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Price</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter Price" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <FormField
+              control={productForm.control}
+              name="price"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">Price</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter Price" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <div>
-                <FormLabel className="mb-2 block">Upload Image</FormLabel>
-                <div className="border-2 border-dashed border-primary border-opacity-30 rounded-lg p-8 text-center bg-red-50">
-                  <div className="w-12 h-12 mx-auto mb-4 bg-primary rounded-lg flex items-center justify-center">
-                    <Camera className="w-6 h-6 text-white" />
+            {/* Image Upload Section */}
+            <div>
+              <FormLabel className="text-sm font-medium text-gray-700 mb-3 block">Upload Images</FormLabel>
+              <div className="grid grid-cols-4 gap-4">
+                {productImages.map((image, index) => (
+                  <div key={index} className="relative aspect-square">
+                    <img 
+                      src={image} 
+                      alt={`Product ${index + 1}`}
+                      className="w-full h-full object-cover rounded-lg border border-gray-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setProductImages(prev => prev.filter((_, i) => i !== index))}
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
                   </div>
-                  <p className="text-sm text-gray-600 mb-2">Drag & drop your image here</p>
-                  <Button className="bg-primary text-white hover:bg-primary-dark">
-                    Upload Image
-                  </Button>
-                </div>
-                <div className="mt-4">
-                  <Button type="button" variant="ghost" className="text-primary hover:text-primary-dark">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add more
-                  </Button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={productForm.control}
-                  name="faqs"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>FAQs</FormLabel>
-                      <FormControl>
-                        <RichTextarea 
-                          placeholder="Enter FAQs" 
-                          rows={3}
-                          className="resize-none"
-                          value={field.value}
-                          onChange={field.onChange}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={productForm.control}
-                  name="paymentDetails"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Payment Details</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Enter Payment Details" 
-                          rows={3}
-                          className="resize-none"
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={productForm.control}
-                  name="discounts"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Discounts</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Enter Discounts" 
-                          rows={3}
-                          className="resize-none"
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={productForm.control}
-                  name="policy"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Policy</FormLabel>
-                      <FormControl>
-                        <RichTextarea 
-                          placeholder="Enter Policy" 
-                          rows={3}
-                          className="resize-none"
-                          value={field.value}
-                          onChange={field.onChange}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <FormField
-                control={productForm.control}
-                name="additionalNotes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Additional Notes</FormLabel>
-                    <FormControl>
-                      <RichTextarea 
-                        placeholder="Enter Additional Notes" 
-                        rows={3}
-                        className="resize-none"
-                        value={field.value}
-                        onChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+                ))}
+                
+                {productImages.length < 4 && (
+                  <label htmlFor="product-image-upload" className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 transition-colors">
+                    <Camera className="w-6 h-6 text-gray-400 mb-1" />
+                    <span className="text-xs text-gray-500">Add Image</span>
+                    <input
+                      id="product-image-upload"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageUpload}
+                      disabled={uploadingImage}
+                    />
+                  </label>
                 )}
-              />
-
-              <FormField
-                control={productForm.control}
-                name="thankYouMessage"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Thank you message</FormLabel>
-                    <FormControl>
-                      <RichTextarea 
-                        placeholder="Enter Thank you message" 
-                        rows={3}
-                        className="resize-none"
-                        value={field.value}
-                        onChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="flex justify-end">
-                <Button 
-                  type="submit" 
-                  className="bg-primary text-white hover:bg-primary-dark"
-                  disabled={productMutation.isPending}
-                >
-                  {productMutation.isPending ? "Saving..." : "Save Product"}
-                </Button>
               </div>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+              {uploadingImage && (
+                <p className="text-sm text-gray-500 mt-2">Uploading image...</p>
+              )}
+            </div>
+
+            <FormField
+              control={productForm.control}
+              name="faqs"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">FAQs</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Enter FAQs" 
+                      rows={3}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={productForm.control}
+              name="paymentDetails"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">Payment Details</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Enter Payment Details" 
+                      rows={3}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={productForm.control}
+              name="discounts"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">Discounts</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Enter Discounts" 
+                      rows={3}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={productForm.control}
+              name="policy"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">Policy</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Enter Policy" 
+                      rows={3}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={productForm.control}
+              name="additionalNotes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">Additional Notes</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Enter Additional Notes" 
+                      rows={3}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={productForm.control}
+              name="thankYouMessage"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">Thank you message</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Enter Thank you message" 
+                      rows={3}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="flex justify-end space-x-3 pt-4">
+              <Button 
+                type="button" 
+                variant="outline"
+                className="border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </Button>
+              <Button 
+                type="submit" 
+                className="bg-primary text-white hover:bg-primary-dark px-6"
+                disabled={productMutation.isPending}
+              >
+                {productMutation.isPending ? "Saving..." : "Save"}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </div>
     </div>
   );
 }
