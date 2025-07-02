@@ -113,24 +113,25 @@ export default function BusinessInfo() {
     }
   }, [business, businessForm]);
 
-  // Update product form when data is loaded (use first product if available)
+  // Update product form when data is loaded (use oldest product for main form)
   useEffect(() => {
     if (Array.isArray(products) && products.length > 0) {
-      const firstProduct = products[0] as any;
+      // Use the oldest product (last in DESC order) for the main form
+      const mainProduct = products[products.length - 1] as any;
       productForm.reset({
-        name: firstProduct.name || "",
-        description: firstProduct.description || "",
-        price: firstProduct.price || "",
-        faqs: firstProduct.faqs || "",
-        paymentDetails: firstProduct.paymentDetails || "",
-        discounts: firstProduct.discounts || "",
-        policy: firstProduct.policy || "",
-        additionalNotes: firstProduct.additionalNotes || "",
-        thankYouMessage: firstProduct.thankYouMessage || "",
+        name: mainProduct.name || "",
+        description: mainProduct.description || "",
+        price: mainProduct.price || "",
+        faqs: mainProduct.faqs || "",
+        paymentDetails: mainProduct.paymentDetails || "",
+        discounts: mainProduct.discounts || "",
+        policy: mainProduct.policy || "",
+        additionalNotes: mainProduct.additionalNotes || "",
+        thankYouMessage: mainProduct.thankYouMessage || "",
       });
       
-      if (firstProduct.imageUrl) {
-        setProductImages([firstProduct.imageUrl]);
+      if (mainProduct.imageUrl) {
+        setProductImages([mainProduct.imageUrl]);
       }
     }
   }, [products, productForm]);
@@ -175,9 +176,9 @@ export default function BusinessInfo() {
   const productMutation = useMutation({
     mutationFn: async (data: ProductFormData) => {
       if (Array.isArray(products) && products.length > 0) {
-        // Update existing product
-        const existingProduct = products[0] as any;
-        return await apiRequest("PATCH", `/api/products/${existingProduct.id}`, data);
+        // Update the main (oldest) product
+        const mainProduct = products[products.length - 1] as any;
+        return await apiRequest("PATCH", `/api/products/${mainProduct.id}`, data);
       } else {
         // Create new product
         return await apiRequest("POST", "/api/products", data);
@@ -712,6 +713,39 @@ export default function BusinessInfo() {
                 <p className="text-sm text-gray-500 mt-2">Uploading image...</p>
               )}
             </div>
+
+            {/* Display Additional Products */}
+            {Array.isArray(products) && products.length > 1 && (
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Additional Products</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {products.slice(0, -1).map((product: any) => (
+                    <div key={product.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-gray-900 mb-1">{product.name || "Unnamed Product"}</h4>
+                          {product.description && (
+                            <p className="text-sm text-gray-600 mb-2">{product.description}</p>
+                          )}
+                          {product.price && (
+                            <p className="text-lg font-bold text-green-600">${product.price}</p>
+                          )}
+                        </div>
+                        {product.imageUrl && (
+                          <div className="ml-4 w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                            <img 
+                              src={product.imageUrl} 
+                              alt={product.name || "Product"}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Add Another Product Button */}
             {!showAddProductForm && (
