@@ -160,26 +160,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Product image upload route
-  app.post('/api/products/upload-image', isAuthenticated, upload.single('image'), async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      
-      if (!req.file) {
-        return res.status(400).json({ message: "No image uploaded" });
-      }
 
-      // Generate unique filename
-      const fileExt = req.file.originalname.split('.').pop();
-      const fileName = `product-${Date.now()}.${fileExt}`;
-      const imageUrl = `/uploads/${fileName}`;
-
-      res.json({ imageUrl });
-    } catch (error) {
-      console.error("Error uploading product image:", error);
-      res.status(500).json({ message: "Failed to upload image" });
-    }
-  });
 
   // Document upload route
   app.post('/api/documents/upload', isAuthenticated, upload.single('file'), async (req: any, res) => {
