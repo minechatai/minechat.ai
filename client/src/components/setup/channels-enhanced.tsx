@@ -22,7 +22,13 @@ const channelSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
+const facebookSchema = z.object({
+  pageId: z.string().min(1, "Facebook Page ID is required"),
+  accessToken: z.string().min(1, "Facebook Access Token is required"),
+});
+
 type ChannelFormData = z.infer<typeof channelSchema>;
+type FacebookFormData = z.infer<typeof facebookSchema>;
 
 interface Channel {
   id: number;
@@ -31,6 +37,175 @@ interface Channel {
   primaryColor: string;
   embedCode: string;
   isActive: boolean;
+}
+
+function FacebookMessengerIntegration() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { data: facebookConnection } = useQuery({
+    queryKey: ["/api/facebook-connection"],
+  });
+
+  const form = useForm<FacebookFormData>({
+    resolver: zodResolver(facebookSchema),
+    defaultValues: {
+      pageId: facebookConnection?.facebookPageId || "",
+      accessToken: facebookConnection?.accessToken || "",
+    },
+  });
+
+  const mutation = useMutation({
+    mutationFn: async (data: FacebookFormData) => {
+      return await apiRequest("/api/facebook/connect-real", {
+        method: "POST",
+        body: JSON.stringify(data),
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Facebook Messenger connected successfully!",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/facebook-connection"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to connect Facebook Messenger",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const disconnectMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest("/api/facebook/disconnect", {
+        method: "DELETE",
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Facebook Messenger disconnected successfully!",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/facebook-connection"] });
+      form.reset({ pageId: "", accessToken: "" });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to disconnect Facebook Messenger",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const onSubmit = (data: FacebookFormData) => {
+    mutation.mutate(data);
+  };
+
+  const webhookUrl = `${window.location.origin}/api/facebook/webhook`;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+            <MessageCircle className="w-5 h-5 text-white" />
+          </div>
+          Facebook Messenger
+          {facebookConnection?.isConnected && (
+            <Badge className="ml-auto bg-green-100 text-green-800">Connected</Badge>
+          )}
+        </CardTitle>
+        <CardDescription>
+          Connect your Facebook Page to automatically respond to messages
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {!facebookConnection?.isConnected ? (
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="pageId">Facebook Page ID</Label>
+              <Input
+                id="pageId"
+                placeholder="Enter your Facebook Page ID"
+                {...form.register("pageId")}
+              />
+              {form.formState.errors.pageId && (
+                <p className="text-sm text-red-500">{form.formState.errors.pageId.message}</p>
+              )}
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="accessToken">Page Access Token</Label>
+              <Input
+                id="accessToken"
+                type="password"
+                placeholder="Enter your Page Access Token"
+                {...form.register("accessToken")}
+              />
+              {form.formState.errors.accessToken && (
+                <p className="text-sm text-red-500">{form.formState.errors.accessToken.message}</p>
+              )}
+            </div>
+
+            <div className="bg-blue-50 dark:bg-blue-950 p-4 rounded-lg space-y-2">
+              <h4 className="font-medium text-blue-900 dark:text-blue-100">Webhook Setup</h4>
+              <p className="text-sm text-blue-700 dark:text-blue-300">
+                Add this webhook URL to your Facebook App:
+              </p>
+              <div className="flex items-center gap-2 p-2 bg-white dark:bg-gray-800 rounded border">
+                <code className="flex-1 text-xs">{webhookUrl}</code>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    navigator.clipboard.writeText(webhookUrl);
+                    toast({ title: "Copied!", description: "Webhook URL copied to clipboard" });
+                  }}
+                >
+                  <Copy className="w-3 h-3" />
+                </Button>
+              </div>
+              <p className="text-xs text-blue-600 dark:text-blue-400">
+                Verify Token: <code>minechat_webhook_verify_token</code>
+              </p>
+            </div>
+
+            <Button type="submit" className="w-full" disabled={mutation.isPending}>
+              {mutation.isPending ? "Connecting..." : "Connect Facebook Messenger"}
+            </Button>
+          </form>
+        ) : (
+          <div className="space-y-4">
+            <div className="p-4 bg-green-50 dark:bg-green-950 rounded-lg">
+              <h4 className="font-medium text-green-900 dark:text-green-100 mb-2">
+                ✅ Connected Successfully
+              </h4>
+              <p className="text-sm text-green-700 dark:text-green-300">
+                Facebook Page: <strong>{facebookConnection.facebookPageName}</strong>
+              </p>
+              <p className="text-sm text-green-700 dark:text-green-300">
+                Your AI assistant will now respond to messages on your Facebook page automatically.
+              </p>
+            </div>
+            
+            <Button 
+              variant="destructive" 
+              onClick={() => disconnectMutation.mutate()} 
+              disabled={disconnectMutation.isPending}
+              className="w-full"
+            >
+              {disconnectMutation.isPending ? "Disconnecting..." : "Disconnect Facebook Messenger"}
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
 }
 
 export default function ChannelsEnhanced() {

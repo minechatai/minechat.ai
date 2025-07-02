@@ -527,6 +527,39 @@ Response style: ${aiAssistant?.responseLength || "normal"} length responses.`;
     }
   });
 
+  app.post('/api/facebook/connect-real', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { pageId, accessToken } = req.body;
+
+      if (!pageId || !accessToken) {
+        return res.status(400).json({ message: "Page ID and access token are required" });
+      }
+
+      // Verify the access token by making a test request to Facebook
+      const response = await fetch(`https://graph.facebook.com/v19.0/${pageId}?access_token=${accessToken}`);
+      
+      if (!response.ok) {
+        return res.status(400).json({ message: "Invalid Facebook credentials" });
+      }
+
+      const pageData = await response.json();
+
+      await storage.upsertFacebookConnection(userId, {
+        userId,
+        facebookPageId: pageId,
+        facebookPageName: pageData.name,
+        accessToken: accessToken,
+        isConnected: true,
+      });
+
+      res.json({ message: "Facebook page connected successfully", pageName: pageData.name });
+    } catch (error) {
+      console.error("Error connecting Facebook:", error);
+      res.status(500).json({ message: "Failed to connect Facebook page" });
+    }
+  });
+
   app.delete('/api/facebook/disconnect', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
