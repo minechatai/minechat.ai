@@ -820,50 +820,75 @@ Response style: ${aiAssistant?.responseLength || "normal"} length responses.`;
       try {
         console.log("🔑 Checking OpenAI API key:", process.env.OPENAI_API_KEY ? "EXISTS" : "MISSING");
         if (process.env.OPENAI_API_KEY) {
-          // Build comprehensive knowledge base from all sources
+          // Build comprehensive knowledge base from all sources with structured format
           let knowledgeBase = "";
           
-          // Add AI Assistant information
-          if (aiAssistant?.description) {
-            knowledgeBase += `AI ASSISTANT KNOWLEDGE:\n${aiAssistant.description}\n\n`;
+          // Add Business Information first (most important context)
+          if (business) {
+            knowledgeBase += `=== BUSINESS INFORMATION ===\n`;
+            if (business.companyName) knowledgeBase += `Company: ${business.companyName}\n`;
+            if (business.companyStory) knowledgeBase += `About: ${business.companyStory}\n`;
+            if (business.email) knowledgeBase += `Contact: ${business.email}\n`;
+            if (business.phoneNumber) knowledgeBase += `Phone: ${business.phoneNumber}\n`;
+            if (business.address) knowledgeBase += `Address: ${business.address}\n`;
+            knowledgeBase += `\n`;
           }
           
-          // Add Business Information
-          if (business?.companyStory) {
-            knowledgeBase += `BUSINESS INFORMATION:\n${business.companyStory}\n\n`;
+          // Add AI Assistant specific knowledge and guidelines
+          if (aiAssistant) {
+            knowledgeBase += `=== AI ASSISTANT GUIDELINES ===\n`;
+            if (aiAssistant.name) knowledgeBase += `Name: ${aiAssistant.name}\n`;
+            if (aiAssistant.description) knowledgeBase += `Knowledge: ${aiAssistant.description}\n`;
+            if (aiAssistant.guidelines) knowledgeBase += `Guidelines: ${aiAssistant.guidelines}\n`;
+            if (aiAssistant.introMessage) knowledgeBase += `Intro: ${aiAssistant.introMessage}\n`;
+            knowledgeBase += `\n`;
           }
           
-          // Add detailed product information including FAQs
+          // Add comprehensive product/service information
           if (products.length > 0) {
-            knowledgeBase += `PRODUCTS/SERVICES & FAQS:\n`;
-            products.forEach(product => {
-              if (product.name) knowledgeBase += `Product: ${product.name}\n`;
+            knowledgeBase += `=== PRODUCTS/SERVICES ===\n`;
+            products.forEach((product, index) => {
+              knowledgeBase += `--- Product ${index + 1} ---\n`;
+              if (product.name) knowledgeBase += `Name: ${product.name}\n`;
               if (product.description) knowledgeBase += `Description: ${product.description}\n`;
-              if (product.price) knowledgeBase += `Price: ${product.price}\n`;
-              if (product.faqs) knowledgeBase += `FAQs: ${product.faqs}\n`;
-              if (product.paymentDetails) knowledgeBase += `Payment: ${product.paymentDetails}\n`;
-              if (product.discounts) knowledgeBase += `Discounts: ${product.discounts}\n`;
-              if (product.policy) knowledgeBase += `Policy: ${product.policy}\n`;
+              if (product.price) knowledgeBase += `Price: $${product.price}\n`;
+              if (product.discounts) knowledgeBase += `Discounts/Offers: ${product.discounts}\n`;
+              if (product.paymentDetails) knowledgeBase += `Payment Options: ${product.paymentDetails}\n`;
+              if (product.policy) knowledgeBase += `Policies: ${product.policy}\n`;
+              if (product.faqs) {
+                knowledgeBase += `FAQs:\n${product.faqs}\n`;
+              }
               knowledgeBase += `\n`;
             });
           }
 
-          const systemPrompt = `You are a customer service AI for ${business?.companyName || "Minechat AI"}. You have access to a complete knowledge base and must use it to answer questions.
+          const systemPrompt = `You are ${aiAssistant?.name || "an AI assistant"} representing ${business?.companyName || "Minechat AI"}. You have access to comprehensive business knowledge and must prioritize information from your knowledge base.
 
-KNOWLEDGE BASE DATA:
+COMPLETE KNOWLEDGE BASE:
 ${knowledgeBase}
 
-INSTRUCTIONS:
-- Use the knowledge base above to answer questions
-- When asked about discounts, search for "Discounts:" in the knowledge base and use that exact information
-- When asked about pricing, use the specific pricing information from the knowledge base
-- When asked about FAQs, use the detailed FAQ content provided
-- Give specific, helpful answers based on the knowledge base content
-- Do not give generic responses like "I'll be happy to help" - use the actual information provided
+CRITICAL INSTRUCTIONS:
+1. ALWAYS search through the knowledge base first before responding
+2. Quote specific information from the knowledge base when available
+3. For pricing questions: Use exact prices from the "PRODUCTS/SERVICES" section
+4. For discount questions: Use exact text from "Discounts/Offers" fields
+5. For FAQ questions: Use the detailed FAQ content provided
+6. For business questions: Use information from "BUSINESS INFORMATION" section
+7. Be specific and detailed - customers want real information, not generic responses
+8. If knowledge base has the answer, use it completely rather than giving partial information
+9. When mentioning prices, include currency and be specific about what's included
 
-Your name: ${aiAssistant?.name || "AI Assistant"}
-Guidelines: ${aiAssistant?.guidelines || "Be helpful and professional"}
-Contact: ${business?.email || "Contact us for more information"}`;
+RESPONSE STYLE:
+- Professional but friendly tone matching: ${aiAssistant?.guidelines || "Be helpful and professional"}
+- Use your intro when greeting: ${aiAssistant?.introMessage || "Hello! How can I help you?"}
+- Always end with an offer to help further
+- Keep responses concise but informative
+
+CONTACT INFORMATION:
+${business?.email ? `Email: ${business.email}` : ""}
+${business?.phoneNumber ? `Phone: ${business.phoneNumber}` : ""}
+
+Remember: You represent ${business?.companyName || "this business"} and customers expect accurate, specific information from the knowledge base.`;
 
           console.log("=== FACEBOOK AI DEBUG ===");
           console.log("System prompt length:", systemPrompt.length);
@@ -990,11 +1015,16 @@ Contact: ${business?.email || "Contact us for more information"}`;
       if (shouldSendPhoto && products.length > 0) {
         const productWithImage = products.find(p => p.imageUrl);
         if (productWithImage && productWithImage.imageUrl) {
+          // Get the domain from environment variables
+          const domain = process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000';
+          const protocol = domain.includes('localhost') ? 'http' : 'https';
+          
           // Convert relative URL to absolute URL for Facebook
           const fullImageUrl = productWithImage.imageUrl.startsWith('http') 
             ? productWithImage.imageUrl 
-            : `${process.env.REPLIT_DEV_DOMAIN || 'http://localhost:5000'}${productWithImage.imageUrl}`;
+            : `${protocol}://${domain}${productWithImage.imageUrl}`;
           
+          console.log(`Attempting to send image: ${fullImageUrl}`);
           await sendFacebookImage(connection.accessToken, senderId, fullImageUrl, productWithImage.name || "Our Product");
         }
       }

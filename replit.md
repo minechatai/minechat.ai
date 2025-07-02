@@ -120,6 +120,13 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Improved fallback responses to use business-specific information
   - Added comprehensive debugging for knowledge base content verification
   - Business information form data persistence fixed for proper loading
+- July 2, 2025: Major AI Response System Enhancement
+  - Restructured knowledge base to prioritize Business Information and AI Assistant data
+  - Enhanced system prompts with detailed instructions for knowledge base usage
+  - Improved AI responses to quote specific information from knowledge base
+  - Fixed product image upload functionality with proper authentication
+  - Enhanced Facebook image sharing with better URL handling
+  - Added comprehensive data structuring for more accurate AI responses
 
 # User Preferences
 
