@@ -853,6 +853,29 @@ export default function BusinessInfo() {
                         Cancel
                       </Button>
                       <Button 
+                        type="button" 
+                        className="bg-green-600 text-white hover:bg-green-700 px-4 mr-2"
+                        onClick={() => {
+                          console.log("TEST: Direct API call");
+                          const testData = {
+                            name: "Test Product",
+                            description: "Test Description", 
+                            price: "99",
+                            imageUrl: newProductImages[0] || "",
+                            faqs: "",
+                            paymentDetails: "",
+                            discounts: "",
+                            policy: "",
+                            additionalNotes: "",
+                            thankYouMessage: ""
+                          };
+                          console.log("TEST: Calling mutation with:", testData);
+                          createNewProductMutation.mutate(testData);
+                        }}
+                      >
+                        TEST
+                      </Button>
+                      <Button 
                         type="submit" 
                         className="bg-primary text-white hover:bg-primary-dark px-6"
                         disabled={createNewProductMutation.isPending}
