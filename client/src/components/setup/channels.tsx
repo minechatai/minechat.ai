@@ -61,10 +61,23 @@ export default function Channels() {
 
   const mutation = useMutation({
     mutationFn: async (data: ChannelFormData) => {
+      console.log('Saving channel data:', data);
+      
+      // Save Facebook connection if provided
+      if (data.pageId && data.facebookAccessToken) {
+        console.log('Saving Facebook connection with Page ID and Access Token');
+        await apiRequest("POST", "/api/facebook/connect-real", {
+          pageId: data.pageId,
+          accessToken: data.facebookAccessToken,
+        });
+      }
+      
+      // Save other channel settings
       await apiRequest("POST", "/api/channels", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/channels"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/facebook-connection"] });
       toast({
         title: "Success",
         description: "Channel settings saved successfully",
