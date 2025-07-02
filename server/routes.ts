@@ -708,6 +708,7 @@ Response style: ${aiAssistant?.responseLength || "normal"} length responses.`;
       let aiMessage = "";
 
       try {
+        console.log("🔑 Checking OpenAI API key:", process.env.OPENAI_API_KEY ? "EXISTS" : "MISSING");
         if (process.env.OPENAI_API_KEY) {
           // Build comprehensive knowledge base from all sources
           let knowledgeBase = "";
@@ -784,13 +785,18 @@ CRITICAL INSTRUCTIONS:
           if (response.ok) {
             const data = await response.json();
             aiMessage = data.choices[0]?.message?.content || "I'm sorry, I couldn't process your message.";
+            console.log("✅ OpenAI API success - Response:", aiMessage);
           } else {
-            throw new Error("OpenAI API error");
+            const errorText = await response.text();
+            console.error("❌ OpenAI API error:", response.status, errorText);
+            throw new Error(`OpenAI API error: ${response.status}`);
           }
         } else {
+          console.log("❌ OpenAI API key not found, using fallback");
           throw new Error("OpenAI API not available");
         }
       } catch (error) {
+        console.log("❌ Error in OpenAI API call:", error.message);
         console.log("Using fallback response for Facebook message");
         
         // Enhanced fallback that uses knowledge base
@@ -807,7 +813,27 @@ CRITICAL INSTRUCTIONS:
           if (productWithDiscounts && productWithDiscounts.discounts) {
             aiMessage = `Here are our current offers: ${productWithDiscounts.discounts}`;
           } else {
-            aiMessage = `I'd be happy to help with pricing and available offers. Please contact us for current discount information.`;
+            // Check FAQs for discount information
+            const productWithFAQs = products.find(p => p.faqs && (p.faqs.toLowerCase().includes('discount') || p.faqs.toLowerCase().includes('price') || p.faqs.toLowerCase().includes('cost')));
+            if (productWithFAQs && productWithFAQs.faqs) {
+              // Extract relevant FAQ sections about pricing/discounts
+              const faqLines = productWithFAQs.faqs.split('\n');
+              const relevantFAQs = faqLines.filter(line => 
+                line.toLowerCase().includes('discount') || 
+                line.toLowerCase().includes('price') || 
+                line.toLowerCase().includes('cost') ||
+                line.toLowerCase().includes('free') ||
+                line.toLowerCase().includes('trial')
+              ).slice(0, 3); // Get first 3 relevant lines
+              
+              if (relevantFAQs.length > 0) {
+                aiMessage = relevantFAQs.join('\n\n');
+              } else {
+                aiMessage = `For information on discounts and current pricing offers, please contact us directly. Our team can provide you with details on any available discounts based on your business needs and requirements.`;
+              }
+            } else {
+              aiMessage = `For information on discounts and current pricing offers, please contact us directly. Our team can provide you with details on any available discounts based on your business needs and requirements.`;
+            }
           }
         } else if (lowerMessage.includes('price') || lowerMessage.includes('cost') || lowerMessage.includes('how much')) {
           if (products.length > 0) {
