@@ -709,31 +709,60 @@ Response style: ${aiAssistant?.responseLength || "normal"} length responses.`;
 
       try {
         if (process.env.OPENAI_API_KEY) {
-          const systemPrompt = `You are ${aiAssistant?.name || "an AI assistant"} for Minechat AI.
+          // Build comprehensive knowledge base from all sources
+          let knowledgeBase = "";
+          
+          // Add AI Assistant information
+          if (aiAssistant?.description) {
+            knowledgeBase += `AI ASSISTANT KNOWLEDGE:\n${aiAssistant.description}\n\n`;
+          }
+          
+          // Add Business Information
+          if (business?.companyStory) {
+            knowledgeBase += `BUSINESS INFORMATION:\n${business.companyStory}\n\n`;
+          }
+          
+          // Add detailed product information including FAQs
+          if (products.length > 0) {
+            knowledgeBase += `PRODUCTS/SERVICES & FAQS:\n`;
+            products.forEach(product => {
+              if (product.name) knowledgeBase += `Product: ${product.name}\n`;
+              if (product.description) knowledgeBase += `Description: ${product.description}\n`;
+              if (product.price) knowledgeBase += `Price: ${product.price}\n`;
+              if (product.faqs) knowledgeBase += `FAQs: ${product.faqs}\n`;
+              if (product.paymentDetails) knowledgeBase += `Payment: ${product.paymentDetails}\n`;
+              if (product.discounts) knowledgeBase += `Discounts: ${product.discounts}\n`;
+              if (product.policy) knowledgeBase += `Policy: ${product.policy}\n`;
+              knowledgeBase += `\n`;
+            });
+          }
 
-MAIN KNOWLEDGE BASE (Most Important - Use this information to answer all questions):
-${aiAssistant?.description || ""}
+          const systemPrompt = `You are ${aiAssistant?.name || "an AI assistant"} for ${business?.companyName || "Minechat AI"}.
+
+COMPLETE KNOWLEDGE BASE - Use this to answer ALL questions:
+${knowledgeBase}
 
 RESPONSE GUIDELINES:
-${aiAssistant?.guidelines || ""}
+${aiAssistant?.guidelines || "Be helpful and professional"}
 
-BUSINESS INFORMATION:
-${business?.companyName ? `Company: ${business.companyName}` : "Company: Minechat AI"}
-${business?.companyStory ? `About us: ${business.companyStory}` : ""}
-${business?.email ? `Contact: ${business.email}` : ""}
+CONTACT INFORMATION:
+${business?.email ? `Email: ${business.email}` : ""}
+${business?.phoneNumber ? `Phone: ${business.phoneNumber}` : ""}
+${business?.address ? `Address: ${business.address}` : ""}
 
-INTRO MESSAGE:
-${aiAssistant?.introMessage || ""}
+CRITICAL INSTRUCTIONS:
+1. Always search the COMPLETE KNOWLEDGE BASE above first before responding
+2. Use the detailed FAQs section to answer customer questions accurately
+3. When asked about discounts, pricing, or services, use the specific information from the knowledge base
+4. If the exact answer isn't in the knowledge base, provide helpful guidance based on related information
+5. Keep responses conversational but informative
+6. Never make up information - only use what's provided above`;
 
-PRODUCTS/SERVICES:
-${products.length > 0 ? products.map(p => `${p.name}: ${p.description}${p.faqs ? ` | FAQs: ${p.faqs}` : ""}`).join("\n") : ""}
-
-IMPORTANT INSTRUCTIONS:
-1. Always use the MAIN KNOWLEDGE BASE above to answer questions - it contains all the detailed information about our services, pricing, features, and FAQs.
-2. When someone asks about whether something is right for their business, booking calls, or similar questions, look for the specific answer in the knowledge base.
-3. Follow the Response Guidelines strictly.
-4. Keep responses natural and conversational for messaging.
-5. Never make up information - only use what's provided in the knowledge base above.`;
+          console.log("=== FACEBOOK AI DEBUG ===");
+          console.log("System prompt length:", systemPrompt.length);
+          console.log("Knowledge base content:", knowledgeBase);
+          console.log("User message:", messageText);
+          console.log("=========================");
 
           const response = await fetch("https://api.openai.com/v1/chat/completions", {
             method: "POST",
@@ -764,20 +793,36 @@ IMPORTANT INSTRUCTIONS:
       } catch (error) {
         console.log("Using fallback response for Facebook message");
         
-        // Use the same intelligent fallback as the chat endpoint
-        const businessName = business?.companyName || "our business";
+        // Enhanced fallback that uses knowledge base
+        const businessName = business?.companyName || "Minechat AI";
         const introMsg = aiAssistant?.introMessage || `Hello! I'm ${aiAssistant?.name || "an AI assistant"} for ${businessName}.`;
         
         const lowerMessage = messageText.toLowerCase();
         
         if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
           aiMessage = `${introMsg} How can I help you today?`;
+        } else if (lowerMessage.includes('discount') || lowerMessage.includes('offer') || lowerMessage.includes('deal')) {
+          // Check if there's discount information in the knowledge base
+          const productWithDiscounts = products.find(p => p.discounts);
+          if (productWithDiscounts && productWithDiscounts.discounts) {
+            aiMessage = `Here are our current offers: ${productWithDiscounts.discounts}`;
+          } else {
+            aiMessage = `I'd be happy to help with pricing and available offers. Please contact us for current discount information.`;
+          }
         } else if (lowerMessage.includes('price') || lowerMessage.includes('cost') || lowerMessage.includes('how much')) {
           if (products.length > 0) {
             const productInfo = products.map(p => `${p.name}${p.price ? ` - $${p.price}` : ''}`).join(', ');
             aiMessage = `Here are our products and pricing: ${productInfo}. Would you like more details?`;
           } else {
             aiMessage = `I'd be happy to help with pricing. Please contact us at ${business?.email || 'our sales team'} for details.`;
+          }
+        } else if (lowerMessage.includes('faq') || lowerMessage.includes('questions')) {
+          // Use FAQs from knowledge base
+          const productWithFAQs = products.find(p => p.faqs);
+          if (productWithFAQs && productWithFAQs.faqs) {
+            aiMessage = `Here are some frequently asked questions: ${productWithFAQs.faqs.substring(0, 300)}...`;
+          } else {
+            aiMessage = `I'm here to answer any questions about ${businessName}. What would you like to know?`;
           }
         } else {
           aiMessage = `Thank you for your message! I'm here to help with any questions about ${businessName}. How can I assist you?`;

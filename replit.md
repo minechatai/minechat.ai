@@ -113,6 +113,13 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Facebook Page product configured with proper webhook subscriptions
   - Facebook credentials saving and connection management working
   - Live testing confirmed with actual Facebook page interactions
+- July 2, 2025: Enhanced Facebook AI Knowledge Base Integration
+  - Fixed Facebook AI responses to properly use knowledge base data
+  - AI now pulls answers from both AI Assistant and Business Information tabs
+  - Enhanced system prompts to prioritize FAQ content from saved data
+  - Improved fallback responses to use business-specific information
+  - Added comprehensive debugging for knowledge base content verification
+  - Business information form data persistence fixed for proper loading
 
 # User Preferences
 
