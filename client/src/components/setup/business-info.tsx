@@ -212,9 +212,11 @@ export default function BusinessInfo() {
 
   const createNewProductMutation = useMutation({
     mutationFn: async (data: ProductFormData) => {
+      console.log("Making API request to create new product:", data);
       return await apiRequest("POST", "/api/products", data);
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      console.log("New product created successfully:", result);
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       setShowAddProductForm(false);
       newProductForm.reset();
@@ -225,6 +227,7 @@ export default function BusinessInfo() {
       });
     },
     onError: (error) => {
+      console.error("Error creating new product:", error);
       if (isUnauthorizedError(error as Error)) {
         toast({
           title: "Unauthorized",
@@ -417,10 +420,17 @@ export default function BusinessInfo() {
   };
 
   const onNewProductSubmit = (data: ProductFormData) => {
-    createNewProductMutation.mutate({
+    console.log("New product form submission data:", data);
+    console.log("New product images:", newProductImages);
+    console.log("Form errors:", newProductForm.formState.errors);
+    
+    const submissionData = {
       ...data,
       imageUrl: newProductImages[0] || "",
-    });
+    };
+    
+    console.log("Final submission data:", submissionData);
+    createNewProductMutation.mutate(submissionData);
   };
 
   if (businessLoading || documentsLoading || productsLoading) {
