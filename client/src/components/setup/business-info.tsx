@@ -101,6 +101,30 @@ export default function BusinessInfo() {
     }
   }, [documents]);
 
+  // Load existing product data into form
+  useEffect(() => {
+    if (products && Array.isArray(products) && products.length > 0) {
+      const existingProduct = products[0]; // Load the first product
+      productForm.reset({
+        name: existingProduct.name || "",
+        description: existingProduct.description || "",
+        price: existingProduct.price || "",
+        faqs: existingProduct.faqs || "",
+        paymentDetails: existingProduct.paymentDetails || "",
+        discounts: existingProduct.discounts || "",
+        policy: existingProduct.policy || "",
+        additionalNotes: existingProduct.additionalNotes || "",
+        thankYouMessage: existingProduct.thankYouMessage || "",
+        imageUrl: existingProduct.imageUrl || "",
+      });
+      
+      // Load product images if they exist
+      if (existingProduct.imageUrl) {
+        setProductImages([existingProduct.imageUrl]);
+      }
+    }
+  }, [products, productForm]);
+
   const businessMutation = useMutation({
     mutationFn: async (data: BusinessFormData) => {
       await apiRequest("POST", "/api/business", data);
