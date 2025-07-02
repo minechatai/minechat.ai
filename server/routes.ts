@@ -738,26 +738,22 @@ Response style: ${aiAssistant?.responseLength || "normal"} length responses.`;
             });
           }
 
-          const systemPrompt = `You are ${aiAssistant?.name || "an AI assistant"} for ${business?.companyName || "Minechat AI"}.
+          const systemPrompt = `You are a customer service AI for ${business?.companyName || "Minechat AI"}. You have access to a complete knowledge base and must use it to answer questions.
 
-COMPLETE KNOWLEDGE BASE - Use this to answer ALL questions:
+KNOWLEDGE BASE DATA:
 ${knowledgeBase}
 
-RESPONSE GUIDELINES:
-${aiAssistant?.guidelines || "Be helpful and professional"}
+INSTRUCTIONS:
+- Use the knowledge base above to answer questions
+- When asked about discounts, search for "Discounts:" in the knowledge base and use that exact information
+- When asked about pricing, use the specific pricing information from the knowledge base
+- When asked about FAQs, use the detailed FAQ content provided
+- Give specific, helpful answers based on the knowledge base content
+- Do not give generic responses like "I'll be happy to help" - use the actual information provided
 
-CONTACT INFORMATION:
-${business?.email ? `Email: ${business.email}` : ""}
-${business?.phoneNumber ? `Phone: ${business.phoneNumber}` : ""}
-${business?.address ? `Address: ${business.address}` : ""}
-
-CRITICAL INSTRUCTIONS:
-1. Always search the COMPLETE KNOWLEDGE BASE above first before responding
-2. Use the detailed FAQs section to answer customer questions accurately
-3. When asked about discounts, pricing, or services, use the specific information from the knowledge base
-4. If the exact answer isn't in the knowledge base, provide helpful guidance based on related information
-5. Keep responses conversational but informative
-6. Never make up information - only use what's provided above`;
+Your name: ${aiAssistant?.name || "AI Assistant"}
+Guidelines: ${aiAssistant?.guidelines || "Be helpful and professional"}
+Contact: ${business?.email || "Contact us for more information"}`;
 
           console.log("=== FACEBOOK AI DEBUG ===");
           console.log("System prompt length:", systemPrompt.length);
@@ -775,10 +771,10 @@ CRITICAL INSTRUCTIONS:
               model: "gpt-3.5-turbo",
               messages: [
                 { role: "system", content: systemPrompt },
-                { role: "user", content: messageText }
+                { role: "user", content: `Please answer this question using the knowledge base provided in the system prompt: ${messageText}` }
               ],
               max_tokens: 500,
-              temperature: 0.7
+              temperature: 0.3
             })
           });
 
@@ -796,7 +792,7 @@ CRITICAL INSTRUCTIONS:
           throw new Error("OpenAI API not available");
         }
       } catch (error) {
-        console.log("❌ Error in OpenAI API call:", error.message);
+        console.log("❌ Error in OpenAI API call:", (error as Error).message);
         console.log("Using fallback response for Facebook message");
         
         // Enhanced fallback that uses knowledge base
