@@ -99,6 +99,8 @@ export const conversations = pgTable("conversations", {
   customerName: varchar("customer_name"),
   customerEmail: varchar("customer_email"),
   status: varchar("status").default("active"),
+  source: varchar("source").default("web"), // web, facebook, etc.
+  facebookSenderId: varchar("facebook_sender_id"), // For Facebook Messenger integration
   lastMessageAt: timestamp("last_message_at").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
 });

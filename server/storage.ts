@@ -78,6 +78,8 @@ export interface IStorage {
   getFacebookConnection(userId: string): Promise<FacebookConnection | undefined>;
   upsertFacebookConnection(userId: string, connection: InsertFacebookConnection): Promise<FacebookConnection>;
   disconnectFacebook(userId: string): Promise<void>;
+  getAllFacebookConnections(): Promise<FacebookConnection[]>;
+  getConversationByFacebookSender(userId: string, facebookSenderId: string): Promise<Conversation | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {

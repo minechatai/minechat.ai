@@ -537,6 +537,198 @@ Response style: ${aiAssistant?.responseLength || "normal"} length responses.`;
     }
   });
 
+  // Facebook webhook endpoints for receiving messages
+  app.get("/api/facebook/webhook", (req, res) => {
+    const VERIFY_TOKEN = process.env.FACEBOOK_VERIFY_TOKEN || "minechat_webhook_verify_token";
+    
+    const mode = req.query["hub.mode"];
+    const token = req.query["hub.verify_token"];
+    const challenge = req.query["hub.challenge"];
+
+    if (mode && token) {
+      if (mode === "subscribe" && token === VERIFY_TOKEN) {
+        console.log("Facebook webhook verified");
+        res.status(200).send(challenge);
+      } else {
+        res.sendStatus(403);
+      }
+    } else {
+      res.sendStatus(400);
+    }
+  });
+
+  app.post("/api/facebook/webhook", async (req, res) => {
+    try {
+      const body = req.body;
+
+      if (body.object === "page") {
+        body.entry?.forEach(async (entry: any) => {
+          const webhookEvent = entry.messaging?.[0];
+          
+          if (webhookEvent && webhookEvent.message && webhookEvent.message.text) {
+            await handleFacebookMessage(webhookEvent);
+          }
+        });
+
+        res.status(200).send("EVENT_RECEIVED");
+      } else {
+        res.sendStatus(404);
+      }
+    } catch (error) {
+      console.error("Facebook webhook error:", error);
+      res.sendStatus(500);
+    }
+  });
+
+  // Helper function to handle Facebook messages
+  async function handleFacebookMessage(webhookEvent: any) {
+    try {
+      const senderId = webhookEvent.sender.id;
+      const recipientId = webhookEvent.recipient.id; // This is the page ID
+      const messageText = webhookEvent.message.text;
+
+      console.log(`Received Facebook message from ${senderId} to page ${recipientId}: ${messageText}`);
+
+      // Find the Facebook connection for this page
+      const facebookConnections = await storage.getAllFacebookConnections();
+      const connection = facebookConnections.find(conn => conn.facebookPageId === recipientId);
+
+      if (!connection || !connection.isConnected) {
+        console.log("No active Facebook connection found for page:", recipientId);
+        return;
+      }
+
+      // Get user's AI assistant settings
+      const aiAssistant = await storage.getAiAssistant(connection.userId);
+      const business = await storage.getBusiness(connection.userId);
+      const products = await storage.getProducts(connection.userId);
+
+      // Create or get conversation
+      let conversation = await storage.getConversationByFacebookSender(connection.userId, senderId);
+      if (!conversation) {
+        conversation = await storage.createConversation(connection.userId, {
+          customerName: `Facebook User ${senderId.substring(0, 8)}`,
+          customerEmail: null,
+          source: "facebook",
+          facebookSenderId: senderId
+        });
+      }
+
+      // Save user message
+      await storage.createMessage({
+        conversationId: conversation.id,
+        senderId: senderId,
+        senderType: "user",
+        content: messageText,
+        messageType: "text"
+      });
+
+      // Generate AI response using the same logic as the chat endpoint
+      let aiMessage = "";
+
+      try {
+        if (process.env.OPENAI_API_KEY) {
+          const systemPrompt = `You are ${aiAssistant?.name || "an AI assistant"} for ${business?.companyName || "our business"}. 
+${aiAssistant?.introMessage || "You are helpful and friendly."}
+${aiAssistant?.instructions || ""}
+${business?.companyStory ? `Company background: ${business.companyStory}` : ""}
+${products.length > 0 ? `Available products/services: ${products.map(p => `${p.name}: ${p.description}`).join(", ")}` : ""}
+Respond naturally and be helpful. Keep responses concise for messaging.`;
+
+          const response = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              model: "gpt-3.5-turbo",
+              messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: messageText }
+              ],
+              max_tokens: 500,
+              temperature: 0.7
+            })
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            aiMessage = data.choices[0]?.message?.content || "I'm sorry, I couldn't process your message.";
+          } else {
+            throw new Error("OpenAI API error");
+          }
+        } else {
+          throw new Error("OpenAI API not available");
+        }
+      } catch (error) {
+        console.log("Using fallback response for Facebook message");
+        
+        // Use the same intelligent fallback as the chat endpoint
+        const businessName = business?.companyName || "our business";
+        const introMsg = aiAssistant?.introMessage || `Hello! I'm ${aiAssistant?.name || "an AI assistant"} for ${businessName}.`;
+        
+        const lowerMessage = messageText.toLowerCase();
+        
+        if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
+          aiMessage = `${introMsg} How can I help you today?`;
+        } else if (lowerMessage.includes('price') || lowerMessage.includes('cost') || lowerMessage.includes('how much')) {
+          if (products.length > 0) {
+            const productInfo = products.map(p => `${p.name}${p.price ? ` - $${p.price}` : ''}`).join(', ');
+            aiMessage = `Here are our products and pricing: ${productInfo}. Would you like more details?`;
+          } else {
+            aiMessage = `I'd be happy to help with pricing. Please contact us at ${business?.email || 'our sales team'} for details.`;
+          }
+        } else {
+          aiMessage = `Thank you for your message! I'm here to help with any questions about ${businessName}. How can I assist you?`;
+        }
+      }
+
+      // Save AI response
+      await storage.createMessage({
+        conversationId: conversation.id,
+        senderId: "ai",
+        senderType: "ai",
+        content: aiMessage,
+        messageType: "text"
+      });
+
+      // Send response back to Facebook
+      await sendFacebookMessage(connection.accessToken, senderId, aiMessage);
+
+      console.log(`Sent AI response to Facebook user ${senderId}: ${aiMessage}`);
+
+    } catch (error) {
+      console.error("Error handling Facebook message:", error);
+    }
+  }
+
+  // Helper function to send message to Facebook
+  async function sendFacebookMessage(accessToken: string, recipientId: string, messageText: string) {
+    try {
+      const response = await fetch("https://graph.facebook.com/v19.0/me/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          access_token: accessToken,
+          recipient: { id: recipientId },
+          message: { text: messageText }
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Facebook send message error:", errorData);
+      } else {
+        console.log("Facebook message sent successfully");
+      }
+    } catch (error) {
+      console.error("Error sending Facebook message:", error);
+    }
+  }
+
   const httpServer = createServer(app);
   return httpServer;
 }
