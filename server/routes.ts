@@ -133,6 +133,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       
+      console.log("Product save request - raw body:", req.body);
+      
       // Clean and filter the data before validation
       const cleanedData = { ...req.body };
       
@@ -143,15 +145,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       });
       
-      // Clean price field - remove commas, dollar signs and handle empty values
+      console.log("Product save - after empty string cleanup:", cleanedData);
+      
+      // Clean price field - remove all non-numeric characters except decimal points
       if (cleanedData.price && cleanedData.price !== '') {
-        const cleanPrice = cleanedData.price.toString().replace(/[$,]/g, '');
-        cleanedData.price = cleanPrice;
+        console.log("Original price value:", cleanedData.price);
+        const cleanPrice = cleanedData.price.toString().replace(/[^0-9.]/g, '');
+        console.log("Cleaned price value:", cleanPrice);
+        cleanedData.price = cleanPrice || null;
       } else {
         cleanedData.price = null;
       }
       
+      console.log("Product save - final cleaned data:", cleanedData);
+      
       const validatedData = insertProductSchema.parse(cleanedData);
+      console.log("Product save - validated data:", validatedData);
+      
       const product = await storage.createProduct(userId, { ...validatedData, userId });
       res.json(product);
     } catch (error) {
