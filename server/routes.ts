@@ -111,15 +111,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/products', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const validatedData = insertProductSchema.parse(req.body);
       
-      // Clean price field - remove commas and convert to proper decimal
-      if (validatedData.price) {
-        const cleanPrice = validatedData.price.toString().replace(/,/g, '');
-        validatedData.price = cleanPrice;
+      // Clean and filter the data before validation
+      const cleanedData = { ...req.body };
+      
+      // Remove empty strings and convert them to null/undefined
+      Object.keys(cleanedData).forEach(key => {
+        if (cleanedData[key] === '') {
+          cleanedData[key] = null;
+        }
+      });
+      
+      // Clean price field - remove commas and handle empty values
+      if (cleanedData.price && cleanedData.price !== '') {
+        const cleanPrice = cleanedData.price.toString().replace(/,/g, '');
+        cleanedData.price = cleanPrice;
+      } else {
+        cleanedData.price = null;
       }
       
-      const product = await storage.createProduct(userId, { ...validatedData, userId });
+      const validatedData = insertProductSchema.parse(cleanedData);
+      const product = await storage.createProduct(userId, validatedData);
       res.json(product);
     } catch (error) {
       console.error("Error creating product:", error);

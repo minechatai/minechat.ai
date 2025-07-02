@@ -66,7 +66,7 @@ export const aiAssistants = pgTable("ai_assistants", {
 export const products = pgTable("products", {
   id: serial("id").primaryKey(),
   userId: varchar("user_id").notNull().references(() => users.id),
-  name: varchar("name").notNull(),
+  name: varchar("name"),
   description: text("description"),
   price: varchar("price"),
   faqs: text("faqs"),
