@@ -45,6 +45,9 @@ export default function BusinessInfo() {
   const [showAddProductForm, setShowAddProductForm] = useState(false);
   const [newProductImages, setNewProductImages] = useState<string[]>([]);
   const [uploadingNewImage, setUploadingNewImage] = useState(false);
+  const [editingProductId, setEditingProductId] = useState<number | null>(null);
+  const [editProductImages, setEditProductImages] = useState<string[]>([]);
+  const [uploadingEditImage, setUploadingEditImage] = useState(false);
   const { toast } = useToast();
 
   const { data: business, isLoading: businessLoading } = useQuery({
@@ -86,6 +89,21 @@ export default function BusinessInfo() {
   });
 
   const newProductForm = useForm<ProductFormData>({
+    resolver: zodResolver(productSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      price: "",
+      faqs: "",
+      paymentDetails: "",
+      discounts: "",
+      policy: "",
+      additionalNotes: "",
+      thankYouMessage: "",
+    },
+  });
+
+  const editProductForm = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: "",
@@ -219,6 +237,30 @@ export default function BusinessInfo() {
       toast({
         title: "Error",
         description: "Failed to create new product",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateProductMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: ProductFormData }) => {
+      return await apiRequest("PATCH", `/api/products/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      setEditingProductId(null);
+      editProductForm.reset();
+      setEditProductImages([]);
+      toast({
+        title: "Success",
+        description: "Product updated successfully",
+      });
+    },
+    onError: (error) => {
+      console.error("Error updating product:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update product",
         variant: "destructive",
       });
     },
@@ -408,6 +450,38 @@ export default function BusinessInfo() {
     
     console.log("Final submission data:", submissionData);
     createNewProductMutation.mutate(submissionData);
+  };
+
+  const startEditingProduct = (product: any) => {
+    setEditingProductId(product.id);
+    editProductForm.reset({
+      name: product.name || "",
+      description: product.description || "",
+      price: product.price || "",
+      faqs: product.faqs || "",
+      paymentDetails: product.paymentDetails || "",
+      discounts: product.discounts || "",
+      policy: product.policy || "",
+      additionalNotes: product.additionalNotes || "",
+      thankYouMessage: product.thankYouMessage || "",
+    });
+    setEditProductImages(product.imageUrl ? [product.imageUrl] : []);
+  };
+
+  const cancelEditing = () => {
+    setEditingProductId(null);
+    editProductForm.reset();
+    setEditProductImages([]);
+  };
+
+  const onEditProductSubmit = (data: ProductFormData) => {
+    if (editingProductId) {
+      const submissionData = {
+        ...data,
+        imageUrl: editProductImages[0] || "",
+      };
+      updateProductMutation.mutate({ id: editingProductId, data: submissionData });
+    }
   };
 
   if (businessLoading || documentsLoading || productsLoading) {
@@ -604,28 +678,96 @@ export default function BusinessInfo() {
           <div className="space-y-4 mb-8">
             {products.map((product: any) => (
               <div key={product.id} className="border border-gray-200 rounded-lg p-6 bg-gray-50">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                      {product.name || "Unnamed Product"}
-                    </h3>
-                    {product.description && (
-                      <p className="text-gray-600 mb-3">{product.description}</p>
-                    )}
-                    {product.price && (
-                      <p className="text-xl font-bold text-green-600">${product.price}</p>
+                {editingProductId === product.id ? (
+                  /* Edit Form */
+                  <Form {...editProductForm}>
+                    <form onSubmit={editProductForm.handleSubmit(onEditProductSubmit)} className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={editProductForm.control}
+                          name="name"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Product Name</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Enter Product Name" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={editProductForm.control}
+                          name="price"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Price</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Enter Price" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      
+                      <FormField
+                        control={editProductForm.control}
+                        name="description"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Description</FormLabel>
+                            <FormControl>
+                              <Textarea placeholder="Enter Description" rows={3} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="flex gap-4 pt-4">
+                        <Button type="submit" disabled={updateProductMutation.isPending}>
+                          {updateProductMutation.isPending ? "Saving..." : "Save Changes"}
+                        </Button>
+                        <Button type="button" variant="outline" onClick={cancelEditing}>
+                          Cancel
+                        </Button>
+                      </div>
+                    </form>
+                  </Form>
+                ) : (
+                  /* Display Mode */
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        {product.name || "Unnamed Product"}
+                      </h3>
+                      {product.description && (
+                        <p className="text-gray-600 mb-3">{product.description}</p>
+                      )}
+                      {product.price && (
+                        <p className="text-xl font-bold text-green-600">${product.price}</p>
+                      )}
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="mt-3"
+                        onClick={() => startEditingProduct(product)}
+                      >
+                        Edit Product
+                      </Button>
+                    </div>
+                    {product.imageUrl && (
+                      <div className="ml-6 w-24 h-24 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                        <img 
+                          src={product.imageUrl} 
+                          alt={product.name || "Product"}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
                     )}
                   </div>
-                  {product.imageUrl && (
-                    <div className="ml-6 w-24 h-24 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-                      <img 
-                        src={product.imageUrl} 
-                        alt={product.name || "Product"}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  )}
-                </div>
+                )}
               </div>
             ))}
           </div>
