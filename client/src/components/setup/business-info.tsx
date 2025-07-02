@@ -252,8 +252,29 @@ export default function BusinessInfo() {
     formData.append('image', file);
 
     try {
-      const response = await apiRequest("POST", "/api/products/upload-image", formData);
-      const newImageUrl = response.imageUrl;
+      const response = await fetch('/api/products/upload-image', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          toast({
+            title: "Unauthorized",
+            description: "You are logged out. Logging in again...",
+            variant: "destructive",
+          });
+          setTimeout(() => {
+            window.location.href = "/api/login";
+          }, 500);
+          return;
+        }
+        throw new Error('Upload failed');
+      }
+
+      const data = await response.json();
+      const newImageUrl = data.imageUrl;
       setProductImages(prev => [...prev, newImageUrl]);
       
       toast({
@@ -261,17 +282,6 @@ export default function BusinessInfo() {
         description: "Product image uploaded successfully",
       });
     } catch (error) {
-      if (isUnauthorizedError(error as Error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
       toast({
         title: "Error",
         description: "Failed to upload image",
