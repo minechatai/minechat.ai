@@ -532,6 +532,8 @@ Response style: ${aiAssistant?.responseLength || "normal"} length responses.`;
       const userId = req.user.claims.sub;
       const { pageId, accessToken } = req.body;
 
+      console.log('Facebook connect request:', { userId, pageId: pageId ? 'PROVIDED' : 'MISSING', accessToken: accessToken ? 'PROVIDED' : 'MISSING' });
+
       if (!pageId || !accessToken) {
         return res.status(400).json({ message: "Page ID and access token are required" });
       }

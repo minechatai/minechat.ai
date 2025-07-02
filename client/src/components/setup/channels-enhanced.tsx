@@ -97,6 +97,7 @@ function FacebookMessengerIntegration() {
   });
 
   const onSubmit = (data: FacebookFormData) => {
+    console.log('Submitting Facebook data:', { pageId: data.pageId ? 'PROVIDED' : 'MISSING', accessToken: data.accessToken ? 'PROVIDED' : 'MISSING' });
     mutation.mutate(data);
   };
 
