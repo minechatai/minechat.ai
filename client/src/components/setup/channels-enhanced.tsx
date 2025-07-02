@@ -40,6 +40,7 @@ interface Channel {
 }
 
 function FacebookMessengerIntegration() {
+  console.log('FacebookMessengerIntegration component rendered');
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -97,7 +98,9 @@ function FacebookMessengerIntegration() {
   });
 
   const onSubmit = (data: FacebookFormData) => {
+    console.log('Form submitted!');
     console.log('Submitting Facebook data:', { pageId: data.pageId ? 'PROVIDED' : 'MISSING', accessToken: data.accessToken ? 'PROVIDED' : 'MISSING' });
+    console.log('Full data:', data);
     mutation.mutate(data);
   };
 
@@ -171,7 +174,12 @@ function FacebookMessengerIntegration() {
               </p>
             </div>
 
-            <Button type="submit" className="w-full" disabled={mutation.isPending}>
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={mutation.isPending}
+              onClick={() => console.log('Button clicked!')}
+            >
               {mutation.isPending ? "Connecting..." : "Connect Facebook Messenger"}
             </Button>
           </form>
