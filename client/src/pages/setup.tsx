@@ -115,7 +115,7 @@ export default function Setup() {
         </div>
 
         {/* AI Testing Panel - only show for AI Assistant and Business Information */}
-        {(currentSection === "ai-assistant" || currentSection === "business-information") && (
+        {(currentSection === "ai-assistant" || currentSection === "business-info") && (
           <AiTestingPanel />
         )}
       </div>
