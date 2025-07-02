@@ -856,6 +856,11 @@ export default function BusinessInfo() {
                         type="submit" 
                         className="bg-primary text-white hover:bg-primary-dark px-6"
                         disabled={createNewProductMutation.isPending}
+                        onClick={(e) => {
+                          console.log("Submit button clicked!");
+                          console.log("Form errors:", newProductForm.formState.errors);
+                          console.log("Form values:", newProductForm.getValues());
+                        }}
                       >
                         {createNewProductMutation.isPending ? "Creating..." : "Add Product"}
                       </Button>
