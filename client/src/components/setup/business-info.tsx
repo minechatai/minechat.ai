@@ -703,7 +703,24 @@ export default function BusinessInfo() {
               )}
             </div>
 
-
+            {/* Add Another Product Button */}
+            {!showAddProductForm && (
+              <div className="flex justify-center pt-4">
+                <Button 
+                  type="button"
+                  variant="outline"
+                  className="border-primary text-primary hover:bg-primary hover:text-white"
+                  onClick={() => {
+                    setShowAddProductForm(true);
+                    newProductForm.reset();
+                    setNewProductImages([]);
+                  }}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Another Product
+                </Button>
+              </div>
+            )}
 
             <FormField
               control={productForm.control}
@@ -813,37 +830,22 @@ export default function BusinessInfo() {
               )}
             />
 
-            <div className="flex justify-between items-center pt-4">
+            <div className="flex justify-end space-x-3 pt-4">
               <Button 
-                type="button"
+                type="button" 
                 variant="outline"
-                className="border-primary text-primary hover:bg-primary hover:text-white"
-                onClick={() => {
-                  setShowAddProductForm(true);
-                  newProductForm.reset();
-                  setNewProductImages([]);
-                }}
+                className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                onClick={() => productForm.reset()}
               >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Another Product
+                Cancel
               </Button>
-              <div className="flex space-x-3">
-                <Button 
-                  type="button" 
-                  variant="outline"
-                  className="border-gray-300 text-gray-700 hover:bg-gray-50"
-                  onClick={() => productForm.reset()}
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  type="submit" 
-                  className="bg-primary text-white hover:bg-primary-dark px-6"
-                  disabled={productMutation.isPending}
-                >
-                  {productMutation.isPending ? "Saving..." : "Save"}
-                </Button>
-              </div>
+              <Button 
+                type="submit" 
+                className="bg-primary text-white hover:bg-primary-dark px-6"
+                disabled={productMutation.isPending}
+              >
+                {productMutation.isPending ? "Saving..." : "Save"}
+              </Button>
             </div>
           </form>
         </Form>
