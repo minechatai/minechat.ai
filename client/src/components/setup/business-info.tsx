@@ -715,7 +715,7 @@ export default function BusinessInfo() {
 
             {/* Add Another Product Button */}
             {!showAddProductForm && (
-              <div className="flex justify-center pt-4">
+              <div className="flex justify-center gap-4 pt-4">
                 <Button 
                   type="button"
                   variant="outline"
@@ -728,6 +728,29 @@ export default function BusinessInfo() {
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Add Another Product
+                </Button>
+                <Button 
+                  type="button" 
+                  className="bg-green-600 text-white hover:bg-green-700"
+                  onClick={() => {
+                    console.log("TEST: Direct API call");
+                    const testData = {
+                      name: "Test Product",
+                      description: "Test Description", 
+                      price: "99",
+                      imageUrl: "",
+                      faqs: "",
+                      paymentDetails: "",
+                      discounts: "",
+                      policy: "",
+                      additionalNotes: "",
+                      thankYouMessage: ""
+                    };
+                    console.log("TEST: Calling mutation with:", testData);
+                    createNewProductMutation.mutate(testData);
+                  }}
+                >
+                  TEST API
                 </Button>
               </div>
             )}
