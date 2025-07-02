@@ -697,6 +697,75 @@ Response style: ${aiAssistant?.responseLength || "normal"} length responses.`;
   });
 
   // Helper function to handle Facebook messages
+  // Helper function to send message to Facebook
+  async function sendFacebookMessage(accessToken: string, recipientId: string, messageText: string) {
+    try {
+      const response = await fetch("https://graph.facebook.com/v19.0/me/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          access_token: accessToken,
+          recipient: { id: recipientId },
+          message: { text: messageText }
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Facebook send message error:", errorData);
+      } else {
+        console.log("Facebook message sent successfully");
+      }
+    } catch (error) {
+      console.error("Error sending Facebook message:", error);
+    }
+  }
+
+  // Helper function to send image to Facebook
+  async function sendFacebookImage(accessToken: string, recipientId: string, imageUrl: string, caption?: string) {
+    try {
+      const messageData = {
+        access_token: accessToken,
+        recipient: { id: recipientId },
+        message: {
+          attachment: {
+            type: "image",
+            payload: {
+              url: imageUrl,
+              is_reusable: true
+            }
+          }
+        }
+      };
+
+      const response = await fetch("https://graph.facebook.com/v19.0/me/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(messageData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Facebook send image error:", errorData);
+      } else {
+        console.log(`Facebook image sent successfully: ${imageUrl}`);
+        
+        // Send caption as separate message if provided
+        if (caption) {
+          setTimeout(() => {
+            sendFacebookMessage(accessToken, recipientId, caption);
+          }, 500);
+        }
+      }
+    } catch (error) {
+      console.error("Error sending Facebook image:", error);
+    }
+  }
+
   async function handleFacebookMessage(webhookEvent: any) {
     try {
       const senderId = webhookEvent.sender.id;
@@ -935,75 +1004,6 @@ Contact: ${business?.email || "Contact us for more information"}`;
 
     } catch (error) {
       console.error("Error handling Facebook message:", error);
-    }
-  }
-
-  // Helper function to send message to Facebook
-  async function sendFacebookMessage(accessToken: string, recipientId: string, messageText: string) {
-    try {
-      const response = await fetch("https://graph.facebook.com/v19.0/me/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          access_token: accessToken,
-          recipient: { id: recipientId },
-          message: { text: messageText }
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Facebook send message error:", errorData);
-      } else {
-        console.log("Facebook message sent successfully");
-      }
-    } catch (error) {
-      console.error("Error sending Facebook message:", error);
-    }
-  }
-
-  // Helper function to send image to Facebook
-  async function sendFacebookImage(accessToken: string, recipientId: string, imageUrl: string, caption?: string) {
-    try {
-      const messageData = {
-        access_token: accessToken,
-        recipient: { id: recipientId },
-        message: {
-          attachment: {
-            type: "image",
-            payload: {
-              url: imageUrl,
-              is_reusable: true
-            }
-          }
-        }
-      };
-
-      const response = await fetch("https://graph.facebook.com/v19.0/me/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(messageData)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Facebook send image error:", errorData);
-      } else {
-        console.log(`Facebook image sent successfully: ${imageUrl}`);
-        
-        // Send caption as separate message if provided
-        if (caption) {
-          setTimeout(() => {
-            sendFacebookMessage(accessToken, recipientId, caption);
-          }, 500);
-        }
-      }
-    } catch (error) {
-      console.error("Error sending Facebook image:", error);
     }
   }
 
