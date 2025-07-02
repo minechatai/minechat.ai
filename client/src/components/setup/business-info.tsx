@@ -42,6 +42,9 @@ export default function BusinessInfo() {
   const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [productImages, setProductImages] = useState<string[]>([]);
+  const [showAddProductForm, setShowAddProductForm] = useState(false);
+  const [newProductImages, setNewProductImages] = useState<string[]>([]);
+  const [uploadingNewImage, setUploadingNewImage] = useState(false);
   const { toast } = useToast();
 
   const { data: business, isLoading: businessLoading } = useQuery({
@@ -68,6 +71,21 @@ export default function BusinessInfo() {
   });
 
   const productForm = useForm<ProductFormData>({
+    resolver: zodResolver(productSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      price: "",
+      faqs: "",
+      paymentDetails: "",
+      discounts: "",
+      policy: "",
+      additionalNotes: "",
+      thankYouMessage: "",
+    },
+  });
+
+  const newProductForm = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: "",
@@ -192,6 +210,40 @@ export default function BusinessInfo() {
     },
   });
 
+  const createNewProductMutation = useMutation({
+    mutationFn: async (data: ProductFormData) => {
+      return await apiRequest("POST", "/api/products", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      setShowAddProductForm(false);
+      newProductForm.reset();
+      setNewProductImages([]);
+      toast({
+        title: "Success",
+        description: "New product created successfully",
+      });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error as Error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to create new product",
+        variant: "destructive",
+      });
+    },
+  });
+
   const deleteDocumentMutation = useMutation({
     mutationFn: async (documentId: number) => {
       await apiRequest("DELETE", `/api/documents/${documentId}`);
@@ -295,6 +347,64 @@ export default function BusinessInfo() {
     }
   };
 
+  const handleNewProductImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Error",
+        description: "Please select a valid image file",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploadingNewImage(true);
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const response = await fetch('/api/products/upload-image', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          toast({
+            title: "Unauthorized",
+            description: "You are logged out. Logging in again...",
+            variant: "destructive",
+          });
+          setTimeout(() => {
+            window.location.href = "/api/login";
+          }, 500);
+          return;
+        }
+        throw new Error('Upload failed');
+      }
+
+      const data = await response.json();
+      const newImageUrl = data.imageUrl;
+      setNewProductImages(prev => [...prev, newImageUrl]);
+      
+      toast({
+        title: "Success",
+        description: "Product image uploaded successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to upload image",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingNewImage(false);
+    }
+  };
+
   const onBusinessSubmit = (data: BusinessFormData) => {
     businessMutation.mutate(data);
   };
@@ -303,6 +413,13 @@ export default function BusinessInfo() {
     productMutation.mutate({
       ...data,
       imageUrl: productImages[0] || "",
+    });
+  };
+
+  const onNewProductSubmit = (data: ProductFormData) => {
+    createNewProductMutation.mutate({
+      ...data,
+      imageUrl: newProductImages[0] || "",
     });
   };
 
@@ -713,6 +830,206 @@ export default function BusinessInfo() {
             </div>
           </form>
         </Form>
+      </div>
+
+      {/* Additional Products Section */}
+      <div>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-semibold text-gray-900">Additional Products</h2>
+        </div>
+
+        {/* Show existing additional products */}
+        {Array.isArray(products) && products.length > 1 && (
+          <div className="space-y-4 mb-6">
+            <h3 className="text-lg font-medium text-gray-700">Your Additional Products</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {products.slice(1).map((product: any) => (
+                <Card key={product.id} className="overflow-hidden">
+                  <CardContent className="p-4">
+                    {product.imageUrl && (
+                      <div className="aspect-square mb-4 rounded-lg overflow-hidden bg-gray-100">
+                        <img 
+                          src={product.imageUrl} 
+                          alt={product.name || "Product"}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <h4 className="font-semibold text-gray-900 mb-2">{product.name || "Unnamed Product"}</h4>
+                    {product.price && (
+                      <p className="text-lg font-bold text-green-600 mb-2">${product.price}</p>
+                    )}
+                    {product.description && (
+                      <p className="text-sm text-gray-600 mb-3 line-clamp-3">{product.description}</p>
+                    )}
+                    <div className="flex justify-between items-center">
+                      <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800">
+                        Edit
+                      </Button>
+                      <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-800">
+                        Delete
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Add New Product Button */}
+        {!showAddProductForm && (
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center mb-6">
+            <Plus className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-700 mb-2">Add New Product</h3>
+            <p className="text-sm text-gray-500 mb-4">Create another product or service for your business</p>
+            <Button 
+              type="button"
+              className="bg-primary text-white hover:bg-primary-dark"
+              onClick={() => {
+                setShowAddProductForm(true);
+                newProductForm.reset();
+                setNewProductImages([]);
+              }}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Product
+            </Button>
+          </div>
+        )}
+
+        {/* New Product Form */}
+        {showAddProductForm && (
+          <div className="border border-gray-200 rounded-lg p-6 bg-white">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-900">Add New Product</h3>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => {
+                  setShowAddProductForm(false);
+                  newProductForm.reset();
+                  setNewProductImages([]);
+                }}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+            
+            <Form {...newProductForm}>
+              <form onSubmit={newProductForm.handleSubmit(onNewProductSubmit)} className="space-y-6">
+                <FormField
+                  control={newProductForm.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700">Product Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter Product Name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={newProductForm.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700">Description</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Enter Product Description" 
+                          rows={3}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={newProductForm.control}
+                  name="price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium text-gray-700">Price</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter Price" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Image Upload Section for New Product */}
+                <div>
+                  <FormLabel className="text-sm font-medium text-gray-700 mb-3 block">Upload Product Images</FormLabel>
+                  <div className="grid grid-cols-4 gap-4">
+                    {newProductImages.map((image, index) => (
+                      <div key={index} className="relative aspect-square">
+                        <img 
+                          src={image} 
+                          alt={`Product ${index + 1}`}
+                          className="w-full h-full object-cover rounded-lg border border-gray-200"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setNewProductImages(prev => prev.filter((_, i) => i !== index))}
+                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                    
+                    {newProductImages.length < 4 && (
+                      <label htmlFor="new-product-image-upload" className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 transition-colors">
+                        <Camera className="w-6 h-6 text-gray-400 mb-1" />
+                        <span className="text-xs text-gray-500">Add Image</span>
+                        <input
+                          id="new-product-image-upload"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleNewProductImageUpload}
+                          disabled={uploadingNewImage}
+                        />
+                      </label>
+                    )}
+                  </div>
+                  {uploadingNewImage && (
+                    <p className="text-sm text-gray-500 mt-2">Uploading image...</p>
+                  )}
+                </div>
+
+                <div className="flex justify-end space-x-3 pt-4">
+                  <Button 
+                    type="button" 
+                    variant="outline"
+                    className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                    onClick={() => {
+                      setShowAddProductForm(false);
+                      newProductForm.reset();
+                      setNewProductImages([]);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    className="bg-primary text-white hover:bg-primary-dark px-6"
+                    disabled={createNewProductMutation.isPending}
+                  >
+                    {createNewProductMutation.isPending ? "Creating..." : "Add Product"}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </div>
+        )}
       </div>
     </div>
   );
