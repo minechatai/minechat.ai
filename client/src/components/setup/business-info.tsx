@@ -18,12 +18,12 @@ const businessSchema = z.object({
   companyName: z.string().optional(),
   phoneNumber: z.string().optional(),
   address: z.string().optional(),
-  email: z.string().email().optional().or(z.literal("")),
+  email: z.string().optional(),
   companyStory: z.string().optional(),
 });
 
 const productSchema = z.object({
-  name: z.string().min(1, "Product name is required"),
+  name: z.string().optional(),
   description: z.string().optional(),
   price: z.string().optional(),
   faqs: z.string().optional(),
