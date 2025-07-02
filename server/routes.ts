@@ -220,6 +220,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update product
+  app.patch('/api/products/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const productId = parseInt(req.params.id);
+      
+      // Clean and filter the data before validation
+      const cleanedData = { ...req.body };
+      
+      // Remove empty strings and convert them to null/undefined
+      Object.keys(cleanedData).forEach(key => {
+        if (cleanedData[key] === '') {
+          cleanedData[key] = null;
+        }
+      });
+      
+      // Clean price field
+      if (cleanedData.price && cleanedData.price !== '') {
+        const cleanPrice = cleanedData.price.toString().replace(/[^0-9.]/g, '');
+        cleanedData.price = cleanPrice || null;
+      } else {
+        cleanedData.price = null;
+      }
+      
+      const validatedData = insertProductSchema.parse(cleanedData);
+      const product = await storage.updateProduct(productId, validatedData);
+      res.json(product);
+    } catch (error) {
+      console.error("Error updating product:", error);
+      res.status(500).json({ message: "Failed to update product" });
+    }
+  });
+
+  // Delete product
+  app.delete('/api/products/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const productId = parseInt(req.params.id);
+      await storage.deleteProduct(productId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      res.status(500).json({ message: "Failed to delete product" });
+    }
+  });
+
   // Image upload route for products
   app.post('/api/products/upload-image', isAuthenticated, imageUpload.single('image'), async (req: any, res) => {
     try {

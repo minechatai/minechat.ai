@@ -319,11 +319,54 @@ export default function BusinessInfo() {
   };
 
   const onProductSubmit = (data: ProductFormData) => {
-    productMutation.mutate({
+    const productData = {
       ...data,
       imageUrl: productImages[0] || "",
-    });
+    };
+
+    if (editingProduct) {
+      // Update existing product
+      updateProductMutation.mutate({ id: editingProduct.id, ...productData });
+    } else {
+      // Create new product
+      productMutation.mutate(productData);
+    }
   };
+
+  const updateProductMutation = useMutation({
+    mutationFn: async ({ id, ...data }: any) => {
+      return await apiRequest("PATCH", `/api/products/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      setShowProductForm(false);
+      setEditingProduct(null);
+      productForm.reset();
+      setProductImages([]);
+      toast({
+        title: "Success",
+        description: "Product updated successfully",
+      });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error as Error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to update product",
+        variant: "destructive",
+      });
+    },
+  });
 
   if (businessLoading || documentsLoading || productsLoading) {
     return (
@@ -582,6 +625,8 @@ export default function BusinessInfo() {
               // Clear form and reset images
               productForm.reset();
               setProductImages([]);
+              setEditingProduct(null);
+              setShowProductForm(true);
             }}
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -589,8 +634,29 @@ export default function BusinessInfo() {
           </Button>
         </div>
         
-        <Form {...productForm}>
-          <form onSubmit={productForm.handleSubmit(onProductSubmit)} className="space-y-6">
+        {/* Product Form - Only show when adding/editing */}
+        {showProductForm && (
+          <div className="border border-gray-200 rounded-lg p-6 bg-white">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-900">
+                {editingProduct ? "Edit Product" : "Add New Product"}
+              </h3>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => {
+                  setShowProductForm(false);
+                  setEditingProduct(null);
+                  productForm.reset();
+                  setProductImages([]);
+                }}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+            
+            <Form {...productForm}>
+              <form onSubmit={productForm.handleSubmit(onProductSubmit)} className="space-y-6">
             <FormField
               control={productForm.control}
               name="name"
@@ -786,24 +852,32 @@ export default function BusinessInfo() {
               )}
             />
 
-            <div className="flex justify-end space-x-3 pt-4">
-              <Button 
-                type="button" 
-                variant="outline"
-                className="border-gray-300 text-gray-700 hover:bg-gray-50"
-              >
-                Cancel
-              </Button>
-              <Button 
-                type="submit" 
-                className="bg-primary text-white hover:bg-primary-dark px-6"
-                disabled={productMutation.isPending}
-              >
-                {productMutation.isPending ? "Saving..." : "Save"}
-              </Button>
-            </div>
-          </form>
-        </Form>
+                <div className="flex justify-end space-x-3 pt-4">
+                  <Button 
+                    type="button" 
+                    variant="outline"
+                    className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                    onClick={() => {
+                      setShowProductForm(false);
+                      setEditingProduct(null);
+                      productForm.reset();
+                      setProductImages([]);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    className="bg-primary text-white hover:bg-primary-dark px-6"
+                    disabled={productMutation.isPending}
+                  >
+                    {productMutation.isPending ? "Saving..." : (editingProduct ? "Update Product" : "Add Product")}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </div>
+        )}
       </div>
     </div>
   );
