@@ -286,8 +286,10 @@ export default function ChannelsEnhanced() {
         </TabsContent>
 
         <TabsContent value="messaging" className="space-y-6">
+          <FacebookMessengerIntegration />
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {channels.filter(ch => ['whatsapp', 'messenger', 'telegram'].includes(ch.id)).map((channel) => (
+            {channels.filter(ch => ['whatsapp', 'telegram'].includes(ch.id)).map((channel) => (
               <Card key={channel.id} className="relative">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-3">

@@ -334,6 +334,23 @@ export class DatabaseStorage implements IStorage {
       .set({ isConnected: false, updatedAt: new Date() })
       .where(eq(facebookConnections.userId, userId));
   }
+
+  async getAllFacebookConnections(): Promise<FacebookConnection[]> {
+    return await db.select().from(facebookConnections).where(eq(facebookConnections.isConnected, true));
+  }
+
+  async getConversationByFacebookSender(userId: string, facebookSenderId: string): Promise<Conversation | undefined> {
+    const [conversation] = await db
+      .select()
+      .from(conversations)
+      .where(
+        and(
+          eq(conversations.userId, userId),
+          eq(conversations.facebookSenderId, facebookSenderId)
+        )
+      );
+    return conversation;
+  }
 }
 
 export const storage = new DatabaseStorage();

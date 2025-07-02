@@ -513,6 +513,7 @@ Response style: ${aiAssistant?.responseLength || "normal"} length responses.`;
       // Simulate successful Facebook connection
       // In production, exchange code for access token and get page info
       await storage.upsertFacebookConnection(userId, {
+        userId,
         facebookPageId: "demo_page_id",
         facebookPageName: "Demo Business Page",
         accessToken: "demo_access_token",
@@ -607,6 +608,7 @@ Response style: ${aiAssistant?.responseLength || "normal"} length responses.`;
       let conversation = await storage.getConversationByFacebookSender(connection.userId, senderId);
       if (!conversation) {
         conversation = await storage.createConversation(connection.userId, {
+          userId: connection.userId,
           customerName: `Facebook User ${senderId.substring(0, 8)}`,
           customerEmail: null,
           source: "facebook",
@@ -630,7 +632,7 @@ Response style: ${aiAssistant?.responseLength || "normal"} length responses.`;
         if (process.env.OPENAI_API_KEY) {
           const systemPrompt = `You are ${aiAssistant?.name || "an AI assistant"} for ${business?.companyName || "our business"}. 
 ${aiAssistant?.introMessage || "You are helpful and friendly."}
-${aiAssistant?.instructions || ""}
+${aiAssistant?.guidelines || ""}
 ${business?.companyStory ? `Company background: ${business.companyStory}` : ""}
 ${products.length > 0 ? `Available products/services: ${products.map(p => `${p.name}: ${p.description}`).join(", ")}` : ""}
 Respond naturally and be helpful. Keep responses concise for messaging.`;
