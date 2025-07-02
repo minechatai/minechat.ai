@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import MainLayout from "@/components/layout/main-layout";
 import AiAssistant from "@/components/setup/ai-assistant";
 import BusinessInfo from "@/components/setup/business-info";
-import Channels from "@/components/setup/channels-fixed";
+import Channels from "@/components/setup/channels";
 import AiTestingPanel from "@/components/setup/ai-testing-panel";
 
 import { ChevronRight } from "lucide-react";

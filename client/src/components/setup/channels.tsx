@@ -73,21 +73,21 @@ export default function Channels() {
   });
 
   useEffect(() => {
-    if (channel) {
+    if (channel && typeof channel === 'object' && 'websiteName' in channel) {
       channelForm.reset({
-        websiteName: channel.websiteName || "",
-        websiteUrl: channel.websiteUrl || "",
-        primaryColor: channel.primaryColor || "#A53860",
-        isActive: channel.isActive ?? true,
+        websiteName: (channel as any).websiteName || "",
+        websiteUrl: (channel as any).websiteUrl || "",
+        primaryColor: (channel as any).primaryColor || "#A53860",
+        isActive: (channel as any).isActive ?? true,
       });
     }
   }, [channel, channelForm]);
 
   useEffect(() => {
-    if (facebookConnection) {
+    if (facebookConnection && typeof facebookConnection === 'object' && 'facebookPageId' in facebookConnection) {
       facebookForm.reset({
-        pageId: facebookConnection.facebookPageId || "",
-        facebookAccessToken: facebookConnection.accessToken || "",
+        pageId: (facebookConnection as any).facebookPageId || "",
+        facebookAccessToken: (facebookConnection as any).accessToken || "",
       });
     }
   }, [facebookConnection, facebookForm]);
@@ -163,8 +163,12 @@ export default function Channels() {
     },
   });
 
-  const onSubmit = (data: ChannelFormData) => {
-    mutation.mutate(data);
+  const onChannelSubmit = (data: ChannelFormData) => {
+    channelMutation.mutate(data);
+  };
+
+  const onFacebookSubmit = (data: FacebookFormData) => {
+    facebookMutation.mutate(data);
   };
 
   if (isLoading) {
@@ -212,64 +216,89 @@ export default function Channels() {
           })}
         </div>
 
-        {/* Channel Configuration Form */}
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="pageId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-gray-900">Page ID</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="https://blissfulretreat.framer.website/"
-                      className="mt-1"
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        {/* Website Settings */}
+        {selectedChannel === "Website" && (
+          <div className="bg-gray-50 rounded-lg p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Website Integration</h3>
+            <form onSubmit={channelForm.handleSubmit(onChannelSubmit)} className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-900">Website Name</label>
+                <Input 
+                  placeholder="Enter your website name"
+                  className="mt-1"
+                  {...channelForm.register("websiteName")}
+                />
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-gray-900">Website URL</label>
+                <Input 
+                  placeholder="https://example.com"
+                  className="mt-1"
+                  {...channelForm.register("websiteUrl")}
+                />
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-gray-900">Primary Color</label>
+                <Input 
+                  type="color"
+                  className="mt-1"
+                  {...channelForm.register("primaryColor")}
+                />
+              </div>
 
-            <FormField
-              control={form.control}
-              name="facebookAccessToken"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-gray-900">Facebook Access Token</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder={`<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">`}
-                      className="mt-1 h-20 font-mono text-sm resize-none"
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <div className="flex justify-end space-x-3 pt-4">
+                <Button type="button" variant="outline">Cancel</Button>
+                <Button type="submit" disabled={channelMutation.isPending}>
+                  {channelMutation.isPending ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        )}
 
-            <div className="flex justify-end space-x-3 pt-4">
-              <Button 
-                type="button" 
-                variant="outline"
-                className="border-gray-300 text-gray-700 hover:bg-gray-50"
-              >
-                Cancel
-              </Button>
-              <Button 
-                type="submit" 
-                className="bg-primary text-white hover:bg-primary-dark px-6"
-                disabled={mutation.isPending}
-              >
-                {mutation.isPending ? "Saving..." : "Save Change"}
-              </Button>
-            </div>
-          </form>
-        </Form>
+        {/* Facebook Messenger Settings */}
+        {selectedChannel === "Messenger" && (
+          <div className="bg-gray-50 rounded-lg p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Facebook Messenger Integration</h3>
+            <form onSubmit={facebookForm.handleSubmit(onFacebookSubmit)} className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-900">Facebook Page ID</label>
+                <Input 
+                  placeholder="Enter your Facebook Page ID"
+                  className="mt-1"
+                  {...facebookForm.register("pageId")}
+                />
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium text-gray-900">Facebook Access Token</label>
+                <Textarea 
+                  placeholder="Enter your Facebook Page Access Token"
+                  className="mt-1 h-20 font-mono text-sm resize-none"
+                  rows={3}
+                  {...facebookForm.register("facebookAccessToken")}
+                />
+              </div>
+
+              <div className="flex justify-end space-x-3 pt-4">
+                <Button type="button" variant="outline">Cancel</Button>
+                <Button type="submit" disabled={facebookMutation.isPending}>
+                  {facebookMutation.isPending ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* Other channels placeholder */}
+        {!["Website", "Messenger"].includes(selectedChannel) && (
+          <div className="bg-gray-50 rounded-lg p-6 text-center">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">{selectedChannel}</h3>
+            <p className="text-gray-600">Integration coming soon</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
