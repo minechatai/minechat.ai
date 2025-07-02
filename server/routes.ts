@@ -688,10 +688,22 @@ Response style: ${aiAssistant?.responseLength || "normal"} length responses.`;
       try {
         if (process.env.OPENAI_API_KEY) {
           const systemPrompt = `You are ${aiAssistant?.name || "an AI assistant"} for ${business?.companyName || "our business"}. 
-${aiAssistant?.introMessage || "You are helpful and friendly."}
-${aiAssistant?.guidelines || ""}
-${business?.companyStory ? `Company background: ${business.companyStory}` : ""}
-${products.length > 0 ? `Available products/services: ${products.map(p => `${p.name}: ${p.description}`).join(", ")}` : ""}
+
+BUSINESS INFORMATION:
+${business?.companyName ? `Company: ${business.companyName}` : ""}
+${business?.companyStory ? `About us: ${business.companyStory}` : ""}
+${business?.email ? `Contact: ${business.email}` : ""}
+
+AI ASSISTANT SETUP:
+${aiAssistant?.description ? `Description & FAQs: ${aiAssistant.description}` : ""}
+${aiAssistant?.guidelines ? `Guidelines: ${aiAssistant.guidelines}` : ""}
+${aiAssistant?.introMessage ? `Intro message: ${aiAssistant.introMessage}` : ""}
+
+PRODUCTS/SERVICES:
+${products.length > 0 ? products.map(p => `${p.name}: ${p.description}${p.faqs ? ` | FAQs: ${p.faqs}` : ""}`).join("\n") : "No products listed"}
+
+IMPORTANT: Use the information above to answer questions accurately. If asked about customization, brand voice, or similar topics, refer to the Description & FAQs section which contains specific information about our capabilities.
+
 Respond naturally and be helpful. Keep responses concise for messaging.`;
 
           const response = await fetch("https://api.openai.com/v1/chat/completions", {
