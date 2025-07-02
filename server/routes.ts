@@ -586,21 +586,32 @@ Response style: ${aiAssistant?.responseLength || "normal"} length responses.`;
 
   // Facebook webhook endpoints for receiving messages
   app.get("/api/facebook/webhook", (req, res) => {
-    const VERIFY_TOKEN = process.env.FACEBOOK_VERIFY_TOKEN || "minechat_webhook_verify_token";
+    // Set CORS headers for Facebook
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    
+    const VERIFY_TOKEN = "minechat_webhook_verify_token";
+    
+    console.log("Facebook webhook verification request:", req.query);
     
     const mode = req.query["hub.mode"];
     const token = req.query["hub.verify_token"];
     const challenge = req.query["hub.challenge"];
 
+    console.log("Verification details:", { mode, token, challenge, expectedToken: VERIFY_TOKEN });
+
     if (mode && token) {
       if (mode === "subscribe" && token === VERIFY_TOKEN) {
-        console.log("Facebook webhook verified");
-        res.status(200).send(challenge);
+        console.log("Facebook webhook verified successfully");
+        return res.status(200).send(challenge);
       } else {
-        res.sendStatus(403);
+        console.log("Facebook webhook verification failed - token mismatch");
+        return res.status(403).send("Forbidden");
       }
     } else {
-      res.sendStatus(400);
+      console.log("Facebook webhook verification failed - missing parameters");
+      return res.status(400).send("Bad Request");
     }
   });
 
