@@ -42,6 +42,8 @@ export default function BusinessInfo() {
   const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [productImages, setProductImages] = useState<string[]>([]);
+  const [showProductForm, setShowProductForm] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
   const { toast } = useToast();
 
   const { data: business, isLoading: businessLoading } = useQuery({
@@ -82,7 +84,7 @@ export default function BusinessInfo() {
     },
   });
 
-  // Update business form when data is loaded
+  // Update form when data is loaded
   useEffect(() => {
     if (business && typeof business === 'object' && 'companyName' in business) {
       businessForm.reset({
@@ -95,33 +97,13 @@ export default function BusinessInfo() {
     }
   }, [business, businessForm]);
 
-  // Update product form when data is loaded (use first product if available)
-  useEffect(() => {
-    if (Array.isArray(products) && products.length > 0) {
-      const firstProduct = products[0] as any;
-      productForm.reset({
-        name: firstProduct.name || "",
-        description: firstProduct.description || "",
-        price: firstProduct.price || "",
-        faqs: firstProduct.faqs || "",
-        paymentDetails: firstProduct.paymentDetails || "",
-        discounts: firstProduct.discounts || "",
-        policy: firstProduct.policy || "",
-        additionalNotes: firstProduct.additionalNotes || "",
-        thankYouMessage: firstProduct.thankYouMessage || "",
-      });
-      
-      if (firstProduct.imageUrl) {
-        setProductImages([firstProduct.imageUrl]);
-      }
-    }
-  }, [products, productForm]);
-
   useEffect(() => {
     if (documents && Array.isArray(documents)) {
       setUploadedFiles(documents);
     }
   }, [documents]);
+
+  // Don't auto-load products into form - let user explicitly choose to add/edit
 
   const businessMutation = useMutation({
     mutationFn: async (data: BusinessFormData) => {
@@ -156,20 +138,15 @@ export default function BusinessInfo() {
 
   const productMutation = useMutation({
     mutationFn: async (data: ProductFormData) => {
-      if (Array.isArray(products) && products.length > 0) {
-        // Update existing product
-        const existingProduct = products[0] as any;
-        return await apiRequest("PATCH", `/api/products/${existingProduct.id}`, data);
-      } else {
-        // Create new product
-        return await apiRequest("POST", "/api/products", data);
-      }
+      await apiRequest("POST", "/api/products", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      productForm.reset();
+      setProductImages([]);
       toast({
         title: "Success",
-        description: "Product information saved successfully",
+        description: "Product saved successfully",
       });
     },
     onError: (error) => {
@@ -186,7 +163,7 @@ export default function BusinessInfo() {
       }
       toast({
         title: "Error",
-        description: "Failed to save product information",
+        description: "Failed to save product",
         variant: "destructive",
       });
     },
@@ -207,6 +184,26 @@ export default function BusinessInfo() {
       toast({
         title: "Error",
         description: "Failed to delete document",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteProductMutation = useMutation({
+    mutationFn: async (productId: number) => {
+      await apiRequest("DELETE", `/api/products/${productId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      toast({
+        title: "Success",
+        description: "Product deleted successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to delete product",
         variant: "destructive",
       });
     },
@@ -300,11 +297,54 @@ export default function BusinessInfo() {
   };
 
   const onProductSubmit = (data: ProductFormData) => {
-    productMutation.mutate({
+    const productData = {
       ...data,
       imageUrl: productImages[0] || "",
-    });
+    };
+
+    if (editingProduct) {
+      // Update existing product
+      updateProductMutation.mutate({ id: editingProduct.id, ...productData });
+    } else {
+      // Create new product
+      productMutation.mutate(productData);
+    }
   };
+
+  const updateProductMutation = useMutation({
+    mutationFn: async ({ id, ...data }: any) => {
+      return await apiRequest("PATCH", `/api/products/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      setShowProductForm(false);
+      setEditingProduct(null);
+      productForm.reset();
+      setProductImages([]);
+      toast({
+        title: "Success",
+        description: "Product updated successfully",
+      });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error as Error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to update product",
+        variant: "destructive",
+      });
+    },
+  });
 
   if (businessLoading || documentsLoading || productsLoading) {
     return (
@@ -699,7 +739,6 @@ export default function BusinessInfo() {
                 type="button" 
                 variant="outline"
                 className="border-gray-300 text-gray-700 hover:bg-gray-50"
-                onClick={() => productForm.reset()}
               >
                 Cancel
               </Button>
