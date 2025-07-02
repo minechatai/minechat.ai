@@ -899,13 +899,21 @@ export default function BusinessInfo() {
                         TEST
                       </Button>
                       <Button 
-                        type="submit" 
+                        type="button" 
                         className="bg-primary text-white hover:bg-primary-dark px-6"
                         disabled={createNewProductMutation.isPending}
-                        onClick={(e) => {
-                          console.log("Submit button clicked!");
-                          console.log("Form errors:", newProductForm.formState.errors);
-                          console.log("Form values:", newProductForm.getValues());
+                        onClick={() => {
+                          console.log("Add Product button clicked!");
+                          const formValues = newProductForm.getValues();
+                          console.log("Form values:", formValues);
+                          
+                          const submissionData = {
+                            ...formValues,
+                            imageUrl: newProductImages[0] || "",
+                          };
+                          
+                          console.log("Submitting product:", submissionData);
+                          createNewProductMutation.mutate(submissionData);
                         }}
                       >
                         {createNewProductMutation.isPending ? "Creating..." : "Add Product"}
