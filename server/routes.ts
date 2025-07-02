@@ -10,6 +10,7 @@ import {
 } from "@shared/schema";
 import multer from "multer";
 import path from "path";
+import express from "express";
 
 // Configure multer for file uploads
 const upload = multer({
@@ -28,7 +29,27 @@ const upload = multer({
   }
 });
 
+// Configure multer for image uploads
+const imageUpload = multer({
+  dest: 'uploads/images/',
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit for images
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (allowedTypes.includes(ext)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only JPG, JPEG, PNG, GIF, and WEBP images are allowed.'));
+    }
+  }
+});
+
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Serve uploaded files statically
+  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+  
   // Auth middleware
   await setupAuth(app);
 
@@ -205,6 +226,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting document:", error);
       res.status(500).json({ message: "Failed to delete document" });
+    }
+  });
+
+  // Image upload route for products
+  app.post('/api/products/upload-image', isAuthenticated, imageUpload.single('image'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No image file provided" });
+      }
+
+      // Generate a unique URL for the uploaded image
+      const imageUrl = `/uploads/images/${req.file.filename}`;
+      
+      res.json({ 
+        imageUrl,
+        originalName: req.file.originalname,
+        size: req.file.size 
+      });
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      res.status(500).json({ message: "Failed to upload image" });
     }
   });
 
@@ -860,8 +902,34 @@ Contact: ${business?.email || "Contact us for more information"}`;
         messageType: "text"
       });
 
-      // Send response back to Facebook
+      // Check if we should send product photos along with the response
+      const lowerMessage = messageText.toLowerCase();
+      const shouldSendPhoto = (
+        lowerMessage.includes('product') || 
+        lowerMessage.includes('photo') || 
+        lowerMessage.includes('picture') || 
+        lowerMessage.includes('image') ||
+        lowerMessage.includes('show me') ||
+        lowerMessage.includes('what do you sell') ||
+        lowerMessage.includes('what are your') ||
+        (lowerMessage.includes('price') && products.length > 0)
+      );
+
+      // Send text response
       await sendFacebookMessage(connection.accessToken, senderId, aiMessage);
+
+      // Send product photos if relevant and available
+      if (shouldSendPhoto && products.length > 0) {
+        const productWithImage = products.find(p => p.imageUrl);
+        if (productWithImage && productWithImage.imageUrl) {
+          // Convert relative URL to absolute URL for Facebook
+          const fullImageUrl = productWithImage.imageUrl.startsWith('http') 
+            ? productWithImage.imageUrl 
+            : `${process.env.REPLIT_DEV_DOMAIN || 'http://localhost:5000'}${productWithImage.imageUrl}`;
+          
+          await sendFacebookImage(connection.accessToken, senderId, fullImageUrl, productWithImage.name || "Our Product");
+        }
+      }
 
       console.log(`Sent AI response to Facebook user ${senderId}: ${aiMessage}`);
 
@@ -893,6 +961,49 @@ Contact: ${business?.email || "Contact us for more information"}`;
       }
     } catch (error) {
       console.error("Error sending Facebook message:", error);
+    }
+  }
+
+  // Helper function to send image to Facebook
+  async function sendFacebookImage(accessToken: string, recipientId: string, imageUrl: string, caption?: string) {
+    try {
+      const messageData = {
+        access_token: accessToken,
+        recipient: { id: recipientId },
+        message: {
+          attachment: {
+            type: "image",
+            payload: {
+              url: imageUrl,
+              is_reusable: true
+            }
+          }
+        }
+      };
+
+      const response = await fetch("https://graph.facebook.com/v19.0/me/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(messageData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Facebook send image error:", errorData);
+      } else {
+        console.log(`Facebook image sent successfully: ${imageUrl}`);
+        
+        // Send caption as separate message if provided
+        if (caption) {
+          setTimeout(() => {
+            sendFacebookMessage(accessToken, recipientId, caption);
+          }, 500);
+        }
+      }
+    } catch (error) {
+      console.error("Error sending Facebook image:", error);
     }
   }
 
