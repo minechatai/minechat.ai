@@ -560,6 +560,17 @@ Response style: ${aiAssistant?.responseLength || "normal"} length responses.`;
     }
   });
 
+  app.get('/api/facebook-connection', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const connection = await storage.getFacebookConnection(userId);
+      res.json(connection || { isConnected: false });
+    } catch (error) {
+      console.error("Error fetching Facebook connection:", error);
+      res.status(500).json({ message: "Failed to fetch Facebook connection" });
+    }
+  });
+
   app.delete('/api/facebook/disconnect', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;

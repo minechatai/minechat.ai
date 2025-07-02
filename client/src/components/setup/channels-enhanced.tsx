@@ -57,10 +57,7 @@ function FacebookMessengerIntegration() {
 
   const mutation = useMutation({
     mutationFn: async (data: FacebookFormData) => {
-      return await apiRequest("/api/facebook/connect-real", {
-        method: "POST",
-        body: JSON.stringify(data),
-      });
+      return await apiRequest("POST", "/api/facebook/connect-real", data);
     },
     onSuccess: () => {
       toast({
@@ -80,9 +77,7 @@ function FacebookMessengerIntegration() {
 
   const disconnectMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest("/api/facebook/disconnect", {
-        method: "DELETE",
-      });
+      return await apiRequest("DELETE", "/api/facebook/disconnect");
     },
     onSuccess: () => {
       toast({
@@ -229,10 +224,7 @@ export default function ChannelsEnhanced() {
 
   const mutation = useMutation({
     mutationFn: async (data: ChannelFormData) => {
-      return apiRequest("/api/channels", {
-        method: "POST",
-        body: JSON.stringify(data),
-      });
+      return apiRequest("POST", "/api/channels", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/channels"] });
