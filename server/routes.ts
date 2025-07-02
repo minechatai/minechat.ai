@@ -467,8 +467,26 @@ Response style: ${aiAssistant?.responseLength || "normal"} length responses.`;
           aiMessage = `${introMsg} How can I help you today?`;
         } else if (lowerMessage.includes('price') || lowerMessage.includes('cost') || lowerMessage.includes('how much')) {
           if (products.length > 0) {
-            const productInfo = products.map(p => `${p.name}${p.price ? ` - $${p.price}` : ''}`).join(', ');
-            aiMessage = `Here are our products and pricing: ${productInfo}. Would you like more details about any of these?`;
+            // Create detailed pricing response
+            let pricingResponse = `Here's our pricing information:\n\n`;
+            products.forEach((product, index) => {
+              pricingResponse += `${index + 1}. ${product.name || 'Product'}\n`;
+              if (product.price) {
+                pricingResponse += `   💰 Price: $${product.price}\n`;
+              }
+              if (product.description) {
+                pricingResponse += `   📋 ${product.description}\n`;
+              }
+              if (product.discounts) {
+                pricingResponse += `   🎉 Special Offers: ${product.discounts}\n`;
+              }
+              if (product.paymentDetails) {
+                pricingResponse += `   💳 Payment: ${product.paymentDetails}\n`;
+              }
+              pricingResponse += `\n`;
+            });
+            pricingResponse += `Would you like more details about any specific product?`;
+            aiMessage = pricingResponse;
           } else {
             aiMessage = `I'd be happy to help with pricing information. Please contact us at ${business?.email || 'our sales team'} for detailed pricing.`;
           }
@@ -968,8 +986,26 @@ Remember: You represent ${business?.companyName || "this business"} and customer
           }
         } else if (lowerMessage.includes('price') || lowerMessage.includes('cost') || lowerMessage.includes('how much')) {
           if (products.length > 0) {
-            const productInfo = products.map(p => `${p.name}${p.price ? ` - $${p.price}` : ''}`).join(', ');
-            aiMessage = `Here are our products and pricing: ${productInfo}. Would you like more details?`;
+            // Create detailed pricing response
+            let pricingResponse = `Here's our pricing information:\n\n`;
+            products.forEach((product, index) => {
+              pricingResponse += `${index + 1}. ${product.name || 'Product'}\n`;
+              if (product.price) {
+                pricingResponse += `   💰 Price: $${product.price}\n`;
+              }
+              if (product.description) {
+                pricingResponse += `   📋 ${product.description}\n`;
+              }
+              if (product.discounts) {
+                pricingResponse += `   🎉 Special Offers: ${product.discounts}\n`;
+              }
+              if (product.paymentDetails) {
+                pricingResponse += `   💳 Payment: ${product.paymentDetails}\n`;
+              }
+              pricingResponse += `\n`;
+            });
+            pricingResponse += `Would you like more details about any specific product?`;
+            aiMessage = pricingResponse;
           } else {
             aiMessage = `I'd be happy to help with pricing. Please contact us at ${business?.email || 'our sales team'} for details.`;
           }

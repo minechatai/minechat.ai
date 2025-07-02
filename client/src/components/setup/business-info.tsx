@@ -42,6 +42,8 @@ export default function BusinessInfo() {
   const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [productImages, setProductImages] = useState<string[]>([]);
+  const [showProductForm, setShowProductForm] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
   const { toast } = useToast();
 
   const { data: business, isLoading: businessLoading } = useQuery({
@@ -204,6 +206,26 @@ export default function BusinessInfo() {
       toast({
         title: "Error",
         description: "Failed to delete document",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteProductMutation = useMutation({
+    mutationFn: async (productId: number) => {
+      await apiRequest("DELETE", `/api/products/${productId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      toast({
+        title: "Success",
+        description: "Product deleted successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to delete product",
         variant: "destructive",
       });
     },
@@ -474,7 +496,98 @@ export default function BusinessInfo() {
 
       {/* Products and Services Section */}
       <div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">Products and Services</h2>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-semibold text-gray-900">Products and Services</h2>
+        </div>
+
+        {/* Existing Products List */}
+        {Array.isArray(products) && products.length > 0 && (
+          <div className="space-y-4 mb-6">
+            <h3 className="text-lg font-medium text-gray-700">Your Products</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {products.map((product: any) => (
+                <Card key={product.id} className="overflow-hidden">
+                  <CardContent className="p-4">
+                    {product.imageUrl && (
+                      <div className="aspect-square mb-4 rounded-lg overflow-hidden bg-gray-100">
+                        <img 
+                          src={product.imageUrl} 
+                          alt={product.name || "Product"}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <h4 className="font-semibold text-gray-900 mb-2">{product.name || "Unnamed Product"}</h4>
+                    {product.price && (
+                      <p className="text-lg font-bold text-green-600 mb-2">${product.price}</p>
+                    )}
+                    {product.description && (
+                      <p className="text-sm text-gray-600 mb-3 line-clamp-3">{product.description}</p>
+                    )}
+                    <div className="flex justify-between items-center">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-blue-600 hover:text-blue-800"
+                        onClick={() => {
+                          setEditingProduct(product);
+                          setShowProductForm(true);
+                          // Pre-fill form with existing product data
+                          productForm.reset({
+                            name: product.name || "",
+                            description: product.description || "",
+                            price: product.price || "",
+                            faqs: product.faqs || "",
+                            paymentDetails: product.paymentDetails || "",
+                            discounts: product.discounts || "",
+                            policy: product.policy || "",
+                            additionalNotes: product.additionalNotes || "",
+                            thankYouMessage: product.thankYouMessage || "",
+                          });
+                          setProductImages(product.imageUrl ? [product.imageUrl] : []);
+                        }}
+                      >
+                        Edit
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-red-600 hover:text-red-800"
+                        onClick={() => {
+                          if (window.confirm('Are you sure you want to delete this product?')) {
+                            deleteProductMutation.mutate(product.id);
+                          }
+                        }}
+                        disabled={deleteProductMutation.isPending}
+                      >
+                        {deleteProductMutation.isPending ? "Deleting..." : "Delete"}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Add New Product Button */}
+        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center mb-6">
+          <Plus className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-700 mb-2">Add New Product</h3>
+          <p className="text-sm text-gray-500 mb-4">Create a new product or service for your business</p>
+          <Button 
+            type="button"
+            className="bg-primary text-white hover:bg-primary-dark"
+            onClick={() => {
+              // Clear form and reset images
+              productForm.reset();
+              setProductImages([]);
+            }}
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Add Product
+          </Button>
+        </div>
         
         <Form {...productForm}>
           <form onSubmit={productForm.handleSubmit(onProductSubmit)} className="space-y-6">
