@@ -661,6 +661,12 @@ Response style: ${aiAssistant?.responseLength || "normal"} length responses.`;
       const business = await storage.getBusiness(connection.userId);
       const products = await storage.getProducts(connection.userId);
 
+      console.log("Facebook AI Data Debug:");
+      console.log("Connection userId:", connection.userId);
+      console.log("AI Assistant:", JSON.stringify(aiAssistant, null, 2));
+      console.log("Business:", JSON.stringify(business, null, 2));
+      console.log("Products:", JSON.stringify(products, null, 2));
+
       // Create or get conversation
       let conversation = await storage.getConversationByFacebookSender(connection.userId, senderId);
       if (!conversation) {
