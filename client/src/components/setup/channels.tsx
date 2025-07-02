@@ -92,21 +92,48 @@ export default function Channels() {
     }
   }, [facebookConnection, facebookForm]);
 
-  const mutation = useMutation({
+  const channelMutation = useMutation({
     mutationFn: async (data: ChannelFormData) => {
       console.log('Saving channel data:', data);
+      await apiRequest("POST", "/api/channels", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/channels"] });
+      toast({
+        title: "Success",
+        description: "Channel settings saved successfully",
+      });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error as Error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to save channel settings",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const facebookMutation = useMutation({
+    mutationFn: async (data: FacebookFormData) => {
+      console.log('Saving Facebook connection:', data);
       
-      // Save Facebook connection if provided
       if (data.pageId && data.facebookAccessToken) {
-        console.log('Saving Facebook connection with Page ID and Access Token');
         await apiRequest("POST", "/api/facebook/connect-real", {
           pageId: data.pageId,
           accessToken: data.facebookAccessToken,
         });
       }
-      
-      // Save other channel settings
-      await apiRequest("POST", "/api/channels", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/channels"] });
