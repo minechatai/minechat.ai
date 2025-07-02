@@ -84,19 +84,19 @@ export default function BusinessInfo() {
 
   // Update form when data is loaded
   useEffect(() => {
-    if (business) {
+    if (business && typeof business === 'object' && 'companyName' in business) {
       businessForm.reset({
-        companyName: business.companyName || "",
-        phoneNumber: business.phoneNumber || "",
-        address: business.address || "",
-        email: business.email || "",
-        companyStory: business.companyStory || "",
+        companyName: (business as any).companyName || "",
+        phoneNumber: (business as any).phoneNumber || "",
+        address: (business as any).address || "",
+        email: (business as any).email || "",
+        companyStory: (business as any).companyStory || "",
       });
     }
   }, [business, businessForm]);
 
   useEffect(() => {
-    if (documents) {
+    if (documents && Array.isArray(documents)) {
       setUploadedFiles(documents);
     }
   }, [documents]);
@@ -189,7 +189,7 @@ export default function BusinessInfo() {
     const files = event.target.files;
     if (!files) return;
 
-    for (const file of files) {
+    for (const file of Array.from(files)) {
       const formData = new FormData();
       formData.append('file', file);
 
