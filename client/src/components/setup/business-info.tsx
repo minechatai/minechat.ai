@@ -113,28 +113,7 @@ export default function BusinessInfo() {
     }
   }, [business, businessForm]);
 
-  // Update product form when data is loaded (use oldest product for main form)
-  useEffect(() => {
-    if (Array.isArray(products) && products.length > 0) {
-      // Use the oldest product (last in DESC order) for the main form
-      const mainProduct = products[products.length - 1] as any;
-      productForm.reset({
-        name: mainProduct.name || "",
-        description: mainProduct.description || "",
-        price: mainProduct.price || "",
-        faqs: mainProduct.faqs || "",
-        paymentDetails: mainProduct.paymentDetails || "",
-        discounts: mainProduct.discounts || "",
-        policy: mainProduct.policy || "",
-        additionalNotes: mainProduct.additionalNotes || "",
-        thankYouMessage: mainProduct.thankYouMessage || "",
-      });
-      
-      if (mainProduct.imageUrl) {
-        setProductImages([mainProduct.imageUrl]);
-      }
-    }
-  }, [products, productForm]);
+  // Don't auto-load any product into the main form - let it be empty for new products
 
   useEffect(() => {
     if (documents && Array.isArray(documents)) {
@@ -175,21 +154,18 @@ export default function BusinessInfo() {
 
   const productMutation = useMutation({
     mutationFn: async (data: ProductFormData) => {
-      if (Array.isArray(products) && products.length > 0) {
-        // Update the main (oldest) product
-        const mainProduct = products[products.length - 1] as any;
-        return await apiRequest("PATCH", `/api/products/${mainProduct.id}`, data);
-      } else {
-        // Create new product
-        return await apiRequest("POST", "/api/products", data);
-      }
+      // Always create new product since main form is for adding new products
+      return await apiRequest("POST", "/api/products", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       toast({
         title: "Success",
-        description: "Product information saved successfully",
+        description: "Product added successfully",
       });
+      // Reset form for next product
+      productForm.reset();
+      setProductImages([]);
     },
     onError: (error) => {
       if (isUnauthorizedError(error as Error)) {
@@ -621,9 +597,44 @@ export default function BusinessInfo() {
         </Form>
       </div>
 
-      {/* Products and Services Section */}
+      {/* Existing Products Section */}
+      {Array.isArray(products) && products.length > 0 && (
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">Your Products</h2>
+          <div className="space-y-4 mb-8">
+            {products.map((product: any) => (
+              <div key={product.id} className="border border-gray-200 rounded-lg p-6 bg-gray-50">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      {product.name || "Unnamed Product"}
+                    </h3>
+                    {product.description && (
+                      <p className="text-gray-600 mb-3">{product.description}</p>
+                    )}
+                    {product.price && (
+                      <p className="text-xl font-bold text-green-600">${product.price}</p>
+                    )}
+                  </div>
+                  {product.imageUrl && (
+                    <div className="ml-6 w-24 h-24 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                      <img 
+                        src={product.imageUrl} 
+                        alt={product.name || "Product"}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Add New Product Section */}
       <div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">Products and Services</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-6">Add New Product</h2>
         
         <Form {...productForm}>
           <form onSubmit={productForm.handleSubmit(onProductSubmit)} className="space-y-6">
@@ -714,38 +725,7 @@ export default function BusinessInfo() {
               )}
             </div>
 
-            {/* Display Additional Products */}
-            {Array.isArray(products) && products.length > 1 && (
-              <div className="mt-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Additional Products</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {products.slice(0, -1).map((product: any) => (
-                    <div key={product.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-gray-900 mb-1">{product.name || "Unnamed Product"}</h4>
-                          {product.description && (
-                            <p className="text-sm text-gray-600 mb-2">{product.description}</p>
-                          )}
-                          {product.price && (
-                            <p className="text-lg font-bold text-green-600">${product.price}</p>
-                          )}
-                        </div>
-                        {product.imageUrl && (
-                          <div className="ml-4 w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-                            <img 
-                              src={product.imageUrl} 
-                              alt={product.name || "Product"}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+
 
             {/* Add Another Product Button */}
             {!showAddProductForm && (
