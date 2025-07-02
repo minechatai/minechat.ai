@@ -867,6 +867,9 @@ Response style: ${aiAssistant?.responseLength || "normal"} length responses.`;
         });
       }
 
+      // Get conversation history for context
+      const messages = await storage.getMessages(conversation.id);
+      
       // Save user message
       await storage.createMessage({
         conversationId: conversation.id,
@@ -924,7 +927,7 @@ Response style: ${aiAssistant?.responseLength || "normal"} length responses.`;
             });
           }
 
-          const systemPrompt = `You are ${aiAssistant?.name || "an AI assistant"} representing ${business?.companyName || "Minechat AI"}. You have access to comprehensive business knowledge and must prioritize information from your knowledge base.
+          const systemPrompt = `You are ${aiAssistant?.name || "an AI assistant"} representing ${business?.companyName || "this business"}. You help customers with questions about our products and services.
 
 COMPLETE KNOWLEDGE BASE:
 ${knowledgeBase}
@@ -933,8 +936,10 @@ CRITICAL INSTRUCTIONS:
 1. ALWAYS search through the knowledge base first before responding
 2. Quote specific information from the knowledge base when available
 3. For pricing questions: Use exact prices from the "PRODUCTS/SERVICES" section
-4. For discount questions: Use exact text from "Discounts/Offers" fields
+4. For product questions: Provide details from product descriptions
 5. For FAQ questions: Use the detailed FAQ content provided
+6. NEVER mention "Minechat AI" unless that's the actual business name
+7. If someone asks about products, describe ALL available products with their prices
 6. For business questions: Use information from "BUSINESS INFORMATION" section
 7. Be specific and detailed - customers want real information, not generic responses
 8. If knowledge base has the answer, use it completely rather than giving partial information
@@ -953,9 +958,27 @@ ${business?.phoneNumber ? `Phone: ${business.phoneNumber}` : ""}
 Remember: You represent ${business?.companyName || "this business"} and customers expect accurate, specific information from the knowledge base.`;
 
           console.log("=== FACEBOOK AI DEBUG ===");
+          // Build conversation history for context
+          const conversationMessages = [];
+          conversationMessages.push({ role: "system", content: systemPrompt });
+          
+          // Add recent conversation history (last 10 messages)
+          const recentMessages = messages.slice(-10);
+          recentMessages.forEach(msg => {
+            if (msg.senderType === "user") {
+              conversationMessages.push({ role: "user", content: msg.content });
+            } else if (msg.senderType === "ai") {
+              conversationMessages.push({ role: "assistant", content: msg.content });
+            }
+          });
+          
+          // Add current user message
+          conversationMessages.push({ role: "user", content: messageText });
+
           console.log("System prompt length:", systemPrompt.length);
           console.log("Knowledge base content:", knowledgeBase);
           console.log("User message:", messageText);
+          console.log("Conversation history length:", conversationMessages.length);
           console.log("=========================");
 
           const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -966,10 +989,7 @@ Remember: You represent ${business?.companyName || "this business"} and customer
             },
             body: JSON.stringify({
               model: "gpt-3.5-turbo",
-              messages: [
-                { role: "system", content: systemPrompt },
-                { role: "user", content: `Please answer this question using the knowledge base provided in the system prompt: ${messageText}` }
-              ],
+              messages: conversationMessages,
               max_tokens: 500,
               temperature: 0.3
             })
@@ -1093,19 +1113,29 @@ Remember: You represent ${business?.companyName || "this business"} and customer
 
       // Send product photos if relevant and available
       if (shouldSendPhoto && products.length > 0) {
-        const productWithImage = products.find(p => p.imageUrl);
-        if (productWithImage && productWithImage.imageUrl) {
+        const productsWithImages = products.filter(p => p.imageUrl);
+        if (productsWithImages.length > 0) {
           // Get the domain from environment variables
           const domain = process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000';
           const protocol = domain.includes('localhost') ? 'http' : 'https';
           
-          // Convert relative URL to absolute URL for Facebook
-          const fullImageUrl = productWithImage.imageUrl.startsWith('http') 
-            ? productWithImage.imageUrl 
-            : `${protocol}://${domain}${productWithImage.imageUrl}`;
-          
-          console.log(`Attempting to send image: ${fullImageUrl}`);
-          await sendFacebookImage(connection.accessToken, senderId, fullImageUrl, productWithImage.name || "Our Product");
+          // Send images for all products that have them
+          for (let i = 0; i < productsWithImages.length; i++) {
+            const product = productsWithImages[i];
+            const fullImageUrl = product.imageUrl.startsWith('http') 
+              ? product.imageUrl 
+              : `${protocol}://${domain}${product.imageUrl}`;
+            
+            console.log(`Attempting to send image ${i + 1}: ${fullImageUrl}`);
+            
+            // Add a small delay between images to avoid rate limiting
+            if (i > 0) {
+              await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+            
+            const caption = `${product.name || "Our Product"}${product.price ? ` - $${product.price}` : ""}`;
+            await sendFacebookImage(connection.accessToken, senderId, fullImageUrl, caption);
+          }
         }
       }
 
