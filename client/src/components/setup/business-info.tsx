@@ -266,6 +266,27 @@ export default function BusinessInfo() {
     },
   });
 
+  const deleteProductMutation = useMutation({
+    mutationFn: async (productId: number) => {
+      return await apiRequest("DELETE", `/api/products/${productId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      toast({
+        title: "Success",
+        description: "Product deleted successfully",
+      });
+    },
+    onError: (error) => {
+      console.error("Error deleting product:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete product",
+        variant: "destructive",
+      });
+    },
+  });
+
   const deleteDocumentMutation = useMutation({
     mutationFn: async (documentId: number) => {
       await apiRequest("DELETE", `/api/documents/${documentId}`);
@@ -481,6 +502,12 @@ export default function BusinessInfo() {
         imageUrl: editProductImages[0] || "",
       };
       updateProductMutation.mutate({ id: editingProductId, data: submissionData });
+    }
+  };
+
+  const handleDeleteProduct = (productId: number) => {
+    if (confirm("Are you sure you want to delete this product?")) {
+      deleteProductMutation.mutate(productId);
     }
   };
 
@@ -748,14 +775,24 @@ export default function BusinessInfo() {
                       {product.price && (
                         <p className="text-xl font-bold text-green-600">${product.price}</p>
                       )}
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="mt-3"
-                        onClick={() => startEditingProduct(product)}
-                      >
-                        Edit Product
-                      </Button>
+                      <div className="flex gap-2 mt-3">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => startEditingProduct(product)}
+                        >
+                          Edit Product
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => handleDeleteProduct(product.id)}
+                          disabled={deleteProductMutation.isPending}
+                        >
+                          {deleteProductMutation.isPending ? "Deleting..." : "Delete"}
+                        </Button>
+                      </div>
                     </div>
                     {product.imageUrl && (
                       <div className="ml-6 w-24 h-24 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
