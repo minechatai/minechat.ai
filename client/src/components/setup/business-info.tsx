@@ -103,29 +103,7 @@ export default function BusinessInfo() {
     }
   }, [documents]);
 
-  // Load existing product data into form
-  useEffect(() => {
-    if (products && Array.isArray(products) && products.length > 0) {
-      const existingProduct = products[0]; // Load the first product
-      productForm.reset({
-        name: existingProduct.name || "",
-        description: existingProduct.description || "",
-        price: existingProduct.price || "",
-        faqs: existingProduct.faqs || "",
-        paymentDetails: existingProduct.paymentDetails || "",
-        discounts: existingProduct.discounts || "",
-        policy: existingProduct.policy || "",
-        additionalNotes: existingProduct.additionalNotes || "",
-        thankYouMessage: existingProduct.thankYouMessage || "",
-        imageUrl: existingProduct.imageUrl || "",
-      });
-      
-      // Load product images if they exist
-      if (existingProduct.imageUrl) {
-        setProductImages([existingProduct.imageUrl]);
-      }
-    }
-  }, [products, productForm]);
+  // Don't auto-load products into form - let user explicitly choose to add/edit
 
   const businessMutation = useMutation({
     mutationFn: async (data: BusinessFormData) => {
@@ -533,6 +511,24 @@ export default function BusinessInfo() {
                 </FormItem>
               )}
             />
+
+            <div className="flex justify-end space-x-3 pt-6">
+              <Button 
+                type="button" 
+                variant="outline"
+                className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                onClick={() => businessForm.reset()}
+              >
+                Reset
+              </Button>
+              <Button 
+                type="submit" 
+                className="bg-primary text-white hover:bg-primary-dark px-6"
+                disabled={businessMutation.isPending}
+              >
+                {businessMutation.isPending ? "Saving..." : "Save Business Information"}
+              </Button>
+            </div>
           </form>
         </Form>
       </div>
@@ -613,26 +609,28 @@ export default function BusinessInfo() {
           </div>
         )}
 
-        {/* Add New Product Button */}
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center mb-6">
-          <Plus className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-700 mb-2">Add New Product</h3>
-          <p className="text-sm text-gray-500 mb-4">Create a new product or service for your business</p>
-          <Button 
-            type="button"
-            className="bg-primary text-white hover:bg-primary-dark"
-            onClick={() => {
-              // Clear form and reset images
-              productForm.reset();
-              setProductImages([]);
-              setEditingProduct(null);
-              setShowProductForm(true);
-            }}
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Product
-          </Button>
-        </div>
+        {/* Add New Product Button - only show when not adding/editing */}
+        {!showProductForm && (
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center mb-6">
+            <Plus className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-700 mb-2">Add New Product</h3>
+            <p className="text-sm text-gray-500 mb-4">Create a new product or service for your business</p>
+            <Button 
+              type="button"
+              className="bg-primary text-white hover:bg-primary-dark"
+              onClick={() => {
+                // Clear form and reset images
+                productForm.reset();
+                setProductImages([]);
+                setEditingProduct(null);
+                setShowProductForm(true);
+              }}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Product
+            </Button>
+          </div>
+        )}
         
         {/* Product Form - Only show when adding/editing */}
         {showProductForm && (
