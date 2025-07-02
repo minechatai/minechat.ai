@@ -722,6 +722,139 @@ export default function BusinessInfo() {
               </div>
             )}
 
+            {/* New Product Form - appears right here */}
+            {showAddProductForm && (
+              <div className="border border-gray-200 rounded-lg p-6 bg-gray-50 mt-4 mb-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900">Add New Product</h3>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      setShowAddProductForm(false);
+                      newProductForm.reset();
+                      setNewProductImages([]);
+                    }}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+                
+                <Form {...newProductForm}>
+                  <form onSubmit={newProductForm.handleSubmit(onNewProductSubmit)} className="space-y-6">
+                    <FormField
+                      control={newProductForm.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-gray-700">Product Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter Product Name" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={newProductForm.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-gray-700">Description</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Enter Product Description" 
+                              rows={3}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={newProductForm.control}
+                      name="price"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-gray-700">Price</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter Price" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* Image Upload Section for New Product */}
+                    <div>
+                      <FormLabel className="text-sm font-medium text-gray-700 mb-3 block">Upload Product Images</FormLabel>
+                      <div className="grid grid-cols-4 gap-4">
+                        {newProductImages.map((image, index) => (
+                          <div key={index} className="relative aspect-square">
+                            <img 
+                              src={image} 
+                              alt={`Product ${index + 1}`}
+                              className="w-full h-full object-cover rounded-lg border border-gray-200"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setNewProductImages(prev => prev.filter((_, i) => i !== index))}
+                              className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                        
+                        {newProductImages.length < 4 && (
+                          <label htmlFor="new-product-image-upload" className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 transition-colors">
+                            <Camera className="w-6 h-6 text-gray-400 mb-1" />
+                            <span className="text-xs text-gray-500">Add Image</span>
+                            <input
+                              id="new-product-image-upload"
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={handleNewProductImageUpload}
+                              disabled={uploadingNewImage}
+                            />
+                          </label>
+                        )}
+                      </div>
+                      {uploadingNewImage && (
+                        <p className="text-sm text-gray-500 mt-2">Uploading image...</p>
+                      )}
+                    </div>
+
+                    <div className="flex justify-end space-x-3 pt-4">
+                      <Button 
+                        type="button" 
+                        variant="outline"
+                        className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                        onClick={() => {
+                          setShowAddProductForm(false);
+                          newProductForm.reset();
+                          setNewProductImages([]);
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button 
+                        type="submit" 
+                        className="bg-primary text-white hover:bg-primary-dark px-6"
+                        disabled={createNewProductMutation.isPending}
+                      >
+                        {createNewProductMutation.isPending ? "Creating..." : "Add Product"}
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </div>
+            )}
+
             <FormField
               control={productForm.control}
               name="faqs"
@@ -851,138 +984,7 @@ export default function BusinessInfo() {
         </Form>
       </div>
 
-      {/* New Product Form */}
-      {showAddProductForm && (
-        <div className="border border-gray-200 rounded-lg p-6 bg-gray-50 mt-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-900">Add New Product</h3>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => {
-                setShowAddProductForm(false);
-                newProductForm.reset();
-                setNewProductImages([]);
-              }}
-            >
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
-          
-          <Form {...newProductForm}>
-            <form onSubmit={newProductForm.handleSubmit(onNewProductSubmit)} className="space-y-6">
-              <FormField
-                control={newProductForm.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-medium text-gray-700">Product Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter Product Name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
-              <FormField
-                control={newProductForm.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-medium text-gray-700">Description</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Enter Product Description" 
-                        rows={3}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={newProductForm.control}
-                name="price"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-medium text-gray-700">Price</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter Price" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Image Upload Section for New Product */}
-              <div>
-                <FormLabel className="text-sm font-medium text-gray-700 mb-3 block">Upload Product Images</FormLabel>
-                <div className="grid grid-cols-4 gap-4">
-                  {newProductImages.map((image, index) => (
-                    <div key={index} className="relative aspect-square">
-                      <img 
-                        src={image} 
-                        alt={`Product ${index + 1}`}
-                        className="w-full h-full object-cover rounded-lg border border-gray-200"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setNewProductImages(prev => prev.filter((_, i) => i !== index))}
-                        className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ))}
-                  
-                  {newProductImages.length < 4 && (
-                    <label htmlFor="new-product-image-upload" className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 transition-colors">
-                      <Camera className="w-6 h-6 text-gray-400 mb-1" />
-                      <span className="text-xs text-gray-500">Add Image</span>
-                      <input
-                        id="new-product-image-upload"
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleNewProductImageUpload}
-                        disabled={uploadingNewImage}
-                      />
-                    </label>
-                  )}
-                </div>
-                {uploadingNewImage && (
-                  <p className="text-sm text-gray-500 mt-2">Uploading image...</p>
-                )}
-              </div>
-
-              <div className="flex justify-end space-x-3 pt-4">
-                <Button 
-                  type="button" 
-                  variant="outline"
-                  className="border-gray-300 text-gray-700 hover:bg-gray-50"
-                  onClick={() => {
-                    setShowAddProductForm(false);
-                    newProductForm.reset();
-                    setNewProductImages([]);
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  type="submit" 
-                  className="bg-primary text-white hover:bg-primary-dark px-6"
-                  disabled={createNewProductMutation.isPending}
-                >
-                  {createNewProductMutation.isPending ? "Creating..." : "Add Product"}
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </div>
-      )}
     </div>
   );
 }
