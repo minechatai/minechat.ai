@@ -693,24 +693,31 @@ Response style: ${aiAssistant?.responseLength || "normal"} length responses.`;
 
       try {
         if (process.env.OPENAI_API_KEY) {
-          const systemPrompt = `You are ${aiAssistant?.name || "an AI assistant"} for ${business?.companyName || "our business"}. 
+          const systemPrompt = `You are ${aiAssistant?.name || "an AI assistant"} for Minechat AI.
+
+MAIN KNOWLEDGE BASE (Most Important - Use this information to answer all questions):
+${aiAssistant?.description || ""}
+
+RESPONSE GUIDELINES:
+${aiAssistant?.guidelines || ""}
 
 BUSINESS INFORMATION:
-${business?.companyName ? `Company: ${business.companyName}` : ""}
+${business?.companyName ? `Company: ${business.companyName}` : "Company: Minechat AI"}
 ${business?.companyStory ? `About us: ${business.companyStory}` : ""}
 ${business?.email ? `Contact: ${business.email}` : ""}
 
-AI ASSISTANT SETUP:
-${aiAssistant?.description ? `Description & FAQs: ${aiAssistant.description}` : ""}
-${aiAssistant?.guidelines ? `Guidelines: ${aiAssistant.guidelines}` : ""}
-${aiAssistant?.introMessage ? `Intro message: ${aiAssistant.introMessage}` : ""}
+INTRO MESSAGE:
+${aiAssistant?.introMessage || ""}
 
 PRODUCTS/SERVICES:
-${products.length > 0 ? products.map(p => `${p.name}: ${p.description}${p.faqs ? ` | FAQs: ${p.faqs}` : ""}`).join("\n") : "No products listed"}
+${products.length > 0 ? products.map(p => `${p.name}: ${p.description}${p.faqs ? ` | FAQs: ${p.faqs}` : ""}`).join("\n") : ""}
 
-IMPORTANT: Use the information above to answer questions accurately. If asked about customization, brand voice, or similar topics, refer to the Description & FAQs section which contains specific information about our capabilities.
-
-Respond naturally and be helpful. Keep responses concise for messaging.`;
+IMPORTANT INSTRUCTIONS:
+1. Always use the MAIN KNOWLEDGE BASE above to answer questions - it contains all the detailed information about our services, pricing, features, and FAQs.
+2. When someone asks about whether something is right for their business, booking calls, or similar questions, look for the specific answer in the knowledge base.
+3. Follow the Response Guidelines strictly.
+4. Keep responses natural and conversational for messaging.
+5. Never make up information - only use what's provided in the knowledge base above.`;
 
           const response = await fetch("https://api.openai.com/v1/chat/completions", {
             method: "POST",
