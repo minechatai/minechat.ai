@@ -15,11 +15,19 @@ import { Globe, MessageCircle, Instagram, Send, MessageSquare, Slack, Hash, More
 import { FaFacebookMessenger, FaTelegram, FaWhatsapp, FaViber, FaDiscord } from "react-icons/fa";
 
 const channelSchema = z.object({
+  websiteName: z.string().optional(),
+  websiteUrl: z.string().optional(),
+  primaryColor: z.string().optional(),
+  isActive: z.boolean().optional(),
+});
+
+const facebookSchema = z.object({
   pageId: z.string().optional(),
   facebookAccessToken: z.string().optional(),
 });
 
 type ChannelFormData = z.infer<typeof channelSchema>;
+type FacebookFormData = z.infer<typeof facebookSchema>;
 
 const channelIcons = [
   { name: "Website", icon: Globe, color: "text-blue-600", bgColor: "bg-blue-50", borderColor: "border-blue-200" },
@@ -42,8 +50,22 @@ export default function Channels() {
     queryKey: ["/api/channels"],
   });
 
-  const form = useForm<ChannelFormData>({
+  const { data: facebookConnection } = useQuery({
+    queryKey: ["/api/facebook-connection"],
+  });
+
+  const channelForm = useForm<ChannelFormData>({
     resolver: zodResolver(channelSchema),
+    defaultValues: {
+      websiteName: "",
+      websiteUrl: "",
+      primaryColor: "#A53860",
+      isActive: true,
+    },
+  });
+
+  const facebookForm = useForm<FacebookFormData>({
+    resolver: zodResolver(facebookSchema),
     defaultValues: {
       pageId: "",
       facebookAccessToken: "",
@@ -52,12 +74,23 @@ export default function Channels() {
 
   useEffect(() => {
     if (channel) {
-      form.reset({
-        pageId: channel.pageId || "",
-        facebookAccessToken: channel.facebookAccessToken || "",
+      channelForm.reset({
+        websiteName: channel.websiteName || "",
+        websiteUrl: channel.websiteUrl || "",
+        primaryColor: channel.primaryColor || "#A53860",
+        isActive: channel.isActive ?? true,
       });
     }
-  }, [channel, form]);
+  }, [channel, channelForm]);
+
+  useEffect(() => {
+    if (facebookConnection) {
+      facebookForm.reset({
+        pageId: facebookConnection.facebookPageId || "",
+        facebookAccessToken: facebookConnection.accessToken || "",
+      });
+    }
+  }, [facebookConnection, facebookForm]);
 
   const mutation = useMutation({
     mutationFn: async (data: ChannelFormData) => {
