@@ -143,16 +143,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       });
       
-      // Clean price field - remove commas and handle empty values
+      // Clean price field - remove commas, dollar signs and handle empty values
       if (cleanedData.price && cleanedData.price !== '') {
-        const cleanPrice = cleanedData.price.toString().replace(/,/g, '');
+        const cleanPrice = cleanedData.price.toString().replace(/[$,]/g, '');
         cleanedData.price = cleanPrice;
       } else {
         cleanedData.price = null;
       }
       
       const validatedData = insertProductSchema.parse(cleanedData);
-      const product = await storage.createProduct(userId, validatedData);
+      const product = await storage.createProduct(userId, { ...validatedData, userId });
       res.json(product);
     } catch (error) {
       console.error("Error creating product:", error);
