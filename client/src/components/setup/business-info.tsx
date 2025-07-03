@@ -110,7 +110,9 @@ export default function BusinessInfo() {
   // Update form when data is loaded
   useEffect(() => {
     if (business && typeof business === 'object' && 'companyName' in business) {
-      console.log("Loading business data:", business);
+      console.log("Loading business data for forms:", business);
+      
+      // Update business form
       businessForm.reset({
         companyName: (business as any).companyName || "",
         phoneNumber: (business as any).phoneNumber || "",
@@ -123,16 +125,13 @@ export default function BusinessInfo() {
         additionalNotes: (business as any).additionalNotes || "",
         thankYouMessage: (business as any).thankYouMessage || "",
       });
-    }
-  }, [business, businessForm]);
-
-  useEffect(() => {
-    if (business && typeof business === 'object' && 'faqs' in business) {
+      
+      // Update FAQ form
       faqForm.reset({
         faqs: (business as any).faqs || "",
       });
     }
-  }, [business, faqForm]);
+  }, [business, businessForm, faqForm]);
 
   useEffect(() => {
     if (documents && Array.isArray(documents)) {
