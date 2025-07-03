@@ -623,7 +623,14 @@ export default function BusinessInfo() {
                         {/* Flag and dropdown section */}
                         <div className="flex items-center bg-gray-50 border-r border-gray-300">
                           <div className="px-3 py-2 flex items-center gap-2">
-                            <span className="text-xl emoji-flag">
+                            <span 
+                              className="text-xl" 
+                              style={{ 
+                                fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Android Emoji", sans-serif',
+                                fontVariantEmoji: 'emoji'
+                              }}
+                              title={`${selectedCountry.name} flag: ${selectedCountry.flag}`}
+                            >
                               {selectedCountry.flag}
                             </span>
                           </div>
@@ -647,7 +654,13 @@ export default function BusinessInfo() {
                               {countries.map((country) => (
                                 <SelectItem key={country.code} value={country.phoneCode}>
                                   <div className="flex items-center gap-3 w-full">
-                                    <span className="text-lg leading-none emoji-flag">
+                                    <span 
+                                      className="text-lg leading-none"
+                                      style={{ 
+                                        fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Android Emoji", sans-serif',
+                                        fontVariantEmoji: 'emoji'
+                                      }}
+                                    >
                                       {country.flag}
                                     </span>
                                     <span className="font-medium text-sm min-w-[50px]">{country.phoneCode}</span>
