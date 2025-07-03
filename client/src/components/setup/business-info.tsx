@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { CloudUpload, FileText, X, Plus, Camera } from "lucide-react";
+import { countries } from "@/data/countries";
 
 const businessSchema = z.object({
   companyName: z.string().optional(),
@@ -48,6 +49,7 @@ export default function BusinessInfo() {
   const [editingProductId, setEditingProductId] = useState<number | null>(null);
   const [editProductImages, setEditProductImages] = useState<string[]>([]);
   const [uploadingEditImage, setUploadingEditImage] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState(countries.find(c => c.phoneCode === "+1") || countries[0]);
   const { toast } = useToast();
 
   const { data: business, isLoading: businessLoading } = useQuery({
@@ -121,9 +123,31 @@ export default function BusinessInfo() {
   // Update business form when data is loaded
   useEffect(() => {
     if (business && typeof business === 'object' && 'companyName' in business) {
+      const phoneNumber = (business as any).phoneNumber || "";
+      
+      // Try to parse existing phone number to extract country code
+      if (phoneNumber) {
+        const foundCountry = countries.find(country => 
+          phoneNumber.startsWith(country.phoneCode)
+        );
+        if (foundCountry) {
+          setSelectedCountry(foundCountry);
+          // Extract the number part without the country code
+          const numberPart = phoneNumber.replace(foundCountry.phoneCode, "").trim();
+          businessForm.reset({
+            companyName: (business as any).companyName || "",
+            phoneNumber: numberPart,
+            address: (business as any).address || "",
+            email: (business as any).email || "",
+            companyStory: (business as any).companyStory || "",
+          });
+          return;
+        }
+      }
+      
       businessForm.reset({
         companyName: (business as any).companyName || "",
-        phoneNumber: (business as any).phoneNumber || "",
+        phoneNumber: phoneNumber,
         address: (business as any).address || "",
         email: (business as any).email || "",
         companyStory: (business as any).companyStory || "",
@@ -449,7 +473,12 @@ export default function BusinessInfo() {
   };
 
   const onBusinessSubmit = (data: BusinessFormData) => {
-    businessMutation.mutate(data);
+    // Combine country code with phone number if both exist
+    const formattedData = {
+      ...data,
+      phoneNumber: data.phoneNumber ? `${selectedCountry.phoneCode} ${data.phoneNumber}` : data.phoneNumber
+    };
+    businessMutation.mutate(formattedData);
   };
 
   const onProductSubmit = (data: ProductFormData) => {
@@ -607,18 +636,35 @@ export default function BusinessInfo() {
                     <FormLabel className="text-sm font-medium text-gray-700">Phone Number</FormLabel>
                     <FormControl>
                       <div className="flex">
-                        <Select defaultValue="+44">
-                          <SelectTrigger className="w-20 rounded-r-none">
-                            <SelectValue />
+                        <Select 
+                          value={selectedCountry.phoneCode} 
+                          onValueChange={(value) => {
+                            const country = countries.find(c => c.phoneCode === value);
+                            if (country) setSelectedCountry(country);
+                          }}
+                        >
+                          <SelectTrigger className="w-32 rounded-r-none">
+                            <SelectValue>
+                              <span className="flex items-center gap-2">
+                                <span>{selectedCountry.flag}</span>
+                                <span>{selectedCountry.phoneCode}</span>
+                              </span>
+                            </SelectValue>
                           </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="+44">🇬🇧 +44</SelectItem>
-                            <SelectItem value="+1">🇺🇸 +1</SelectItem>
-                            <SelectItem value="+880">🇧🇩 +880</SelectItem>
+                          <SelectContent className="max-h-60">
+                            {countries.map((country) => (
+                              <SelectItem key={country.code} value={country.phoneCode}>
+                                <div className="flex items-center gap-2">
+                                  <span>{country.flag}</span>
+                                  <span>{country.phoneCode}</span>
+                                  <span className="text-sm text-gray-500">{country.name}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                         <Input 
-                          placeholder="XXXX XXX XXXX" 
+                          placeholder="Enter phone number" 
                           className="rounded-l-none"
                           {...field} 
                         />
