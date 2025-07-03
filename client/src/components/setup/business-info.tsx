@@ -64,6 +64,22 @@ export default function BusinessInfo() {
     queryKey: ["/api/products"],
   });
 
+  // Debug log for products data
+  useEffect(() => {
+    if (products && products.length > 0) {
+      console.log("Products loaded from API:", products);
+      products.forEach((product, index) => {
+        console.log(`Product ${index + 1}:`, {
+          id: product.id,
+          name: product.name,
+          faqs: product.faqs,
+          discounts: product.discounts,
+          paymentDetails: product.paymentDetails
+        });
+      });
+    }
+  }, [products]);
+
   const businessForm = useForm<BusinessFormData>({
     resolver: zodResolver(businessSchema),
     defaultValues: {
@@ -487,11 +503,12 @@ export default function BusinessInfo() {
   };
 
   const startEditingProduct = (product: any) => {
+    console.log("Editing product data:", product);
     setEditingProductId(product.id);
     editProductForm.reset({
       name: product.name || "",
       description: product.description || "",
-      price: product.price || "",
+      price: product.price?.toString() || "",
       faqs: product.faqs || "",
       paymentDetails: product.paymentDetails || "",
       discounts: product.discounts || "",
