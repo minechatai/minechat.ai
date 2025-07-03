@@ -80,12 +80,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/business', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      console.log("Business save request - userId:", userId);
-      console.log("Business save request - body:", req.body);
+      console.log("📝 Business save request - userId:", userId);
+      console.log("📝 Business save request - body:", req.body);
+      console.log("📝 Business save request - FAQs specifically:", req.body.faqs);
       const validatedData = insertBusinessSchema.parse(req.body);
-      console.log("Business save - validated data:", validatedData);
+      console.log("📝 Business save - validated data:", validatedData);
+      console.log("📝 Business save - validated FAQs:", validatedData.faqs);
       const business = await storage.upsertBusiness(userId, { ...validatedData, userId });
-      console.log("Business save - result:", business);
+      console.log("📝 Business save - result:", business);
+      console.log("📝 Business save - result FAQs:", business.faqs);
       res.json(business);
     } catch (error) {
       console.error("Error saving business:", error);
