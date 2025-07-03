@@ -20,7 +20,6 @@ const businessSchema = z.object({
   address: z.string().optional(),
   email: z.string().optional(),
   companyStory: z.string().optional(),
-  faqs: z.string().optional(),
   paymentDetails: z.string().optional(),
   discounts: z.string().optional(),
   policy: z.string().optional(),
@@ -41,8 +40,13 @@ const productSchema = z.object({
   imageUrl: z.string().optional(),
 });
 
+const faqSchema = z.object({
+  faqs: z.string().optional(),
+});
+
 type BusinessFormData = z.infer<typeof businessSchema>;
 type ProductFormData = z.infer<typeof productSchema>;
+type FaqFormData = z.infer<typeof faqSchema>;
 
 export default function BusinessInfo() {
   const [currentSubSection, setCurrentSubSection] = useState("business-information");
@@ -73,7 +77,6 @@ export default function BusinessInfo() {
       address: "",
       email: "",
       companyStory: "",
-      faqs: "",
       paymentDetails: "",
       discounts: "",
       policy: "",
@@ -97,6 +100,13 @@ export default function BusinessInfo() {
     },
   });
 
+  const faqForm = useForm<FaqFormData>({
+    resolver: zodResolver(faqSchema),
+    defaultValues: {
+      faqs: "",
+    },
+  });
+
   // Update form when data is loaded
   useEffect(() => {
     if (business && typeof business === 'object' && 'companyName' in business) {
@@ -107,7 +117,6 @@ export default function BusinessInfo() {
         address: (business as any).address || "",
         email: (business as any).email || "",
         companyStory: (business as any).companyStory || "",
-        faqs: (business as any).faqs || "",
         paymentDetails: (business as any).paymentDetails || "",
         discounts: (business as any).discounts || "",
         policy: (business as any).policy || "",
@@ -116,6 +125,14 @@ export default function BusinessInfo() {
       });
     }
   }, [business, businessForm]);
+
+  useEffect(() => {
+    if (business && typeof business === 'object' && 'faqs' in business) {
+      faqForm.reset({
+        faqs: (business as any).faqs || "",
+      });
+    }
+  }, [business, faqForm]);
 
   useEffect(() => {
     if (documents && Array.isArray(documents)) {
@@ -151,6 +168,37 @@ export default function BusinessInfo() {
       toast({
         title: "Error",
         description: "Failed to save business information",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const faqMutation = useMutation({
+    mutationFn: async (data: FaqFormData) => {
+      await apiRequest("POST", "/api/business", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/business"] });
+      toast({
+        title: "Success",
+        description: "FAQ information saved successfully",
+      });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error as Error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to save FAQ information",
         variant: "destructive",
       });
     },
@@ -314,6 +362,10 @@ export default function BusinessInfo() {
 
   const onBusinessSubmit = (data: BusinessFormData) => {
     businessMutation.mutate(data);
+  };
+
+  const onFaqSubmit = (data: FaqFormData) => {
+    faqMutation.mutate(data);
   };
 
   const onProductSubmit = (data: ProductFormData) => {
@@ -569,24 +621,7 @@ export default function BusinessInfo() {
               )}
             />
 
-            <FormField
-              control={businessForm.control}
-              name="faqs"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-gray-700">FAQs</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Enter frequently asked questions" 
-                      rows={3}
-                      className="resize-none"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+
 
             <FormField
               control={businessForm.control}
@@ -716,11 +751,57 @@ export default function BusinessInfo() {
         </div>
       )}
 
-      {/* FAQs Section - Coming Soon */}
+      {/* FAQs Section */}
       {currentSubSection === "faqs" && (
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">FAQs</h2>
-          <p className="text-gray-600">Coming soon...</p>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">FAQs</h2>
+            <span className="text-sm text-blue-600 cursor-pointer hover:underline">(watch tutorial video)</span>
+          </div>
+          
+          <Form {...faqForm}>
+            <form onSubmit={faqForm.handleSubmit(onFaqSubmit)} className="space-y-6">
+              <FormField
+                control={faqForm.control}
+                name="faqs"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">Frequently Asked Questions</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Enter frequently asked questions and their answers" 
+                        rows={6}
+                        className="resize-none"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* FAQ Form Buttons */}
+              <div className="border-t pt-6 mt-6">
+                <div className="flex justify-end space-x-3">
+                  <Button 
+                    type="button" 
+                    variant="outline"
+                    className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                    onClick={() => faqForm.reset()}
+                  >
+                    Reset
+                  </Button>
+                  <Button 
+                    type="submit" 
+                    className="bg-primary text-white hover:bg-primary-dark px-6"
+                    disabled={faqMutation.isPending}
+                  >
+                    {faqMutation.isPending ? "Saving..." : "Save FAQ"}
+                  </Button>
+                </div>
+              </div>
+            </form>
+          </Form>
         </div>
       )}
     </div>
