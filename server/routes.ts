@@ -489,7 +489,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (business.phoneNumber) knowledgeBase += `Phone: ${business.phoneNumber}\n`;
         if (business.address) knowledgeBase += `Address: ${business.address}\n`;
         if (business.companyStory) knowledgeBase += `Company Story: ${business.companyStory}\n`;
-        if (business.faqs) knowledgeBase += `FAQs: ${business.faqs}\n`;
+        if (business.faqs) {
+          // Extract individual FAQ entries and format them more efficiently
+          console.log("🔍 Processing FAQs, raw data length:", business.faqs.length);
+          const faqSections = business.faqs.split('### ').filter(section => section.trim());
+          console.log("🔍 Found FAQ sections:", faqSections.length);
+          if (faqSections.length > 0) {
+            knowledgeBase += `Frequently Asked Questions:\n`;
+            faqSections.forEach((section, index) => {
+              const [question, ...answerParts] = section.split('\n\n');
+              if (question && answerParts.length > 0) {
+                const answer = answerParts.join('\n\n').trim();
+                // Only include the first 300 characters of long answers to save space
+                const truncatedAnswer = answer.length > 300 ? answer.substring(0, 300) + '...' : answer;
+                console.log(`🔍 FAQ ${index + 1}: Q: ${question.trim()}`);
+                knowledgeBase += `Q: ${question.trim()}\nA: ${truncatedAnswer}\n\n`;
+              }
+            });
+          }
+        }
         if (business.paymentDetails) knowledgeBase += `Payment Details: ${business.paymentDetails}\n`;
         if (business.discounts) knowledgeBase += `Discounts: ${business.discounts}\n`;
         if (business.policy) knowledgeBase += `Policy: ${business.policy}\n`;
@@ -1013,7 +1031,22 @@ You represent ${business?.companyName || "this business"} and customers expect a
             if (business.email) knowledgeBase += `Contact: ${business.email}\n`;
             if (business.phoneNumber) knowledgeBase += `Phone: ${business.phoneNumber}\n`;
             if (business.address) knowledgeBase += `Address: ${business.address}\n`;
-            if (business.faqs) knowledgeBase += `FAQs: ${business.faqs}\n`;
+            if (business.faqs) {
+              // Extract individual FAQ entries and format them more efficiently
+              const faqSections = business.faqs.split('### ').filter(section => section.trim());
+              if (faqSections.length > 0) {
+                knowledgeBase += `Frequently Asked Questions:\n`;
+                faqSections.forEach(section => {
+                  const [question, ...answerParts] = section.split('\n\n');
+                  if (question && answerParts.length > 0) {
+                    const answer = answerParts.join('\n\n').trim();
+                    // Only include the first 200 characters for FAQ answers to save space
+                    const truncatedAnswer = answer.length > 200 ? answer.substring(0, 200) + '...' : answer;
+                    knowledgeBase += `Q: ${question.trim()}\nA: ${truncatedAnswer}\n\n`;
+                  }
+                });
+              }
+            }
             if (business.paymentDetails) knowledgeBase += `Payment Details: ${business.paymentDetails}\n`;
             if (business.discounts) knowledgeBase += `Discounts: ${business.discounts}\n`;
             if (business.policy) knowledgeBase += `Policy: ${business.policy}\n`;
