@@ -122,7 +122,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const products = await storage.getProducts(userId);
-      res.json(products);
+      
+      // Debug log to see what we're getting from the database
+      console.log("Products from database:", JSON.stringify(products, null, 2));
+      
+      // Ensure proper field mapping for frontend
+      const mappedProducts = products.map(product => ({
+        ...product,
+        // Ensure all fields are properly mapped
+        paymentDetails: product.paymentDetails || product.payment_details || "",
+        additionalNotes: product.additionalNotes || product.additional_notes || "",
+        thankYouMessage: product.thankYouMessage || product.thank_you_message || "",
+        imageUrl: product.imageUrl || product.image_url || "",
+        faqs: product.faqs || "",
+        discounts: product.discounts || "",
+        policy: product.policy || ""
+      }));
+      
+      console.log("Mapped products for frontend:", JSON.stringify(mappedProducts, null, 2));
+      res.json(mappedProducts);
     } catch (error) {
       console.error("Error fetching products:", error);
       res.status(500).json({ message: "Failed to fetch products" });
