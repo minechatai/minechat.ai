@@ -163,27 +163,31 @@ export default function BusinessInfo() {
     }
   }, [business, businessForm]);
 
-  // Load the first product into the main form for editing
+  // Load the product with the most complete data into the main form for editing
   useEffect(() => {
     if (products && Array.isArray(products) && products.length > 0) {
-      const firstProduct = products[0] as any;
-      console.log("Loading first product into main form:", firstProduct);
+      // Find the product with the most complete data (has FAQs and other fields)
+      const productWithData = products.find((product: any) => 
+        product.faqs && product.faqs.length > 100 // Find product with substantial FAQs
+      ) || products[0]; // Fallback to first product if none have FAQs
+      
+      console.log("Loading product with complete data into main form:", productWithData);
       
       const formData = {
-        name: firstProduct.name || "",
-        description: firstProduct.description || "",
-        price: firstProduct.price?.toString() || "",
-        faqs: firstProduct.faqs || "",
-        paymentDetails: firstProduct.paymentDetails || "",
-        discounts: firstProduct.discounts || "",
-        policy: firstProduct.policy || "",
-        additionalNotes: firstProduct.additionalNotes || "",
-        thankYouMessage: firstProduct.thankYouMessage || "",
+        name: productWithData.name || "",
+        description: productWithData.description || "",
+        price: productWithData.price?.toString() || "",
+        faqs: productWithData.faqs || "",
+        paymentDetails: productWithData.paymentDetails || "",
+        discounts: productWithData.discounts || "",
+        policy: productWithData.policy || "",
+        additionalNotes: productWithData.additionalNotes || "",
+        thankYouMessage: productWithData.thankYouMessage || "",
       };
       
       console.log("Form data to be loaded:", formData);
       productForm.reset(formData);
-      setProductImages(firstProduct.imageUrl ? [firstProduct.imageUrl] : []);
+      setProductImages(productWithData.imageUrl ? [productWithData.imageUrl] : []);
     }
   }, [products, productForm]);
 
@@ -508,14 +512,17 @@ export default function BusinessInfo() {
   };
 
   const onProductSubmit = (data: ProductFormData) => {
-    // Update the first product if it exists, otherwise create a new one
+    // Update the product with complete data if it exists, otherwise create a new one
     if (products && Array.isArray(products) && products.length > 0) {
-      const firstProduct = products[0];
+      const productWithData = products.find((product: any) => 
+        product.faqs && product.faqs.length > 100
+      ) || products[0];
+      
       const submissionData = {
         ...data,
         imageUrl: productImages[0] || "",
       };
-      updateProductMutation.mutate({ id: firstProduct.id, data: submissionData });
+      updateProductMutation.mutate({ id: productWithData.id, data: submissionData });
     } else {
       // Create new product if no products exist
       productMutation.mutate({
