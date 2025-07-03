@@ -166,8 +166,10 @@ export default function BusinessInfo() {
   // Load the first product into the main form for editing
   useEffect(() => {
     if (products && Array.isArray(products) && products.length > 0) {
-      const firstProduct = products[0];
-      productForm.reset({
+      const firstProduct = products[0] as any;
+      console.log("Loading first product into main form:", firstProduct);
+      
+      const formData = {
         name: firstProduct.name || "",
         description: firstProduct.description || "",
         price: firstProduct.price?.toString() || "",
@@ -177,7 +179,10 @@ export default function BusinessInfo() {
         policy: firstProduct.policy || "",
         additionalNotes: firstProduct.additionalNotes || "",
         thankYouMessage: firstProduct.thankYouMessage || "",
-      });
+      };
+      
+      console.log("Form data to be loaded:", formData);
+      productForm.reset(formData);
       setProductImages(firstProduct.imageUrl ? [firstProduct.imageUrl] : []);
     }
   }, [products, productForm]);
