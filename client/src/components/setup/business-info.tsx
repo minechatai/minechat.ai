@@ -619,66 +619,22 @@ export default function BusinessInfo() {
                   <FormItem>
                     <FormLabel className="text-sm font-medium text-gray-700">Phone Number</FormLabel>
                     <FormControl>
-                      <div className="flex border border-gray-300 rounded-md overflow-hidden">
-                        {/* Flag and dropdown section */}
-                        <div className="flex items-center bg-gray-50 px-3 py-2 border-r border-gray-300">
-                          <span className="text-xl mr-2" style={{fontFamily: 'Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji'}}>{selectedCountry.flag}</span>
-                          <Select 
-                            value={selectedCountry.phoneCode} 
-                            onValueChange={(value) => {
-                              const country = countries.find(c => c.phoneCode === value);
-                              if (country) {
-                                setSelectedCountry(country);
-                              }
-                            }}
-                          >
-                            <SelectTrigger className="w-6 h-6 border-0 bg-transparent p-0 [&>svg]:w-3 [&>svg]:h-3">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent className="max-h-60 w-[350px]">
-                              {countries.map((country) => (
-                                <SelectItem key={country.code} value={country.phoneCode}>
-                                  <div className="flex items-center gap-3 w-full">
-                                    <span className="text-lg" style={{fontFamily: 'Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji'}}>{country.flag}</span>
-                                    <span className="font-medium text-sm min-w-[50px]">{country.phoneCode}</span>
-                                    <span className="text-sm text-gray-600 truncate">{country.name}</span>
-                                  </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        
-                        {/* Country code input - EDITABLE */}
-                        <input 
-                          type="text"
-                          placeholder="+1" 
-                          className="w-20 px-2 py-2 border-0 border-r border-gray-300 text-center font-medium focus:outline-none focus:ring-0"
-                          value={selectedCountry.phoneCode}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            
-                            // Auto-detect country when user types
-                            if (value.startsWith('+')) {
-                              const detectedCountry = detectCountryFromPhone(value);
-                              if (detectedCountry) {
-                                setSelectedCountry(detectedCountry);
-                              }
+                      <Input 
+                        placeholder="Enter phone number with country code (e.g., +63 9171234567)" 
+                        value={field.value || ''}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          field.onChange(value);
+                          
+                          // Auto-detect country when user types
+                          if (value.startsWith('+') || value.match(/^\d+/)) {
+                            const detectedCountry = detectCountryFromPhone(value);
+                            if (detectedCountry && detectedCountry.phoneCode !== selectedCountry.phoneCode) {
+                              setSelectedCountry(detectedCountry);
                             }
-                          }}
-                        />
-                        
-                        {/* Phone number input */}
-                        <Input 
-                          placeholder="Enter phone number" 
-                          className="flex-1 border-0 rounded-none focus:ring-0"
-                          value={field.value ? field.value.replace(/^\+\d+\s*/, '') : ''}
-                          onChange={(e) => {
-                            const phoneNumber = e.target.value;
-                            field.onChange(selectedCountry.phoneCode + (phoneNumber ? ' ' + phoneNumber : ''));
-                          }}
-                        />
-                      </div>
+                          }
+                        }}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
