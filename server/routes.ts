@@ -457,32 +457,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
         context += `Available documents: ${documents.map(d => d.originalName).join(", ")}\n\n`;
       }
 
+      // Build comprehensive knowledge base from all saved data
+      let knowledgeBase = "";
+      
+      // Business Information Section
+      if (business) {
+        knowledgeBase += `=== BUSINESS INFORMATION ===\n`;
+        if (business.companyName) knowledgeBase += `Company Name: ${business.companyName}\n`;
+        if (business.email) knowledgeBase += `Email: ${business.email}\n`;
+        if (business.phoneNumber) knowledgeBase += `Phone: ${business.phoneNumber}\n`;
+        if (business.address) knowledgeBase += `Address: ${business.address}\n`;
+        if (business.companyStory) knowledgeBase += `Company Story: ${business.companyStory}\n`;
+        knowledgeBase += `\n`;
+      }
+      
+      // AI Assistant Information Section
+      if (aiAssistant) {
+        knowledgeBase += `=== AI ASSISTANT KNOWLEDGE ===\n`;
+        if (aiAssistant.name) knowledgeBase += `Assistant Name: ${aiAssistant.name}\n`;
+        if (aiAssistant.description) knowledgeBase += `Knowledge Base: ${aiAssistant.description}\n`;
+        if (aiAssistant.guidelines) knowledgeBase += `Guidelines: ${aiAssistant.guidelines}\n`;
+        if (aiAssistant.introMessage) knowledgeBase += `Intro Message: ${aiAssistant.introMessage}\n`;
+        if (aiAssistant.responseLength) knowledgeBase += `Response Style: ${aiAssistant.responseLength}\n`;
+        knowledgeBase += `\n`;
+      }
+      
+      // Products Section
+      if (products.length > 0) {
+        knowledgeBase += `=== PRODUCTS/SERVICES ===\n`;
+        products.forEach((product, index) => {
+          knowledgeBase += `--- Product ${index + 1} ---\n`;
+          if (product.name) knowledgeBase += `Name: ${product.name}\n`;
+          if (product.description) knowledgeBase += `Description: ${product.description}\n`;
+          if (product.price) knowledgeBase += `Price: $${product.price}\n`;
+          if (product.discounts) knowledgeBase += `Discounts: ${product.discounts}\n`;
+          if (product.paymentDetails) knowledgeBase += `Payment: ${product.paymentDetails}\n`;
+          if (product.policy) knowledgeBase += `Policy: ${product.policy}\n`;
+          if (product.faqs) knowledgeBase += `FAQs: ${product.faqs}\n`;
+          knowledgeBase += `\n`;
+        });
+      }
+      
+      // Documents Section
+      if (documents.length > 0) {
+        knowledgeBase += `=== UPLOADED DOCUMENTS ===\n`;
+        documents.forEach(doc => {
+          knowledgeBase += `- ${doc.originalName}\n`;
+        });
+        knowledgeBase += `\n`;
+      }
+
       const systemPrompt = `You are ${aiAssistant?.name || "an AI assistant"} working for ${business?.companyName || "this business"}. 
 
-CRITICAL: Always respond as if you are part of the business team and have direct knowledge of the business. Use the business information provided to answer questions specifically and accurately.
+CRITICAL INSTRUCTIONS:
+1. You have access to complete business information below - USE IT to answer questions
+2. NEVER say "I'll be happy to answer questions related to our business" unless the question is completely unrelated to business (like asking about weather, sports, etc.)
+3. Always search through the knowledge base first before responding
+4. Give specific, detailed answers using the exact information provided
+5. Remember conversation history and build on previous interactions
 
-BUSINESS INFORMATION:
-- Company: ${business?.companyName || "Unknown"}
-- Email: ${business?.email || "Not provided"}
-- Phone: ${business?.phoneNumber || "Not provided"}
-- Address: ${business?.address || "Not provided"}
-- Story: ${business?.companyStory || "Not provided"}
+COMPLETE KNOWLEDGE BASE:
+${knowledgeBase}
 
-PRODUCTS/SERVICES:
-${products.length > 0 ? products.map(p => `- ${p.name}: ${p.description || 'No description'} ${p.price ? `(Price: $${p.price})` : ''}`).join('\n') : "No products listed"}
+RESPONSE RULES:
+- For contact questions: Use exact email (${business?.email}), phone (${business?.phoneNumber}), address (${business?.address})
+- For company questions: Use company story and business information
+- For product questions: Provide detailed product info including prices
+- For FAQ questions: Use the specific FAQ content from products
+- For greeting: Use the intro message if available
+- Only give generic responses for truly irrelevant questions (weather, sports, unrelated topics)
 
-INSTRUCTIONS:
-1. Always refer to the business by name: "${business?.companyName || "our company"}"
-2. Answer questions about contact info using the exact details provided above
-3. When asked "Who founded your company?" answer with the company story
-4. Be specific and helpful, not generic
-5. If asked about products/services, provide detailed information including prices when available
+CONVERSATION CONTEXT:
+- Remember what we've discussed previously
+- Build on previous questions and answers
+- Reference earlier parts of our conversation when relevant
 
-${aiAssistant?.description || "You help customers with their questions and provide information about products and services."}
-
-${aiAssistant?.guidelines || "Be helpful, professional, and friendly."}
-
-Response style: ${aiAssistant?.responseLength || "normal"} length responses.`;
+You represent ${business?.companyName || "this business"} and customers expect accurate, specific information from our knowledge base.`;
 
       let aiMessage = "";
       
@@ -492,6 +542,25 @@ Response style: ${aiAssistant?.responseLength || "normal"} length responses.`;
       console.log("🔍 AI Chat Debug - Business Data:", business);
       console.log("🔍 AI Chat Debug - Products:", products);
       
+      // Get conversation history for context
+      const conversationMessages = await storage.getMessages(conversation.id);
+      
+      // Build conversation history for OpenAI
+      const messages = [{ role: 'system', content: systemPrompt }];
+      
+      // Add recent conversation history (last 10 messages for context)
+      const recentMessages = conversationMessages.slice(-10);
+      recentMessages.forEach(msg => {
+        if (msg.senderType === "user") {
+          messages.push({ role: 'user', content: msg.content });
+        } else if (msg.senderType === "ai") {
+          messages.push({ role: 'assistant', content: msg.content });
+        }
+      });
+      
+      // Add current user message
+      messages.push({ role: 'user', content: message });
+
       // Try OpenAI API first
       try {
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -502,10 +571,7 @@ Response style: ${aiAssistant?.responseLength || "normal"} length responses.`;
           },
           body: JSON.stringify({
             model: 'gpt-3.5-turbo',
-            messages: [
-              { role: 'system', content: systemPrompt },
-              { role: 'user', content: message }
-            ],
+            messages: messages,
             max_tokens: aiAssistant?.responseLength === 'short' ? 100 : 
                        aiAssistant?.responseLength === 'long' ? 500 : 250,
             temperature: 0.7,
@@ -951,34 +1017,73 @@ Response style: ${aiAssistant?.responseLength || "normal"} length responses.`;
             });
           }
 
+          // Build comprehensive knowledge base from all saved data
+          let facebookKnowledgeBase = "";
+          
+          // Business Information Section
+          if (business) {
+            facebookKnowledgeBase += `=== BUSINESS INFORMATION ===\n`;
+            if (business.companyName) facebookKnowledgeBase += `Company Name: ${business.companyName}\n`;
+            if (business.email) facebookKnowledgeBase += `Email: ${business.email}\n`;
+            if (business.phoneNumber) facebookKnowledgeBase += `Phone: ${business.phoneNumber}\n`;
+            if (business.address) facebookKnowledgeBase += `Address: ${business.address}\n`;
+            if (business.companyStory) facebookKnowledgeBase += `Company Story: ${business.companyStory}\n`;
+            facebookKnowledgeBase += `\n`;
+          }
+          
+          // AI Assistant Information Section
+          if (aiAssistant) {
+            facebookKnowledgeBase += `=== AI ASSISTANT KNOWLEDGE ===\n`;
+            if (aiAssistant.name) facebookKnowledgeBase += `Assistant Name: ${aiAssistant.name}\n`;
+            if (aiAssistant.description) facebookKnowledgeBase += `Knowledge Base: ${aiAssistant.description}\n`;
+            if (aiAssistant.guidelines) facebookKnowledgeBase += `Guidelines: ${aiAssistant.guidelines}\n`;
+            if (aiAssistant.introMessage) facebookKnowledgeBase += `Intro Message: ${aiAssistant.introMessage}\n`;
+            if (aiAssistant.responseLength) facebookKnowledgeBase += `Response Style: ${aiAssistant.responseLength}\n`;
+            facebookKnowledgeBase += `\n`;
+          }
+          
+          // Products Section
+          if (products.length > 0) {
+            facebookKnowledgeBase += `=== PRODUCTS/SERVICES ===\n`;
+            products.forEach((product, index) => {
+              facebookKnowledgeBase += `--- Product ${index + 1} ---\n`;
+              if (product.name) facebookKnowledgeBase += `Name: ${product.name}\n`;
+              if (product.description) facebookKnowledgeBase += `Description: ${product.description}\n`;
+              if (product.price) facebookKnowledgeBase += `Price: $${product.price}\n`;
+              if (product.discounts) facebookKnowledgeBase += `Discounts: ${product.discounts}\n`;
+              if (product.paymentDetails) facebookKnowledgeBase += `Payment: ${product.paymentDetails}\n`;
+              if (product.policy) facebookKnowledgeBase += `Policy: ${product.policy}\n`;
+              if (product.faqs) facebookKnowledgeBase += `FAQs: ${product.faqs}\n`;
+              facebookKnowledgeBase += `\n`;
+            });
+          }
+
           const systemPrompt = `You are ${aiAssistant?.name || "an AI assistant"} working for ${business?.companyName || "this business"}. 
 
-CRITICAL: Always respond as if you are part of the business team and have direct knowledge of the business. Use the business information provided to answer questions specifically and accurately.
+CRITICAL INSTRUCTIONS:
+1. You have access to complete business information below - USE IT to answer questions
+2. NEVER say "I'll be happy to answer questions related to our business" unless the question is completely unrelated to business (like asking about weather, sports, etc.)
+3. Always search through the knowledge base first before responding
+4. Give specific, detailed answers using the exact information provided
+5. Remember conversation history and build on previous interactions
 
-BUSINESS INFORMATION:
-- Company: ${business?.companyName || "Unknown"}
-- Email: ${business?.email || "Not provided"}
-- Phone: ${business?.phoneNumber || "Not provided"}
-- Address: ${business?.address || "Not provided"}
-- Story: ${business?.companyStory || "Not provided"}
+COMPLETE KNOWLEDGE BASE:
+${facebookKnowledgeBase}
 
-PRODUCTS/SERVICES:
-${products.length > 0 ? products.map(p => `- ${p.name}: ${p.description || 'No description'} ${p.price ? `(Price: $${p.price})` : ''}`).join('\n') : "No products listed"}
+RESPONSE RULES:
+- For contact questions: Use exact email (${business?.email}), phone (${business?.phoneNumber}), address (${business?.address})
+- For company questions: Use company story and business information
+- For product questions: Provide detailed product info including prices
+- For FAQ questions: Use the specific FAQ content from products
+- For greeting: Use the intro message if available
+- Only give generic responses for truly irrelevant questions (weather, sports, unrelated topics)
 
-INSTRUCTIONS:
-1. Always refer to the business by name: "${business?.companyName || "our company"}"
-2. Answer questions about contact info using the exact details provided above
-3. When asked "Who founded your company?" answer with the company story
-4. When asked for phone number, give the exact phone number: ${business?.phoneNumber || "Not available"}
-5. When asked for email, give the exact email: ${business?.email || "Not available"}
-6. Be specific and helpful, not generic
-7. If asked about products/services, provide detailed information including prices when available
+CONVERSATION CONTEXT:
+- Remember what we've discussed previously
+- Build on previous questions and answers
+- Reference earlier parts of our conversation when relevant
 
-${aiAssistant?.description || "You help customers with their questions and provide information about products and services."}
-
-${aiAssistant?.guidelines || "Be helpful, professional, and friendly."}
-
-Response style: ${aiAssistant?.responseLength || "normal"} length responses.`;
+You represent ${business?.companyName || "this business"} and customers expect accurate, specific information from our knowledge base.`;
 
           console.log("=== FACEBOOK AI DEBUG ===");
           // Build conversation history for context
