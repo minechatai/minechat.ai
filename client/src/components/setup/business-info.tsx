@@ -132,43 +132,26 @@ export default function BusinessInfo() {
   // Function to parse FAQ entries from saved text
   const parseFaqEntries = (faqText: string): FaqEntry[] => {
     const entries: FaqEntry[] = [];
-    const lines = faqText.split('\n');
-    let currentQuestion = '';
-    let currentAnswer = '';
-    let isQuestion = false;
     
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-      
-      // Check if line starts with ### (our FAQ format)
-      if (line.startsWith('###')) {
-        // Save previous entry if exists
-        if (currentQuestion && currentAnswer) {
+    // Split by ### to get sections
+    const sections = faqText.split('###').filter(section => section.trim());
+    
+    sections.forEach(section => {
+      const lines = section.trim().split('\n');
+      if (lines.length >= 2) {
+        const question = lines[0].trim();
+        // Join all remaining lines as the answer, filtering out empty lines
+        const answer = lines.slice(1).filter(line => line.trim()).join('\n').trim();
+        
+        if (question && answer) {
           entries.push({
             id: Date.now().toString() + Math.random(),
-            question: currentQuestion,
-            answer: currentAnswer.trim(),
+            question: question,
+            answer: answer,
           });
         }
-        
-        // Start new entry
-        currentQuestion = line.replace('###', '').trim();
-        currentAnswer = '';
-        isQuestion = true;
-      } else if (isQuestion && line) {
-        // This is the answer part
-        currentAnswer += (currentAnswer ? '\n' : '') + line;
       }
-    }
-    
-    // Add last entry
-    if (currentQuestion && currentAnswer) {
-      entries.push({
-        id: Date.now().toString() + Math.random(),
-        question: currentQuestion,
-        answer: currentAnswer.trim(),
-      });
-    }
+    });
     
     return entries;
   };
@@ -209,7 +192,9 @@ export default function BusinessInfo() {
       
       // Parse individual FAQ entries from saved text
       if (faqData.faqs) {
+        console.log("🔍 Raw FAQ data:", faqData.faqs);
         const parsedEntries = parseFaqEntries(faqData.faqs);
+        console.log("🔍 Parsed FAQ entries:", parsedEntries);
         setFaqEntries(parsedEntries);
       }
       
