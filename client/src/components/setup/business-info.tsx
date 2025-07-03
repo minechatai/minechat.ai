@@ -619,80 +619,55 @@ export default function BusinessInfo() {
                   <FormItem>
                     <FormLabel className="text-sm font-medium text-gray-700">Phone Number</FormLabel>
                     <FormControl>
-                      <div className="flex items-center border border-gray-300 rounded-md overflow-hidden">
+                      <div className="flex border border-gray-300 rounded-md overflow-hidden">
                         {/* Flag and dropdown section */}
-                        <div className="flex items-center bg-gray-50 border-r border-gray-300">
-                          <div className="px-3 py-2 flex items-center gap-2">
-                            <span 
-                              className="text-xl" 
-                              style={{ 
-                                fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Android Emoji", sans-serif',
-                                fontVariantEmoji: 'emoji'
+                        <div className="flex items-center bg-gray-50 px-3 py-2 border-r border-gray-300">
+                          <div className="flex items-center gap-2">
+                            <span className="text-2xl">🇺🇸</span>
+                            <Select 
+                              value={selectedCountry.phoneCode} 
+                              onValueChange={(value) => {
+                                const country = countries.find(c => c.phoneCode === value);
+                                if (country) {
+                                  setSelectedCountry(country);
+                                  const phoneNumberValue = field.value || '';
+                                  const phoneWithoutCode = phoneNumberValue.replace(/^\+\d+\s*/, '');
+                                  field.onChange(country.phoneCode + ' ' + phoneWithoutCode);
+                                }
                               }}
-                              title={`${selectedCountry.name} flag: ${selectedCountry.flag}`}
                             >
-                              {selectedCountry.flag}
-                            </span>
+                              <SelectTrigger className="w-8 h-8 border-0 bg-transparent p-0">
+                                <span className="text-gray-400">▼</span>
+                              </SelectTrigger>
+                              <SelectContent className="max-h-60 w-[300px]">
+                                <SelectItem value="+1"><div className="flex items-center gap-3"><span className="text-lg">🇺🇸</span><span>+1</span><span>United States</span></div></SelectItem>
+                                <SelectItem value="+1"><div className="flex items-center gap-3"><span className="text-lg">🇨🇦</span><span>+1</span><span>Canada</span></div></SelectItem>
+                                <SelectItem value="+44"><div className="flex items-center gap-3"><span className="text-lg">🇬🇧</span><span>+44</span><span>United Kingdom</span></div></SelectItem>
+                                <SelectItem value="+49"><div className="flex items-center gap-3"><span className="text-lg">🇩🇪</span><span>+49</span><span>Germany</span></div></SelectItem>
+                                <SelectItem value="+33"><div className="flex items-center gap-3"><span className="text-lg">🇫🇷</span><span>+33</span><span>France</span></div></SelectItem>
+                                <SelectItem value="+81"><div className="flex items-center gap-3"><span className="text-lg">🇯🇵</span><span>+81</span><span>Japan</span></div></SelectItem>
+                                <SelectItem value="+86"><div className="flex items-center gap-3"><span className="text-lg">🇨🇳</span><span>+86</span><span>China</span></div></SelectItem>
+                                <SelectItem value="+91"><div className="flex items-center gap-3"><span className="text-lg">🇮🇳</span><span>+91</span><span>India</span></div></SelectItem>
+                                <SelectItem value="+61"><div className="flex items-center gap-3"><span className="text-lg">🇦🇺</span><span>+61</span><span>Australia</span></div></SelectItem>
+                                <SelectItem value="+55"><div className="flex items-center gap-3"><span className="text-lg">🇧🇷</span><span>+55</span><span>Brazil</span></div></SelectItem>
+                                <SelectItem value="+63"><div className="flex items-center gap-3"><span className="text-lg">🇵🇭</span><span>+63</span><span>Philippines</span></div></SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
-                          <Select 
-                            value={selectedCountry.phoneCode} 
-                            onValueChange={(value) => {
-                              const country = countries.find(c => c.phoneCode === value);
-                              if (country) {
-                                setSelectedCountry(country);
-                                // Update country code input
-                                const phoneNumberValue = field.value || '';
-                                const phoneWithoutCode = phoneNumberValue.replace(/^\+\d+\s*/, '');
-                                field.onChange(country.phoneCode + ' ' + phoneWithoutCode);
-                              }
-                            }}
-                          >
-                            <SelectTrigger className="w-8 h-full border-0 bg-transparent p-1">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent className="max-h-60 w-[300px]">
-                              {countries.map((country) => (
-                                <SelectItem key={country.code} value={country.phoneCode}>
-                                  <div className="flex items-center gap-3 w-full">
-                                    <span 
-                                      className="text-lg leading-none"
-                                      style={{ 
-                                        fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Android Emoji", sans-serif',
-                                        fontVariantEmoji: 'emoji'
-                                      }}
-                                    >
-                                      {country.flag}
-                                    </span>
-                                    <span className="font-medium text-sm min-w-[50px]">{country.phoneCode}</span>
-                                    <span className="text-sm text-gray-600 flex-1 truncate">{country.name}</span>
-                                  </div>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
                         </div>
                         
                         {/* Country code input */}
                         <Input 
                           placeholder="+1" 
-                          className="w-20 border-0 border-r border-gray-300 rounded-none text-center font-medium"
+                          className="w-20 border-0 border-r border-gray-300 rounded-none text-center font-medium focus:ring-0"
                           value={selectedCountry.phoneCode}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            // Auto-detect country when user types
-                            if (value.startsWith('+')) {
-                              const detectedCountry = detectCountryFromPhone(value);
-                              if (detectedCountry && detectedCountry.phoneCode !== selectedCountry.phoneCode) {
-                                setSelectedCountry(detectedCountry);
-                              }
-                            }
-                          }}
+                          readOnly
                         />
                         
                         {/* Phone number input */}
                         <Input 
                           placeholder="Enter phone number" 
-                          className="flex-1 border-0 rounded-none"
+                          className="flex-1 border-0 rounded-none focus:ring-0"
                           value={field.value ? field.value.replace(/^\+\d+\s*/, '') : ''}
                           onChange={(e) => {
                             const phoneNumber = e.target.value;
