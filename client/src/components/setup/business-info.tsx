@@ -44,9 +44,21 @@ const faqSchema = z.object({
   faqs: z.string().optional(),
 });
 
+const individualFaqSchema = z.object({
+  question: z.string().min(1, "Question is required"),
+  answer: z.string().min(1, "Answer is required"),
+});
+
 type BusinessFormData = z.infer<typeof businessSchema>;
 type ProductFormData = z.infer<typeof productSchema>;
 type FaqFormData = z.infer<typeof faqSchema>;
+type IndividualFaqData = z.infer<typeof individualFaqSchema>;
+
+interface FaqEntry {
+  id: string;
+  question: string;
+  answer: string;
+}
 
 export default function BusinessInfo() {
   const [currentSubSection, setCurrentSubSection] = useState("business-information");
@@ -55,6 +67,8 @@ export default function BusinessInfo() {
   const [productImages, setProductImages] = useState<string[]>([]);
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [faqEntries, setFaqEntries] = useState<FaqEntry[]>([]);
+  const [showAddFaqForm, setShowAddFaqForm] = useState(false);
   const { toast } = useToast();
 
   const { data: business, isLoading: businessLoading } = useQuery({
@@ -104,6 +118,14 @@ export default function BusinessInfo() {
     resolver: zodResolver(faqSchema),
     defaultValues: {
       faqs: "",
+    },
+  });
+
+  const individualFaqForm = useForm<IndividualFaqData>({
+    resolver: zodResolver(individualFaqSchema),
+    defaultValues: {
+      question: "",
+      answer: "",
     },
   });
 
@@ -377,6 +399,34 @@ export default function BusinessInfo() {
 
   const onFaqSubmit = (data: FaqFormData) => {
     faqMutation.mutate(data);
+  };
+
+  // Individual FAQ functions
+  const addFaqEntry = (data: IndividualFaqData) => {
+    const newEntry: FaqEntry = {
+      id: Date.now().toString(),
+      question: data.question,
+      answer: data.answer,
+    };
+    setFaqEntries(prev => [...prev, newEntry]);
+    individualFaqForm.reset();
+    setShowAddFaqForm(false);
+    toast({
+      title: "Success",
+      description: "FAQ entry added successfully",
+    });
+  };
+
+  const removeFaqEntry = (id: string) => {
+    setFaqEntries(prev => prev.filter(entry => entry.id !== id));
+    toast({
+      title: "Success", 
+      description: "FAQ entry removed successfully",
+    });
+  };
+
+  const onIndividualFaqSubmit = (data: IndividualFaqData) => {
+    addFaqEntry(data);
   };
 
   const onProductSubmit = (data: ProductFormData) => {
@@ -818,6 +868,120 @@ export default function BusinessInfo() {
                   </div>
                 ))}
               </div>
+            )}
+          </div>
+          
+          {/* Individual FAQ Management */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium text-gray-900">Individual FAQ Entries</h3>
+              <Button 
+                onClick={() => setShowAddFaqForm(true)}
+                className="bg-primary text-white hover:bg-primary-dark"
+                size="sm"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add New FAQ
+              </Button>
+            </div>
+            
+            {/* Display existing FAQ entries */}
+            {faqEntries.length > 0 && (
+              <div className="space-y-4 mb-6">
+                {faqEntries.map((entry) => (
+                  <div key={entry.id} className="border rounded-lg p-4 bg-gray-50">
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="font-medium text-gray-900">Q: {entry.question}</h4>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeFaqEntry(entry.id)}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <p className="text-gray-700">A: {entry.answer}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {/* Add FAQ Form */}
+            {showAddFaqForm && (
+              <Card className="p-6 border border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-lg font-medium text-gray-900">Add New FAQ</h4>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setShowAddFaqForm(false);
+                      individualFaqForm.reset();
+                    }}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+                
+                <Form {...individualFaqForm}>
+                  <form onSubmit={individualFaqForm.handleSubmit(onIndividualFaqSubmit)} className="space-y-4">
+                    <FormField
+                      control={individualFaqForm.control}
+                      name="question"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-gray-700">Question</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Enter your question" 
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={individualFaqForm.control}
+                      name="answer"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-gray-700">Answer</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Enter your answer" 
+                              rows={3}
+                              className="resize-none"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div className="flex justify-end space-x-3 pt-4 border-t">
+                      <Button 
+                        type="button" 
+                        variant="outline"
+                        onClick={() => {
+                          setShowAddFaqForm(false);
+                          individualFaqForm.reset();
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button 
+                        type="submit" 
+                        className="bg-primary text-white hover:bg-primary-dark"
+                      >
+                        Add FAQ
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </Card>
             )}
           </div>
           
