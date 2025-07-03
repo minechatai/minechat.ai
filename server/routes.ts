@@ -457,19 +457,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
         context += `Available documents: ${documents.map(d => d.originalName).join(", ")}\n\n`;
       }
 
-      const systemPrompt = `You are an AI assistant for ${business?.companyName || "this business"}. 
+      const systemPrompt = `You are ${aiAssistant?.name || "an AI assistant"} working for ${business?.companyName || "this business"}. 
+
+CRITICAL: Always respond as if you are part of the business team and have direct knowledge of the business. Use the business information provided to answer questions specifically and accurately.
+
+BUSINESS INFORMATION:
+- Company: ${business?.companyName || "Unknown"}
+- Email: ${business?.email || "Not provided"}
+- Phone: ${business?.phoneNumber || "Not provided"}
+- Address: ${business?.address || "Not provided"}
+- Story: ${business?.companyStory || "Not provided"}
+
+PRODUCTS/SERVICES:
+${products.length > 0 ? products.map(p => `- ${p.name}: ${p.description || 'No description'} ${p.price ? `(Price: $${p.price})` : ''}`).join('\n') : "No products listed"}
+
+INSTRUCTIONS:
+1. Always refer to the business by name: "${business?.companyName || "our company"}"
+2. Answer questions about contact info using the exact details provided above
+3. When asked "Who founded your company?" answer with the company story
+4. Be specific and helpful, not generic
+5. If asked about products/services, provide detailed information including prices when available
+
 ${aiAssistant?.description || "You help customers with their questions and provide information about products and services."}
 
 ${aiAssistant?.guidelines || "Be helpful, professional, and friendly."}
 
-Context about the business:
-${context}
-
-${aiAssistant?.introMessage ? `Introduction: ${aiAssistant.introMessage}` : ""}
-
 Response style: ${aiAssistant?.responseLength || "normal"} length responses.`;
 
       let aiMessage = "";
+      
+      // Debug logging
+      console.log("🔍 AI Chat Debug - System Prompt:", systemPrompt);
+      console.log("🔍 AI Chat Debug - User Message:", message);
+      console.log("🔍 AI Chat Debug - Business Data:", business);
+      console.log("🔍 AI Chat Debug - Products:", products);
       
       // Try OpenAI API first
       try {
@@ -494,7 +515,10 @@ Response style: ${aiAssistant?.responseLength || "normal"} length responses.`;
         if (response.ok) {
           const aiResponse = await response.json();
           aiMessage = aiResponse.choices[0]?.message?.content || "";
+          console.log("✅ OpenAI API Response:", aiMessage);
         } else {
+          const errorText = await response.text();
+          console.log("❌ OpenAI API Error:", response.status, errorText);
           throw new Error(`OpenAI API error: ${response.status}`);
         }
       } catch (openaiError) {
