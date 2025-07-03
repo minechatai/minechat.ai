@@ -163,7 +163,24 @@ export default function BusinessInfo() {
     }
   }, [business, businessForm]);
 
-  // Don't auto-load any product into the main form - let it be empty for new products
+  // Load the first product into the main form for editing
+  useEffect(() => {
+    if (products && Array.isArray(products) && products.length > 0) {
+      const firstProduct = products[0];
+      productForm.reset({
+        name: firstProduct.name || "",
+        description: firstProduct.description || "",
+        price: firstProduct.price?.toString() || "",
+        faqs: firstProduct.faqs || "",
+        paymentDetails: firstProduct.paymentDetails || "",
+        discounts: firstProduct.discounts || "",
+        policy: firstProduct.policy || "",
+        additionalNotes: firstProduct.additionalNotes || "",
+        thankYouMessage: firstProduct.thankYouMessage || "",
+      });
+      setProductImages(firstProduct.imageUrl ? [firstProduct.imageUrl] : []);
+    }
+  }, [products, productForm]);
 
   useEffect(() => {
     if (documents && Array.isArray(documents)) {
@@ -486,10 +503,21 @@ export default function BusinessInfo() {
   };
 
   const onProductSubmit = (data: ProductFormData) => {
-    productMutation.mutate({
-      ...data,
-      imageUrl: productImages[0] || "",
-    });
+    // Update the first product if it exists, otherwise create a new one
+    if (products && Array.isArray(products) && products.length > 0) {
+      const firstProduct = products[0];
+      const submissionData = {
+        ...data,
+        imageUrl: productImages[0] || "",
+      };
+      updateProductMutation.mutate({ id: firstProduct.id, data: submissionData });
+    } else {
+      // Create new product if no products exist
+      productMutation.mutate({
+        ...data,
+        imageUrl: productImages[0] || "",
+      });
+    }
   };
 
   const onNewProductSubmit = (data: ProductFormData) => {
