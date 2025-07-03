@@ -163,33 +163,7 @@ export default function BusinessInfo() {
     }
   }, [business, businessForm]);
 
-  // Load the product with the most complete data into the main form for editing
-  useEffect(() => {
-    if (products && Array.isArray(products) && products.length > 0) {
-      // Find the product with the most complete data (has FAQs and other fields)
-      const productWithData = products.find((product: any) => 
-        product.faqs && product.faqs.length > 100 // Find product with substantial FAQs
-      ) || products[0]; // Fallback to first product if none have FAQs
-      
-      console.log("Loading product with complete data into main form:", productWithData);
-      
-      const formData = {
-        name: productWithData.name || "",
-        description: productWithData.description || "",
-        price: productWithData.price?.toString() || "",
-        faqs: productWithData.faqs || "",
-        paymentDetails: productWithData.paymentDetails || "",
-        discounts: productWithData.discounts || "",
-        policy: productWithData.policy || "",
-        additionalNotes: productWithData.additionalNotes || "",
-        thankYouMessage: productWithData.thankYouMessage || "",
-      };
-      
-      console.log("Form data to be loaded:", formData);
-      productForm.reset(formData);
-      setProductImages(productWithData.imageUrl ? [productWithData.imageUrl] : []);
-    }
-  }, [products, productForm]);
+  // Don't auto-populate any forms - keep them empty for user input
 
   useEffect(() => {
     if (documents && Array.isArray(documents)) {
@@ -503,6 +477,64 @@ export default function BusinessInfo() {
       });
     } finally {
       setUploadingNewImage(false);
+    }
+  };
+
+  const handleEditProductImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Error",
+        description: "Please select a valid image file",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploadingEditImage(true);
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const response = await fetch('/api/products/upload-image', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          toast({
+            title: "Unauthorized",
+            description: "You are logged out. Logging in again...",
+            variant: "destructive",
+          });
+          setTimeout(() => {
+            window.location.href = "/api/login";
+          }, 500);
+          return;
+        }
+        throw new Error('Upload failed');
+      }
+
+      const data = await response.json();
+      const newImageUrl = data.imageUrl;
+      setEditProductImages(prev => [...prev, newImageUrl]);
+      
+      toast({
+        title: "Success",
+        description: "Product image uploaded successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to upload image",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingEditImage(false);
     }
   };
 
@@ -827,6 +859,47 @@ export default function BusinessInfo() {
                           </FormItem>
                         )}
                       />
+
+                      {/* Image Upload Section for Edit Product */}
+                      <div>
+                        <FormLabel className="text-sm font-medium text-gray-700 mb-3 block">Product Images</FormLabel>
+                        <div className="grid grid-cols-4 gap-4">
+                          {editProductImages.map((image, index) => (
+                            <div key={index} className="relative aspect-square">
+                              <img 
+                                src={image} 
+                                alt={`Product ${index + 1}`}
+                                className="w-full h-full object-cover rounded-lg border border-gray-200"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setEditProductImages(prev => prev.filter((_, i) => i !== index))}
+                                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ))}
+                          
+                          {editProductImages.length < 4 && (
+                            <label htmlFor="edit-product-image-upload" className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 transition-colors">
+                              <Camera className="w-6 h-6 text-gray-400 mb-1" />
+                              <span className="text-xs text-gray-500">Add Image</span>
+                              <input
+                                id="edit-product-image-upload"
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={handleEditProductImageUpload}
+                                disabled={uploadingEditImage}
+                              />
+                            </label>
+                          )}
+                        </div>
+                        {uploadingEditImage && (
+                          <p className="text-sm text-gray-500 mt-2">Uploading image...</p>
+                        )}
+                      </div>
 
                       <div className="flex gap-4 pt-4">
                         <Button type="submit" disabled={updateProductMutation.isPending}>
