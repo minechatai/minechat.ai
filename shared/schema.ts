@@ -45,6 +45,12 @@ export const businesses = pgTable("businesses", {
   address: text("address"),
   email: varchar("email"),
   companyStory: text("company_story"),
+  faqs: text("faqs"),
+  paymentDetails: text("payment_details"),
+  discounts: text("discounts"),
+  policy: text("policy"),
+  additionalNotes: text("additional_notes"),
+  thankYouMessage: text("thank_you_message"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

@@ -20,6 +20,12 @@ const businessSchema = z.object({
   address: z.string().optional(),
   email: z.string().optional(),
   companyStory: z.string().optional(),
+  faqs: z.string().optional(),
+  paymentDetails: z.string().optional(),
+  discounts: z.string().optional(),
+  policy: z.string().optional(),
+  additionalNotes: z.string().optional(),
+  thankYouMessage: z.string().optional(),
 });
 
 const productSchema = z.object({
@@ -66,6 +72,12 @@ export default function BusinessInfo() {
       address: "",
       email: "",
       companyStory: "",
+      faqs: "",
+      paymentDetails: "",
+      discounts: "",
+      policy: "",
+      additionalNotes: "",
+      thankYouMessage: "",
     },
   });
 
@@ -94,6 +106,12 @@ export default function BusinessInfo() {
         address: (business as any).address || "",
         email: (business as any).email || "",
         companyStory: (business as any).companyStory || "",
+        faqs: (business as any).faqs || "",
+        paymentDetails: (business as any).paymentDetails || "",
+        discounts: (business as any).discounts || "",
+        policy: (business as any).policy || "",
+        additionalNotes: (business as any).additionalNotes || "",
+        thankYouMessage: (business as any).thankYouMessage || "",
       });
     }
   }, [business, businessForm]);
@@ -504,6 +522,120 @@ export default function BusinessInfo() {
                     <Textarea 
                       placeholder="Enter company story or other information" 
                       rows={4}
+                      className="resize-none"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={businessForm.control}
+              name="faqs"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">FAQs</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Enter frequently asked questions" 
+                      rows={3}
+                      className="resize-none"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={businessForm.control}
+              name="paymentDetails"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">Payment Details</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Enter payment information and methods" 
+                      rows={3}
+                      className="resize-none"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={businessForm.control}
+              name="discounts"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">Discounts</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Enter discount information and promotions" 
+                      rows={3}
+                      className="resize-none"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={businessForm.control}
+              name="policy"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">Policy</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Enter business policies and terms" 
+                      rows={3}
+                      className="resize-none"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={businessForm.control}
+              name="additionalNotes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">Additional Notes</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Enter any additional information" 
+                      rows={3}
+                      className="resize-none"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={businessForm.control}
+              name="thankYouMessage"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">Thank You Message</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Enter thank you message for customers" 
+                      rows={3}
                       className="resize-none"
                       {...field}
                     />
