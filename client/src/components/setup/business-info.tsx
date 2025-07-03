@@ -69,12 +69,16 @@ export default function BusinessInfo() {
     if (products && products.length > 0) {
       console.log("Products loaded from API:", products);
       products.forEach((product, index) => {
-        console.log(`Product ${index + 1}:`, {
+        console.log(`Product ${index + 1} full data:`, product);
+        console.log(`Product ${index + 1} specific fields:`, {
           id: product.id,
           name: product.name,
           faqs: product.faqs,
           discounts: product.discounts,
-          paymentDetails: product.paymentDetails
+          paymentDetails: product.paymentDetails,
+          policy: product.policy,
+          additionalNotes: product.additionalNotes,
+          thankYouMessage: product.thankYouMessage
         });
       });
     }
