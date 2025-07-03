@@ -5,6 +5,14 @@ export interface Country {
   flag: string;
 }
 
+// Fallback function to get flag or country code
+export function getCountryDisplay(country: Country): { emoji: string; text: string } {
+  return {
+    emoji: country.flag,
+    text: country.code
+  };
+}
+
 export const countries: Country[] = [
   { name: "Afghanistan", code: "AF", phoneCode: "+93", flag: "🇦🇫" },
   { name: "Albania", code: "AL", phoneCode: "+355", flag: "🇦🇱" },

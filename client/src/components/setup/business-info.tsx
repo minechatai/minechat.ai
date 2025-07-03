@@ -620,8 +620,10 @@ export default function BusinessInfo() {
                     <FormLabel className="text-sm font-medium text-gray-700">Phone Number</FormLabel>
                     <FormControl>
                       <div className="flex">
-                        <div className="flex items-center gap-2 px-3 py-2 border border-r-0 border-gray-300 rounded-l-md bg-gray-50 min-w-[80px]">
-                          <span className="text-lg">{selectedCountry.flag}</span>
+                        <div className="flex items-center gap-2 px-3 py-2 border border-r-0 border-gray-300 rounded-l-md bg-gray-50 min-w-[100px]">
+                          <span className="w-6 h-4 flex items-center justify-center text-lg">
+                            {selectedCountry.flag}
+                          </span>
                           <span className="text-sm font-medium">{selectedCountry.phoneCode}</span>
                         </div>
                         <Input 
@@ -661,13 +663,15 @@ export default function BusinessInfo() {
                                 <span>⌄</span>
                               </SelectValue>
                             </SelectTrigger>
-                            <SelectContent className="max-h-60">
+                            <SelectContent className="max-h-60 w-80">
                               {countries.map((country) => (
                                 <SelectItem key={country.code} value={country.phoneCode}>
-                                  <div className="flex items-center gap-3 min-w-[200px]">
-                                    <span className="text-lg">{country.flag}</span>
-                                    <span className="font-medium">{country.phoneCode}</span>
-                                    <span className="text-sm text-gray-600 truncate">{country.name}</span>
+                                  <div className="flex items-center gap-3 w-full">
+                                    <span className="w-6 h-4 flex items-center justify-center text-lg">
+                                      {country.flag}
+                                    </span>
+                                    <span className="font-medium text-sm">{country.phoneCode}</span>
+                                    <span className="text-sm text-gray-600 flex-1 truncate">{country.name}</span>
                                   </div>
                                 </SelectItem>
                               ))}
