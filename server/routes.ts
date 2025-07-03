@@ -1010,6 +1010,12 @@ You represent ${business?.companyName || "this business"} and customers expect a
             if (business.email) knowledgeBase += `Contact: ${business.email}\n`;
             if (business.phoneNumber) knowledgeBase += `Phone: ${business.phoneNumber}\n`;
             if (business.address) knowledgeBase += `Address: ${business.address}\n`;
+            if (business.faqs) knowledgeBase += `FAQs: ${business.faqs}\n`;
+            if (business.paymentDetails) knowledgeBase += `Payment Details: ${business.paymentDetails}\n`;
+            if (business.discounts) knowledgeBase += `Discounts: ${business.discounts}\n`;
+            if (business.policy) knowledgeBase += `Policy: ${business.policy}\n`;
+            if (business.additionalNotes) knowledgeBase += `Additional Notes: ${business.additionalNotes}\n`;
+            if (business.thankYouMessage) knowledgeBase += `Thank You Message: ${business.thankYouMessage}\n`;
             knowledgeBase += `\n`;
           }
           
@@ -1134,7 +1140,7 @@ You represent ${business?.companyName || "this business"} and customers expect a
           conversationMessages.push({ role: "user", content: messageText });
 
           console.log("System prompt length:", systemPrompt.length);
-          console.log("Knowledge base content:", knowledgeBase);
+          console.log("Knowledge base content:", facebookKnowledgeBase);
           console.log("User message:", messageText);
           console.log("Conversation history length:", conversationMessages.length);
           console.log("=========================");
