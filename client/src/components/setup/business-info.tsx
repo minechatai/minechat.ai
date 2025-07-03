@@ -553,12 +553,12 @@ export default function BusinessInfo() {
       name: product.name || "",
       description: product.description || "",
       price: product.price?.toString() || "",
-      faqs: product.faqs || "",
-      paymentDetails: product.paymentDetails || "",
-      discounts: product.discounts || "",
-      policy: product.policy || "",
-      additionalNotes: product.additionalNotes || "",
-      thankYouMessage: product.thankYouMessage || "",
+      faqs: "", // Keep empty for individual product editing
+      paymentDetails: "",
+      discounts: "",
+      policy: "",
+      additionalNotes: "",
+      thankYouMessage: "",
     });
     setEditProductImages(product.imageUrl ? [product.imageUrl] : []);
   };
@@ -572,8 +572,11 @@ export default function BusinessInfo() {
   const onEditProductSubmit = (data: ProductFormData) => {
     if (editingProductId) {
       const submissionData = {
-        ...data,
+        name: data.name,
+        description: data.description,
+        price: data.price,
         imageUrl: editProductImages[0] || "",
+        // Don't update the detailed fields for individual product edits
       };
       updateProductMutation.mutate({ id: editingProductId, data: submissionData });
     }
@@ -819,90 +822,6 @@ export default function BusinessInfo() {
                             <FormLabel>Description</FormLabel>
                             <FormControl>
                               <Textarea placeholder="Enter Description" rows={3} {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={editProductForm.control}
-                        name="faqs"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>FAQs</FormLabel>
-                            <FormControl>
-                              <Textarea placeholder="Enter FAQs" rows={3} {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={editProductForm.control}
-                        name="paymentDetails"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Payment Details</FormLabel>
-                            <FormControl>
-                              <Textarea placeholder="Enter Payment Details" rows={3} {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={editProductForm.control}
-                        name="discounts"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Discounts</FormLabel>
-                            <FormControl>
-                              <Textarea placeholder="Enter Discounts/Special Offers" rows={2} {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={editProductForm.control}
-                        name="policy"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Policy</FormLabel>
-                            <FormControl>
-                              <Textarea placeholder="Enter policies and terms" rows={2} {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={editProductForm.control}
-                        name="additionalNotes"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Additional Notes</FormLabel>
-                            <FormControl>
-                              <Textarea placeholder="Enter additional notes" rows={2} {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={editProductForm.control}
-                        name="thankYouMessage"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Thank You Message</FormLabel>
-                            <FormControl>
-                              <Textarea placeholder="Enter thank you message" rows={2} {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
