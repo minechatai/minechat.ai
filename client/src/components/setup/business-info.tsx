@@ -13,7 +13,6 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { CloudUpload, FileText, X, Plus, Camera } from "lucide-react";
-import { countries, detectCountryFromPhone } from "@/data/countries";
 
 const businessSchema = z.object({
   companyName: z.string().optional(),
@@ -43,13 +42,8 @@ export default function BusinessInfo() {
   const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [productImages, setProductImages] = useState<string[]>([]);
-  const [showAddProductForm, setShowAddProductForm] = useState(false);
-  const [newProductImages, setNewProductImages] = useState<string[]>([]);
-  const [uploadingNewImage, setUploadingNewImage] = useState(false);
-  const [editingProductId, setEditingProductId] = useState<number | null>(null);
-  const [editProductImages, setEditProductImages] = useState<string[]>([]);
-  const [uploadingEditImage, setUploadingEditImage] = useState(false);
-  const [selectedCountry, setSelectedCountry] = useState(countries.find(c => c.phoneCode === "+1") || countries[0]);
+  const [showProductForm, setShowProductForm] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
   const { toast } = useToast();
 
   const { data: business, isLoading: businessLoading } = useQuery({
@@ -63,26 +57,6 @@ export default function BusinessInfo() {
   const { data: products = [], isLoading: productsLoading } = useQuery({
     queryKey: ["/api/products"],
   });
-
-  // Debug log for products data
-  useEffect(() => {
-    if (products && Array.isArray(products) && products.length > 0) {
-      console.log("Products loaded from API:", products);
-      products.forEach((product: any, index: number) => {
-        console.log(`Product ${index + 1} full data:`, product);
-        console.log(`Product ${index + 1} specific fields:`, {
-          id: product.id,
-          name: product.name,
-          faqs: product.faqs,
-          discounts: product.discounts,
-          paymentDetails: product.paymentDetails,
-          policy: product.policy,
-          additionalNotes: product.additionalNotes,
-          thankYouMessage: product.thankYouMessage
-        });
-      });
-    }
-  }, [products]);
 
   const businessForm = useForm<BusinessFormData>({
     resolver: zodResolver(businessSchema),
@@ -110,52 +84,12 @@ export default function BusinessInfo() {
     },
   });
 
-  const newProductForm = useForm<ProductFormData>({
-    resolver: zodResolver(productSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      price: "",
-      faqs: "",
-      paymentDetails: "",
-      discounts: "",
-      policy: "",
-      additionalNotes: "",
-      thankYouMessage: "",
-    },
-  });
-
-  const editProductForm = useForm<ProductFormData>({
-    resolver: zodResolver(productSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      price: "",
-      faqs: "",
-      paymentDetails: "",
-      discounts: "",
-      policy: "",
-      additionalNotes: "",
-      thankYouMessage: "",
-    },
-  });
-
-  // Update business form when data is loaded
+  // Update form when data is loaded
   useEffect(() => {
     if (business && typeof business === 'object' && 'companyName' in business) {
-      const phoneNumber = (business as any).phoneNumber || "";
-      
-      // Auto-detect country from saved phone number
-      if (phoneNumber) {
-        const detectedCountry = detectCountryFromPhone(phoneNumber);
-        if (detectedCountry) {
-          setSelectedCountry(detectedCountry);
-        }
-      }
-      
       businessForm.reset({
         companyName: (business as any).companyName || "",
-        phoneNumber: phoneNumber,
+        phoneNumber: (business as any).phoneNumber || "",
         address: (business as any).address || "",
         email: (business as any).email || "",
         companyStory: (business as any).companyStory || "",
@@ -163,13 +97,13 @@ export default function BusinessInfo() {
     }
   }, [business, businessForm]);
 
-  // Don't auto-populate any forms - keep them empty for user input
-
   useEffect(() => {
     if (documents && Array.isArray(documents)) {
       setUploadedFiles(documents);
     }
   }, [documents]);
+
+  // Don't auto-load products into form - let user explicitly choose to add/edit
 
   const businessMutation = useMutation({
     mutationFn: async (data: BusinessFormData) => {
@@ -204,18 +138,16 @@ export default function BusinessInfo() {
 
   const productMutation = useMutation({
     mutationFn: async (data: ProductFormData) => {
-      // Always create new product since main form is for adding new products
-      return await apiRequest("POST", "/api/products", data);
+      await apiRequest("POST", "/api/products", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
-      toast({
-        title: "Success",
-        description: "Product added successfully",
-      });
-      // Reset form for next product
       productForm.reset();
       setProductImages([]);
+      toast({
+        title: "Success",
+        description: "Product saved successfully",
+      });
     },
     onError: (error) => {
       if (isUnauthorizedError(error as Error)) {
@@ -231,89 +163,7 @@ export default function BusinessInfo() {
       }
       toast({
         title: "Error",
-        description: "Failed to save product information",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const createNewProductMutation = useMutation({
-    mutationFn: async (data: ProductFormData) => {
-      console.log("Making API request to create new product:", data);
-      return await apiRequest("POST", "/api/products", data);
-    },
-    onSuccess: (result) => {
-      console.log("New product created successfully:", result);
-      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
-      setShowAddProductForm(false);
-      newProductForm.reset();
-      setNewProductImages([]);
-      toast({
-        title: "Success",
-        description: "New product created successfully",
-      });
-    },
-    onError: (error) => {
-      console.error("Error creating new product:", error);
-      if (isUnauthorizedError(error as Error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
-      }
-      toast({
-        title: "Error",
-        description: "Failed to create new product",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const updateProductMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: ProductFormData }) => {
-      return await apiRequest("PATCH", `/api/products/${id}`, data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
-      setEditingProductId(null);
-      editProductForm.reset();
-      setEditProductImages([]);
-      toast({
-        title: "Success",
-        description: "Product updated successfully",
-      });
-    },
-    onError: (error) => {
-      console.error("Error updating product:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update product",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const deleteProductMutation = useMutation({
-    mutationFn: async (productId: number) => {
-      return await apiRequest("DELETE", `/api/products/${productId}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
-      toast({
-        title: "Success",
-        description: "Product deleted successfully",
-      });
-    },
-    onError: (error) => {
-      console.error("Error deleting product:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete product",
+        description: "Failed to save product",
         variant: "destructive",
       });
     },
@@ -334,6 +184,26 @@ export default function BusinessInfo() {
       toast({
         title: "Error",
         description: "Failed to delete document",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteProductMutation = useMutation({
+    mutationFn: async (productId: number) => {
+      await apiRequest("DELETE", `/api/products/${productId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      toast({
+        title: "Success",
+        description: "Product deleted successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to delete product",
         variant: "destructive",
       });
     },
@@ -422,203 +292,59 @@ export default function BusinessInfo() {
     }
   };
 
-  const handleNewProductImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      toast({
-        title: "Error",
-        description: "Please select a valid image file",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setUploadingNewImage(true);
-    const formData = new FormData();
-    formData.append('image', file);
-
-    try {
-      const response = await fetch('/api/products/upload-image', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          toast({
-            title: "Unauthorized",
-            description: "You are logged out. Logging in again...",
-            variant: "destructive",
-          });
-          setTimeout(() => {
-            window.location.href = "/api/login";
-          }, 500);
-          return;
-        }
-        throw new Error('Upload failed');
-      }
-
-      const data = await response.json();
-      const newImageUrl = data.imageUrl;
-      setNewProductImages(prev => [...prev, newImageUrl]);
-      
-      toast({
-        title: "Success",
-        description: "Product image uploaded successfully",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to upload image",
-        variant: "destructive",
-      });
-    } finally {
-      setUploadingNewImage(false);
-    }
-  };
-
-  const handleEditProductImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      toast({
-        title: "Error",
-        description: "Please select a valid image file",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setUploadingEditImage(true);
-    const formData = new FormData();
-    formData.append('image', file);
-
-    try {
-      const response = await fetch('/api/products/upload-image', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          toast({
-            title: "Unauthorized",
-            description: "You are logged out. Logging in again...",
-            variant: "destructive",
-          });
-          setTimeout(() => {
-            window.location.href = "/api/login";
-          }, 500);
-          return;
-        }
-        throw new Error('Upload failed');
-      }
-
-      const data = await response.json();
-      const newImageUrl = data.imageUrl;
-      setEditProductImages(prev => [...prev, newImageUrl]);
-      
-      toast({
-        title: "Success",
-        description: "Product image uploaded successfully",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to upload image",
-        variant: "destructive",
-      });
-    } finally {
-      setUploadingEditImage(false);
-    }
-  };
-
   const onBusinessSubmit = (data: BusinessFormData) => {
-    // Phone number should already include country code since user types it directly
     businessMutation.mutate(data);
   };
 
   const onProductSubmit = (data: ProductFormData) => {
-    // Update the product with complete data if it exists, otherwise create a new one
-    if (products && Array.isArray(products) && products.length > 0) {
-      const productWithData = products.find((product: any) => 
-        product.faqs && product.faqs.length > 100
-      ) || products[0];
-      
-      const submissionData = {
-        ...data,
-        imageUrl: productImages[0] || "",
-      };
-      updateProductMutation.mutate({ id: productWithData.id, data: submissionData });
-    } else {
-      // Create new product if no products exist
-      productMutation.mutate({
-        ...data,
-        imageUrl: productImages[0] || "",
-      });
-    }
-  };
-
-  const onNewProductSubmit = (data: ProductFormData) => {
-    console.log("New product form submission data:", data);
-    console.log("New product images:", newProductImages);
-    console.log("Form errors:", newProductForm.formState.errors);
-    
-    const submissionData = {
+    const productData = {
       ...data,
-      imageUrl: newProductImages[0] || "",
+      imageUrl: productImages[0] || "",
     };
-    
-    console.log("Final submission data:", submissionData);
-    createNewProductMutation.mutate(submissionData);
-  };
 
-  const startEditingProduct = (product: any) => {
-    console.log("Editing product data:", product);
-    setEditingProductId(product.id);
-    editProductForm.reset({
-      name: product.name || "",
-      description: product.description || "",
-      price: product.price?.toString() || "",
-      faqs: "", // Keep empty for individual product editing
-      paymentDetails: "",
-      discounts: "",
-      policy: "",
-      additionalNotes: "",
-      thankYouMessage: "",
-    });
-    setEditProductImages(product.imageUrl ? [product.imageUrl] : []);
-  };
-
-  const cancelEditing = () => {
-    setEditingProductId(null);
-    editProductForm.reset();
-    setEditProductImages([]);
-  };
-
-  const onEditProductSubmit = (data: ProductFormData) => {
-    if (editingProductId) {
-      const submissionData = {
-        name: data.name,
-        description: data.description,
-        price: data.price,
-        imageUrl: editProductImages[0] || "",
-        // Don't update the detailed fields for individual product edits
-      };
-      updateProductMutation.mutate({ id: editingProductId, data: submissionData });
+    if (editingProduct) {
+      // Update existing product
+      updateProductMutation.mutate({ id: editingProduct.id, ...productData });
+    } else {
+      // Create new product
+      productMutation.mutate(productData);
     }
   };
 
-  const handleDeleteProduct = (productId: number) => {
-    if (confirm("Are you sure you want to delete this product?")) {
-      deleteProductMutation.mutate(productId);
-    }
-  };
+  const updateProductMutation = useMutation({
+    mutationFn: async ({ id, ...data }: any) => {
+      return await apiRequest("PATCH", `/api/products/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      setShowProductForm(false);
+      setEditingProduct(null);
+      productForm.reset();
+      setProductImages([]);
+      toast({
+        title: "Success",
+        description: "Product updated successfully",
+      });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error as Error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to update product",
+        variant: "destructive",
+      });
+    },
+  });
 
   if (businessLoading || documentsLoading || productsLoading) {
     return (
@@ -715,22 +441,23 @@ export default function BusinessInfo() {
                   <FormItem>
                     <FormLabel className="text-sm font-medium text-gray-700">Phone Number</FormLabel>
                     <FormControl>
-                      <Input 
-                        placeholder="Enter phone number with country code (e.g., +63 9171234567)" 
-                        value={field.value || ''}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          field.onChange(value);
-                          
-                          // Auto-detect country when user types
-                          if (value.startsWith('+') || value.match(/^\d+/)) {
-                            const detectedCountry = detectCountryFromPhone(value);
-                            if (detectedCountry && detectedCountry.phoneCode !== selectedCountry.phoneCode) {
-                              setSelectedCountry(detectedCountry);
-                            }
-                          }
-                        }}
-                      />
+                      <div className="flex">
+                        <Select defaultValue="+44">
+                          <SelectTrigger className="w-20 rounded-r-none">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="+44">🇬🇧 +44</SelectItem>
+                            <SelectItem value="+1">🇺🇸 +1</SelectItem>
+                            <SelectItem value="+880">🇧🇩 +880</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Input 
+                          placeholder="XXXX XXX XXXX" 
+                          className="rounded-l-none"
+                          {...field} 
+                        />
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -806,163 +533,9 @@ export default function BusinessInfo() {
         </Form>
       </div>
 
-      {/* Existing Products Section */}
-      {Array.isArray(products) && products.length > 0 && (
-        <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Your Products</h2>
-          <div className="space-y-4 mb-8">
-            {products.map((product: any) => (
-              <div key={product.id} className="border border-gray-200 rounded-lg p-6 bg-gray-50">
-                {editingProductId === product.id ? (
-                  /* Edit Form */
-                  <Form {...editProductForm}>
-                    <form onSubmit={editProductForm.handleSubmit(onEditProductSubmit)} className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField
-                          control={editProductForm.control}
-                          name="name"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Product Name</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Enter Product Name" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={editProductForm.control}
-                          name="price"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Price</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Enter Price" {...field} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      
-                      <FormField
-                        control={editProductForm.control}
-                        name="description"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Description</FormLabel>
-                            <FormControl>
-                              <Textarea placeholder="Enter Description" rows={3} {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      {/* Image Upload Section for Edit Product */}
-                      <div>
-                        <FormLabel className="text-sm font-medium text-gray-700 mb-3 block">Product Images</FormLabel>
-                        <div className="grid grid-cols-4 gap-4">
-                          {editProductImages.map((image, index) => (
-                            <div key={index} className="relative aspect-square">
-                              <img 
-                                src={image} 
-                                alt={`Product ${index + 1}`}
-                                className="w-full h-full object-cover rounded-lg border border-gray-200"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => setEditProductImages(prev => prev.filter((_, i) => i !== index))}
-                                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600"
-                              >
-                                <X className="w-3 h-3" />
-                              </button>
-                            </div>
-                          ))}
-                          
-                          {editProductImages.length < 4 && (
-                            <label htmlFor="edit-product-image-upload" className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 transition-colors">
-                              <Camera className="w-6 h-6 text-gray-400 mb-1" />
-                              <span className="text-xs text-gray-500">Add Image</span>
-                              <input
-                                id="edit-product-image-upload"
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={handleEditProductImageUpload}
-                                disabled={uploadingEditImage}
-                              />
-                            </label>
-                          )}
-                        </div>
-                        {uploadingEditImage && (
-                          <p className="text-sm text-gray-500 mt-2">Uploading image...</p>
-                        )}
-                      </div>
-
-                      <div className="flex gap-4 pt-4">
-                        <Button type="submit" disabled={updateProductMutation.isPending}>
-                          {updateProductMutation.isPending ? "Saving..." : "Save Changes"}
-                        </Button>
-                        <Button type="button" variant="outline" onClick={cancelEditing}>
-                          Cancel
-                        </Button>
-                      </div>
-                    </form>
-                  </Form>
-                ) : (
-                  /* Display Mode */
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                        {product.name || "Unnamed Product"}
-                      </h3>
-                      {product.description && (
-                        <p className="text-gray-600 mb-3">{product.description}</p>
-                      )}
-                      {product.price && (
-                        <p className="text-xl font-bold text-green-600">${product.price}</p>
-                      )}
-                      <div className="flex gap-2 mt-3">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => startEditingProduct(product)}
-                        >
-                          Edit Product
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                          onClick={() => handleDeleteProduct(product.id)}
-                          disabled={deleteProductMutation.isPending}
-                        >
-                          {deleteProductMutation.isPending ? "Deleting..." : "Delete"}
-                        </Button>
-                      </div>
-                    </div>
-                    {product.imageUrl && (
-                      <div className="ml-6 w-24 h-24 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-                        <img 
-                          src={product.imageUrl} 
-                          alt={product.name || "Product"}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Add New Product Section */}
+      {/* Products and Services Section */}
       <div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">Add New Product</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-6">Products and Services</h2>
         
         <Form {...productForm}>
           <form onSubmit={productForm.handleSubmit(onProductSubmit)} className="space-y-6">
@@ -1052,306 +625,6 @@ export default function BusinessInfo() {
                 <p className="text-sm text-gray-500 mt-2">Uploading image...</p>
               )}
             </div>
-
-
-
-            {/* Add Another Product Button */}
-            {!showAddProductForm && (
-              <div className="flex justify-center pt-4">
-                <Button 
-                  type="button"
-                  variant="outline"
-                  className="border-primary text-primary hover:bg-primary hover:text-white"
-                  onClick={() => {
-                    // Clear cache and refresh products
-                    queryClient.invalidateQueries({ queryKey: ["/api/products"] });
-                    setShowAddProductForm(true);
-                    newProductForm.reset();
-                    setNewProductImages([]);
-                  }}
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Another Product
-                </Button>
-              </div>
-            )}
-
-            {/* New Product Form - appears right here */}
-            {showAddProductForm && (
-              <div className="border border-gray-200 rounded-lg p-6 bg-gray-50 mt-4 mb-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900">Add New Product</h3>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => {
-                      setShowAddProductForm(false);
-                      newProductForm.reset();
-                      setNewProductImages([]);
-                    }}
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-                
-                <Form {...newProductForm}>
-                  <form onSubmit={newProductForm.handleSubmit(onNewProductSubmit)} className="space-y-6">
-                    <FormField
-                      control={newProductForm.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium text-gray-700">Product Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Enter Product Name" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={newProductForm.control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium text-gray-700">Description</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Enter Product Description" 
-                              rows={3}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={newProductForm.control}
-                      name="price"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium text-gray-700">Price</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Enter Price" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={newProductForm.control}
-                      name="faqs"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium text-gray-700">FAQs</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Enter FAQs" 
-                              rows={3}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={newProductForm.control}
-                      name="paymentDetails"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium text-gray-700">Payment Details</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Enter Payment Details" 
-                              rows={3}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={newProductForm.control}
-                      name="discounts"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium text-gray-700">Discounts</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Enter Discounts/Special Offers" 
-                              rows={2}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={newProductForm.control}
-                      name="policy"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium text-gray-700">Policy</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Enter policies and terms" 
-                              rows={2}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={newProductForm.control}
-                      name="additionalNotes"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium text-gray-700">Additional Notes</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Enter additional notes" 
-                              rows={2}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={newProductForm.control}
-                      name="thankYouMessage"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium text-gray-700">Thank You Message</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Enter thank you message" 
-                              rows={2}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    {/* Image Upload Section for New Product */}
-                    <div>
-                      <FormLabel className="text-sm font-medium text-gray-700 mb-3 block">Upload Product Images</FormLabel>
-                      <div className="grid grid-cols-4 gap-4">
-                        {newProductImages.map((image, index) => (
-                          <div key={index} className="relative aspect-square">
-                            <img 
-                              src={image} 
-                              alt={`Product ${index + 1}`}
-                              className="w-full h-full object-cover rounded-lg border border-gray-200"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setNewProductImages(prev => prev.filter((_, i) => i !== index))}
-                              className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600"
-                            >
-                              <X className="w-3 h-3" />
-                            </button>
-                          </div>
-                        ))}
-                        
-                        {newProductImages.length < 4 && (
-                          <label htmlFor="new-product-image-upload" className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 transition-colors">
-                            <Camera className="w-6 h-6 text-gray-400 mb-1" />
-                            <span className="text-xs text-gray-500">Add Image</span>
-                            <input
-                              id="new-product-image-upload"
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={handleNewProductImageUpload}
-                              disabled={uploadingNewImage}
-                            />
-                          </label>
-                        )}
-                      </div>
-                      {uploadingNewImage && (
-                        <p className="text-sm text-gray-500 mt-2">Uploading image...</p>
-                      )}
-                    </div>
-
-                    <div className="flex justify-end space-x-3 pt-4">
-                      <Button 
-                        type="button" 
-                        variant="outline"
-                        className="border-gray-300 text-gray-700 hover:bg-gray-50"
-                        onClick={() => {
-                          setShowAddProductForm(false);
-                          newProductForm.reset();
-                          setNewProductImages([]);
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                      <Button 
-                        type="button" 
-                        className="bg-green-600 text-white hover:bg-green-700 px-4 mr-2"
-                        onClick={() => {
-                          console.log("TEST: Direct API call");
-                          const testData = {
-                            name: "Test Product",
-                            description: "Test Description", 
-                            price: "99",
-                            imageUrl: newProductImages[0] || "",
-                            faqs: "",
-                            paymentDetails: "",
-                            discounts: "",
-                            policy: "",
-                            additionalNotes: "",
-                            thankYouMessage: ""
-                          };
-                          console.log("TEST: Calling mutation with:", testData);
-                          createNewProductMutation.mutate(testData);
-                        }}
-                      >
-                        TEST
-                      </Button>
-                      <Button 
-                        type="button" 
-                        className="bg-primary text-white hover:bg-primary-dark px-6"
-                        disabled={createNewProductMutation.isPending}
-                        onClick={() => {
-                          console.log("Add Product button clicked!");
-                          const formValues = newProductForm.getValues();
-                          console.log("Form values:", formValues);
-                          
-                          const submissionData = {
-                            ...formValues,
-                            imageUrl: newProductImages[0] || "",
-                          };
-                          
-                          console.log("Submitting product:", submissionData);
-                          createNewProductMutation.mutate(submissionData);
-                        }}
-                      >
-                        {createNewProductMutation.isPending ? "Creating..." : "Add Product"}
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
-              </div>
-            )}
 
             <FormField
               control={productForm.control}
@@ -1466,7 +739,6 @@ export default function BusinessInfo() {
                 type="button" 
                 variant="outline"
                 className="border-gray-300 text-gray-700 hover:bg-gray-50"
-                onClick={() => productForm.reset()}
               >
                 Cancel
               </Button>
@@ -1481,8 +753,6 @@ export default function BusinessInfo() {
           </form>
         </Form>
       </div>
-
-
     </div>
   );
 }
