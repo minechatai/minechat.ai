@@ -770,6 +770,57 @@ export default function BusinessInfo() {
             <span className="text-sm text-blue-600 cursor-pointer hover:underline">(watch tutorial video)</span>
           </div>
           
+          <div className="mb-8">
+            <p className="text-sm text-gray-600 mb-4">Upload files you want to import FAQ documents</p>
+            
+            {/* File Upload Area */}
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center mb-6">
+              <CloudUpload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600 mb-2">Drag & Drop files here</p>
+              <p className="text-sm text-gray-500 mb-4">or</p>
+              <label htmlFor="faq-file-upload">
+                <Button className="bg-primary text-white hover:bg-primary-dark cursor-pointer">
+                  CHOOSE FILE
+                </Button>
+                <input
+                  id="faq-file-upload"
+                  type="file"
+                  multiple
+                  accept=".pdf,.doc,.docx,.txt"
+                  className="hidden"
+                  onChange={handleFileUpload}
+                />
+              </label>
+            </div>
+            
+            {/* Display uploaded files */}
+            {uploadedFiles.length > 0 && (
+              <div className="space-y-3 mb-8">
+                {uploadedFiles.map((file) => (
+                  <div key={file.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <FileText className="w-5 h-5 text-blue-500" />
+                      <span className="text-sm font-medium text-gray-700">{file.originalName}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-xs text-gray-500">
+                        {file.uploadStatus === 'completed' ? 'Complete' : 'Processing...'}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deleteDocumentMutation.mutate(file.id)}
+                        disabled={deleteDocumentMutation.isPending}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          
           <Form {...faqForm}>
             <form onSubmit={faqForm.handleSubmit(onFaqSubmit)} className="space-y-6">
               <FormField
