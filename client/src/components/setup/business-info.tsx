@@ -623,8 +623,8 @@ export default function BusinessInfo() {
                         {/* Flag and dropdown section */}
                         <div className="flex items-center bg-gray-50 border-r border-gray-300">
                           <div className="px-3 py-2 flex items-center gap-2">
-                            <span className="text-xl emoji" style={{ fontFamily: 'Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji' }}>
-                              {selectedCountry.flag || selectedCountry.code}
+                            <span className="text-xl emoji-flag">
+                              {selectedCountry.flag}
                             </span>
                           </div>
                           <Select 
@@ -641,16 +641,14 @@ export default function BusinessInfo() {
                             }}
                           >
                             <SelectTrigger className="w-8 h-full border-0 bg-transparent p-1">
-                              <SelectValue>
-                                <span className="text-gray-400">⌄</span>
-                              </SelectValue>
+                              <SelectValue />
                             </SelectTrigger>
                             <SelectContent className="max-h-60 w-[300px]">
                               {countries.map((country) => (
                                 <SelectItem key={country.code} value={country.phoneCode}>
                                   <div className="flex items-center gap-3 w-full">
-                                    <span className="text-lg leading-none emoji" style={{ fontFamily: 'Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji' }}>
-                                      {country.flag || country.code}
+                                    <span className="text-lg leading-none emoji-flag">
+                                      {country.flag}
                                     </span>
                                     <span className="font-medium text-sm min-w-[50px]">{country.phoneCode}</span>
                                     <span className="text-sm text-gray-600 flex-1 truncate">{country.name}</span>

@@ -8,6 +8,11 @@
   font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, sans-serif !important;
 }
 
+/* Allow emoji fonts to override the general font rule */
+.emoji-flag {
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Segoe UI Symbol', sans-serif !important;
+}
+
 /* Ensure emojis render correctly with proper font fallback */
 .emoji, [class*="flag"] {
   font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Segoe UI Symbol', 'Android Emoji', 'EmojiSymbols' !important;
