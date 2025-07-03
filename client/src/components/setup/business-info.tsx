@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -69,6 +69,7 @@ export default function BusinessInfo() {
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [faqEntries, setFaqEntries] = useState<FaqEntry[]>([]);
   const [showAddFaqForm, setShowAddFaqForm] = useState(false);
+  const addFaqFormRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   const { data: business, isLoading: businessLoading } = useQuery({
@@ -523,6 +524,17 @@ export default function BusinessInfo() {
     addFaqEntry(data);
   };
 
+  const handleOpenAddFaqForm = () => {
+    setShowAddFaqForm(true);
+    // Scroll to form after a short delay to ensure it's rendered
+    setTimeout(() => {
+      addFaqFormRef.current?.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+    }, 100);
+  };
+
   const onProductSubmit = (data: ProductFormData) => {
     const productData = {
       ...data,
@@ -970,7 +982,7 @@ export default function BusinessInfo() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-medium text-gray-900">Individual FAQ Entries</h3>
               <Button 
-                onClick={() => setShowAddFaqForm(true)}
+                onClick={handleOpenAddFaqForm}
                 className="bg-primary text-white hover:bg-primary-dark"
                 size="sm"
               >
@@ -1002,7 +1014,7 @@ export default function BusinessInfo() {
             
             {/* Add FAQ Form */}
             {showAddFaqForm && (
-              <Card className="p-6 border border-gray-200">
+              <Card ref={addFaqFormRef} className="p-6 border border-gray-200">
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="text-lg font-medium text-gray-900">Add New FAQ</h4>
                   <Button
