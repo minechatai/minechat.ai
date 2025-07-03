@@ -344,6 +344,41 @@ export default function BusinessInfo() {
     },
   });
 
+  const updateProductMutation = useMutation({
+    mutationFn: async ({ id, ...data }: { id: number } & ProductFormData) => {
+      return await apiRequest("PUT", `/api/products/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      setEditingProduct(null);
+      setShowProductForm(false);
+      productForm.reset();
+      setProductImages([]);
+      toast({
+        title: "Success",
+        description: "Product updated successfully",
+      });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error as Error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to update product",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
@@ -574,42 +609,71 @@ export default function BusinessInfo() {
       // Create new product
       productMutation.mutate(productData);
     }
-  };
+  }
 
-  const updateProductMutation = useMutation({
-    mutationFn: async ({ id, ...data }: any) => {
-      return await apiRequest("PATCH", `/api/products/${id}`, data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
-      setShowProductForm(false);
-      setEditingProduct(null);
-      productForm.reset();
-      setProductImages([]);
-      toast({
-        title: "Success",
-        description: "Product updated successfully",
+  const handleProductImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const response = await fetch('/api/upload/image', {
+        method: 'POST',
+        body: formData,
       });
-    },
-    onError: (error) => {
-      if (isUnauthorizedError(error as Error)) {
+
+      if (response.ok) {
+        const result = await response.json();
+        setProductImages([...productImages, result.imageUrl]);
         toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
+          title: "Success",
+          description: "Image uploaded successfully",
         });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
-        return;
+      } else {
+        throw new Error('Failed to upload image');
       }
+    } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to update product",
+        description: "Failed to upload image",
         variant: "destructive",
       });
-    },
-  });
+    } finally {
+      setUploadingImage(false);
+      // Reset the input
+      event.target.value = '';
+    }
+  };
+
+  const removeProductImage = (index: number) => {
+    const updatedImages = productImages.filter((_, i) => i !== index);
+    setProductImages(updatedImages);
+  };
+
+  const startEditingProduct = (product: any) => {
+    setEditingProduct(product);
+    setShowProductForm(true);
+    productForm.reset({
+      name: product.name || "",
+      description: product.description || "",
+      price: product.price || "",
+      faqs: product.faqs || "",
+      paymentDetails: product.paymentDetails || "",
+      discounts: product.discounts || "",
+      policy: product.policy || "",
+      additionalNotes: product.additionalNotes || "",
+      thankYouMessage: product.thankYouMessage || "",
+    });
+    // Set existing product image
+    if (product.imageUrl) {
+      setProductImages([product.imageUrl]);
+    }
+  };
+
+
 
   if (businessLoading || documentsLoading || productsLoading) {
     return (
@@ -1237,6 +1301,346 @@ export default function BusinessInfo() {
               </div>
             </form>
           </Form>
+        </div>
+      )}
+
+      {/* Products & Services Section */}
+      {currentSubSection === "products-services" && (
+        <div>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Products & Services</h2>
+            <span className="text-sm text-blue-600 cursor-pointer hover:underline">(watch tutorial video)</span>
+          </div>
+
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Product Management</h3>
+              <Button 
+                onClick={() => setShowProductForm(true)}
+                className="bg-primary text-white hover:bg-primary-dark"
+                size="sm"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add New Product
+              </Button>
+            </div>
+
+            {/* Add Product Form */}
+            {showProductForm && (
+              <Card className="p-6 border border-gray-200 dark:border-gray-700 mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100">Add New Product</h4>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setShowProductForm(false);
+                      productForm.reset();
+                    }}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+                
+                <Form {...productForm}>
+                  <form onSubmit={productForm.handleSubmit(onProductSubmit)} className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={productForm.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">Product Name</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="Enter product name" 
+                                className="bg-white dark:bg-gray-700"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={productForm.control}
+                        name="price"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">Price</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="Enter price (e.g. 29.99)" 
+                                type="number"
+                                step="0.01"
+                                className="bg-white dark:bg-gray-700"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <FormField
+                      control={productForm.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">Description</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Enter product description"
+                              rows={3}
+                              className="resize-none bg-white dark:bg-gray-700"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={productForm.control}
+                        name="faqs"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">FAQs</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Enter frequently asked questions"
+                                rows={3}
+                                className="resize-none bg-white dark:bg-gray-700"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={productForm.control}
+                        name="paymentDetails"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">Payment Details</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Enter payment information"
+                                rows={3}
+                                className="resize-none bg-white dark:bg-gray-700"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={productForm.control}
+                        name="discounts"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">Discounts</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Enter discount information"
+                                rows={2}
+                                className="resize-none bg-white dark:bg-gray-700"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={productForm.control}
+                        name="policy"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">Policy</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Enter policy information"
+                                rows={2}
+                                className="resize-none bg-white dark:bg-gray-700"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={productForm.control}
+                        name="additionalNotes"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">Additional Notes</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Enter additional notes"
+                                rows={2}
+                                className="resize-none bg-white dark:bg-gray-700"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={productForm.control}
+                        name="thankYouMessage"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">Thank You Message</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Enter thank you message"
+                                rows={2}
+                                className="resize-none bg-white dark:bg-gray-700"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    {/* Product Image Upload */}
+                    <div>
+                      <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 block">Product Image</FormLabel>
+                      <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
+                        <Camera className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                        <p className="text-gray-600 dark:text-gray-400 mb-2 text-sm">Upload product image</p>
+                        <label htmlFor="product-image-upload">
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            size="sm" 
+                            className="cursor-pointer"
+                            disabled={uploadingImage}
+                          >
+                            {uploadingImage ? "Uploading..." : "Choose Image"}
+                          </Button>
+                          <input
+                            id="product-image-upload"
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleProductImageUpload}
+                          />
+                        </label>
+                        
+                        {productImages.length > 0 && (
+                          <div className="mt-4 flex flex-wrap gap-2">
+                            {productImages.map((imageUrl, index) => (
+                              <div key={index} className="relative">
+                                <img 
+                                  src={imageUrl} 
+                                  alt={`Product ${index + 1}`}
+                                  className="w-20 h-20 object-cover rounded border"
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="absolute -top-2 -right-2 w-6 h-6 p-0 bg-red-500 text-white rounded-full hover:bg-red-600"
+                                  onClick={() => removeProductImage(index)}
+                                >
+                                  <X className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-end space-x-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setShowProductForm(false);
+                          productForm.reset();
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="submit"
+                        className="bg-primary text-white hover:bg-primary-dark"
+                        disabled={productMutation.isPending}
+                      >
+                        {productMutation.isPending ? "Adding..." : "Add Product"}
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </Card>
+            )}
+
+            {/* Display existing products */}
+            {Array.isArray(products) && products.length > 0 && (
+              <div className="space-y-4">
+                <h4 className="font-medium text-gray-900 dark:text-gray-100">Existing Products</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {products.map((product: any) => (
+                    <div key={product.id} className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
+                      {product.imageUrl && (
+                        <img 
+                          src={product.imageUrl} 
+                          alt={product.name}
+                          className="w-full h-32 object-cover rounded mb-3"
+                        />
+                      )}
+                      <div className="flex justify-between items-start mb-2">
+                        <h5 className="font-medium text-gray-900 dark:text-gray-100">{product.name}</h5>
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => startEditingProduct(product)}
+                            className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => deleteProductMutation.mutate(product.id)}
+                            className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                            disabled={deleteProductMutation.isPending}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <p className="text-gray-700 dark:text-gray-300 text-sm mb-2">{product.description}</p>
+                      <p className="text-primary font-semibold">${product.price}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
