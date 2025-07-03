@@ -623,7 +623,9 @@ export default function BusinessInfo() {
                         {/* Flag and dropdown section */}
                         <div className="flex items-center bg-gray-50 px-3 py-2 border-r border-gray-300">
                           <div className="flex items-center gap-2">
-                            <span className="text-2xl">🇺🇸</span>
+                            <div className="w-6 h-4 bg-blue-500 border border-gray-300 rounded-sm flex items-center justify-center text-white text-xs font-bold">
+                              {selectedCountry.code}
+                            </div>
                             <Select 
                               value={selectedCountry.phoneCode} 
                               onValueChange={(value) => {
@@ -640,17 +642,17 @@ export default function BusinessInfo() {
                                 <span className="text-gray-400">▼</span>
                               </SelectTrigger>
                               <SelectContent className="max-h-60 w-[300px]">
-                                <SelectItem value="+1"><div className="flex items-center gap-3"><span className="text-lg">🇺🇸</span><span>+1</span><span>United States</span></div></SelectItem>
-                                <SelectItem value="+1"><div className="flex items-center gap-3"><span className="text-lg">🇨🇦</span><span>+1</span><span>Canada</span></div></SelectItem>
-                                <SelectItem value="+44"><div className="flex items-center gap-3"><span className="text-lg">🇬🇧</span><span>+44</span><span>United Kingdom</span></div></SelectItem>
-                                <SelectItem value="+49"><div className="flex items-center gap-3"><span className="text-lg">🇩🇪</span><span>+49</span><span>Germany</span></div></SelectItem>
-                                <SelectItem value="+33"><div className="flex items-center gap-3"><span className="text-lg">🇫🇷</span><span>+33</span><span>France</span></div></SelectItem>
-                                <SelectItem value="+81"><div className="flex items-center gap-3"><span className="text-lg">🇯🇵</span><span>+81</span><span>Japan</span></div></SelectItem>
-                                <SelectItem value="+86"><div className="flex items-center gap-3"><span className="text-lg">🇨🇳</span><span>+86</span><span>China</span></div></SelectItem>
-                                <SelectItem value="+91"><div className="flex items-center gap-3"><span className="text-lg">🇮🇳</span><span>+91</span><span>India</span></div></SelectItem>
-                                <SelectItem value="+61"><div className="flex items-center gap-3"><span className="text-lg">🇦🇺</span><span>+61</span><span>Australia</span></div></SelectItem>
-                                <SelectItem value="+55"><div className="flex items-center gap-3"><span className="text-lg">🇧🇷</span><span>+55</span><span>Brazil</span></div></SelectItem>
-                                <SelectItem value="+63"><div className="flex items-center gap-3"><span className="text-lg">🇵🇭</span><span>+63</span><span>Philippines</span></div></SelectItem>
+                                {countries.map((country) => (
+                                  <SelectItem key={country.code} value={country.phoneCode}>
+                                    <div className="flex items-center gap-3 w-full">
+                                      <div className="w-6 h-4 bg-blue-500 border border-gray-300 rounded-sm flex items-center justify-center text-white text-xs font-bold">
+                                        {country.code}
+                                      </div>
+                                      <span className="font-medium text-sm min-w-[50px]">{country.phoneCode}</span>
+                                      <span className="text-sm text-gray-600 flex-1 truncate">{country.name}</span>
+                                    </div>
+                                  </SelectItem>
+                                ))}
                               </SelectContent>
                             </Select>
                           </div>
@@ -661,7 +663,15 @@ export default function BusinessInfo() {
                           placeholder="+1" 
                           className="w-20 border-0 border-r border-gray-300 rounded-none text-center font-medium focus:ring-0"
                           value={selectedCountry.phoneCode}
-                          readOnly
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (value.startsWith('+')) {
+                              const detectedCountry = detectCountryFromPhone(value);
+                              if (detectedCountry && detectedCountry.phoneCode !== selectedCountry.phoneCode) {
+                                setSelectedCountry(detectedCountry);
+                              }
+                            }
+                          }}
                         />
                         
                         {/* Phone number input */}
