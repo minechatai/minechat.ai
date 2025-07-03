@@ -87,6 +87,7 @@ export default function BusinessInfo() {
   // Update form when data is loaded
   useEffect(() => {
     if (business && typeof business === 'object' && 'companyName' in business) {
+      console.log("Loading business data:", business);
       businessForm.reset({
         companyName: (business as any).companyName || "",
         phoneNumber: (business as any).phoneNumber || "",
