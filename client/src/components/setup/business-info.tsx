@@ -109,11 +109,15 @@ export default function BusinessInfo() {
 
   // Update form when data is loaded
   useEffect(() => {
-    if (business && typeof business === 'object' && 'companyName' in business) {
-      console.log("Loading business data for forms:", business);
+    console.log("Business data from API:", business);
+    console.log("Business loading:", businessLoading);
+    
+    if (business && typeof business === 'object') {
+      console.log("All business fields:", Object.keys(business));
+      console.log("Company name specifically:", (business as any).companyName);
       
       // Update business form
-      businessForm.reset({
+      const formData = {
         companyName: (business as any).companyName || "",
         phoneNumber: (business as any).phoneNumber || "",
         address: (business as any).address || "",
@@ -124,14 +128,20 @@ export default function BusinessInfo() {
         policy: (business as any).policy || "",
         additionalNotes: (business as any).additionalNotes || "",
         thankYouMessage: (business as any).thankYouMessage || "",
-      });
+      };
+      
+      console.log("Form data to populate:", formData);
+      businessForm.reset(formData);
       
       // Update FAQ form
-      faqForm.reset({
+      const faqData = {
         faqs: (business as any).faqs || "",
-      });
+      };
+      
+      console.log("FAQ data to populate:", faqData);
+      faqForm.reset(faqData);
     }
-  }, [business, businessForm, faqForm]);
+  }, [business, businessForm, faqForm, businessLoading]);
 
   useEffect(() => {
     if (documents && Array.isArray(documents)) {
