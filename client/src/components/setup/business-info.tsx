@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { CloudUpload, FileText, X, Plus, Camera } from "lucide-react";
-import { countries } from "@/data/countries";
+import { countries, detectCountryFromPhone } from "@/data/countries";
 
 const businessSchema = z.object({
   companyName: z.string().optional(),
@@ -125,23 +125,11 @@ export default function BusinessInfo() {
     if (business && typeof business === 'object' && 'companyName' in business) {
       const phoneNumber = (business as any).phoneNumber || "";
       
-      // Try to parse existing phone number to extract country code
+      // Auto-detect country from saved phone number
       if (phoneNumber) {
-        const foundCountry = countries.find(country => 
-          phoneNumber.startsWith(country.phoneCode)
-        );
-        if (foundCountry) {
-          setSelectedCountry(foundCountry);
-          // Extract the number part without the country code
-          const numberPart = phoneNumber.replace(foundCountry.phoneCode, "").trim();
-          businessForm.reset({
-            companyName: (business as any).companyName || "",
-            phoneNumber: numberPart,
-            address: (business as any).address || "",
-            email: (business as any).email || "",
-            companyStory: (business as any).companyStory || "",
-          });
-          return;
+        const detectedCountry = detectCountryFromPhone(phoneNumber);
+        if (detectedCountry) {
+          setSelectedCountry(detectedCountry);
         }
       }
       
@@ -473,12 +461,8 @@ export default function BusinessInfo() {
   };
 
   const onBusinessSubmit = (data: BusinessFormData) => {
-    // Combine country code with phone number if both exist
-    const formattedData = {
-      ...data,
-      phoneNumber: data.phoneNumber ? `${selectedCountry.phoneCode} ${data.phoneNumber}` : data.phoneNumber
-    };
-    businessMutation.mutate(formattedData);
+    // Phone number should already include country code since user types it directly
+    businessMutation.mutate(data);
   };
 
   const onProductSubmit = (data: ProductFormData) => {
@@ -636,38 +620,60 @@ export default function BusinessInfo() {
                     <FormLabel className="text-sm font-medium text-gray-700">Phone Number</FormLabel>
                     <FormControl>
                       <div className="flex">
-                        <Select 
-                          value={selectedCountry.phoneCode} 
-                          onValueChange={(value) => {
-                            const country = countries.find(c => c.phoneCode === value);
-                            if (country) setSelectedCountry(country);
-                          }}
-                        >
-                          <SelectTrigger className="w-32 rounded-r-none">
-                            <SelectValue>
-                              <span className="flex items-center gap-2">
-                                <span>{selectedCountry.flag}</span>
-                                <span>{selectedCountry.phoneCode}</span>
-                              </span>
-                            </SelectValue>
-                          </SelectTrigger>
-                          <SelectContent className="max-h-60">
-                            {countries.map((country) => (
-                              <SelectItem key={country.code} value={country.phoneCode}>
-                                <div className="flex items-center gap-2">
-                                  <span>{country.flag}</span>
-                                  <span>{country.phoneCode}</span>
-                                  <span className="text-sm text-gray-500">{country.name}</span>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <div className="flex items-center gap-2 px-3 py-2 border border-r-0 border-gray-300 rounded-l-md bg-gray-50 min-w-[80px]">
+                          <span className="text-lg">{selectedCountry.flag}</span>
+                          <span className="text-sm font-medium">{selectedCountry.phoneCode}</span>
+                        </div>
                         <Input 
-                          placeholder="Enter phone number" 
-                          className="rounded-l-none"
-                          {...field} 
+                          placeholder="Enter phone number with country code (e.g., +63 9171234567)" 
+                          className="rounded-l-none border-l-0"
+                          value={field.value || ''}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            field.onChange(value);
+                            
+                            // Auto-detect country when user types
+                            if (value.startsWith('+') || value.match(/^\d+/)) {
+                              const detectedCountry = detectCountryFromPhone(value);
+                              if (detectedCountry && detectedCountry.phoneCode !== selectedCountry.phoneCode) {
+                                setSelectedCountry(detectedCountry);
+                              }
+                            }
+                          }}
                         />
+                        <div className="ml-2">
+                          <Select 
+                            value={selectedCountry.phoneCode} 
+                            onValueChange={(value) => {
+                              const country = countries.find(c => c.phoneCode === value);
+                              if (country) {
+                                setSelectedCountry(country);
+                                // Auto-update input with country code if not already present
+                                const currentValue = field.value || '';
+                                if (!currentValue.startsWith(country.phoneCode)) {
+                                  field.onChange(country.phoneCode + ' ');
+                                }
+                              }
+                            }}
+                          >
+                            <SelectTrigger className="w-8 h-8 p-1">
+                              <SelectValue>
+                                <span>⌄</span>
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent className="max-h-60">
+                              {countries.map((country) => (
+                                <SelectItem key={country.code} value={country.phoneCode}>
+                                  <div className="flex items-center gap-3 min-w-[200px]">
+                                    <span className="text-lg">{country.flag}</span>
+                                    <span className="font-medium">{country.phoneCode}</span>
+                                    <span className="text-sm text-gray-600 truncate">{country.name}</span>
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
                     </FormControl>
                     <FormMessage />
