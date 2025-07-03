@@ -12,7 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import { CloudUpload, FileText, X, Plus, Camera } from "lucide-react";
+import { CloudUpload, FileText, X, Plus, Camera, Edit } from "lucide-react";
 
 const businessSchema = z.object({
   companyName: z.string().optional(),
@@ -69,6 +69,7 @@ export default function BusinessInfo() {
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [faqEntries, setFaqEntries] = useState<FaqEntry[]>([]);
   const [showAddFaqForm, setShowAddFaqForm] = useState(false);
+  const [editingFaqId, setEditingFaqId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const { data: business, isLoading: businessLoading } = useQuery({
@@ -192,9 +193,7 @@ export default function BusinessInfo() {
       
       // Parse individual FAQ entries from saved text
       if (faqData.faqs) {
-        console.log("🔍 Raw FAQ data:", faqData.faqs);
         const parsedEntries = parseFaqEntries(faqData.faqs);
-        console.log("🔍 Parsed FAQ entries:", parsedEntries);
         setFaqEntries(parsedEntries);
       }
       
@@ -502,13 +501,63 @@ export default function BusinessInfo() {
       title: "Success", 
       description: "FAQ entry removed and saved successfully",
     });
+  }
+
+  const startEditingFaq = (faq: FaqEntry) => {
+    // Close add form if open
+    if (showAddFaqForm) {
+      setShowAddFaqForm(false);
+    }
+    setEditingFaqId(faq.id);
+    individualFaqForm.reset({
+      question: faq.question,
+      answer: faq.answer,
+    });
   };
+
+  const cancelEditingFaq = () => {
+    setEditingFaqId(null);
+    individualFaqForm.reset();
+  };
+
+  const updateFaqEntry = (data: IndividualFaqData) => {
+    const updatedEntries = faqEntries.map(entry => 
+      entry.id === editingFaqId 
+        ? { ...entry, question: data.question, answer: data.answer }
+        : entry
+    );
+    setFaqEntries(updatedEntries);
+    
+    // Automatically save to database with updated combined FAQs
+    const currentFaqText = faqForm.getValues().faqs || "";
+    const individualFaqsText = updatedEntries.map(entry => 
+      `### ${entry.question}\n\n${entry.answer}`
+    ).join('\n\n');
+    
+    const combinedFaqs = currentFaqText ? 
+      `${currentFaqText}\n\n${individualFaqsText}` : 
+      individualFaqsText;
+    
+    faqMutation.mutate({ faqs: combinedFaqs });
+    
+    setEditingFaqId(null);
+    individualFaqForm.reset();
+    toast({
+      title: "Success",
+      description: "FAQ entry updated and saved successfully",
+    });
+  };;
 
   const onIndividualFaqSubmit = (data: IndividualFaqData) => {
     addFaqEntry(data);
   };
 
   const handleOpenAddFaqForm = () => {
+    // Cancel editing if currently editing an FAQ
+    if (editingFaqId) {
+      setEditingFaqId(null);
+      individualFaqForm.reset();
+    }
     setShowAddFaqForm(true);
   };
 
@@ -1050,18 +1099,94 @@ export default function BusinessInfo() {
             {faqEntries.length > 0 && (
               <div className="space-y-4 mb-6">
                 {faqEntries.map((entry) => (
-                  <div key={entry.id} className="border rounded-lg p-4 bg-gray-50">
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-medium text-gray-900">Q: {entry.question}</h4>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeFaqEntry(entry.id)}
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </div>
-                    <p className="text-gray-700">A: {entry.answer}</p>
+                  <div key={entry.id} className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
+                    {editingFaqId === entry.id ? (
+                      /* Edit mode */
+                      <Form {...individualFaqForm}>
+                        <form onSubmit={individualFaqForm.handleSubmit(updateFaqEntry)} className="space-y-4">
+                          <FormField
+                            control={individualFaqForm.control}
+                            name="question"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">Question</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    placeholder="Enter your question"
+                                    className="bg-white dark:bg-gray-700"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={individualFaqForm.control}
+                            name="answer"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">Answer</FormLabel>
+                                <FormControl>
+                                  <Textarea 
+                                    placeholder="Enter the answer"
+                                    rows={3}
+                                    className="resize-none bg-white dark:bg-gray-700"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <div className="flex justify-end space-x-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={cancelEditingFaq}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              type="submit"
+                              size="sm"
+                              className="bg-primary text-white hover:bg-primary-dark"
+                            >
+                              Save
+                            </Button>
+                          </div>
+                        </form>
+                      </Form>
+                    ) : (
+                      /* View mode */
+                      <>
+                        <div className="flex justify-between items-start mb-2">
+                          <h4 className="font-medium text-gray-900 dark:text-gray-100">Q: {entry.question}</h4>
+                          <div className="flex space-x-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => startEditingFaq(entry)}
+                              className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeFaqEntry(entry.id)}
+                              className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        <p className="text-gray-700 dark:text-gray-300">A: {entry.answer}</p>
+                      </>
+                    )}
                   </div>
                 ))}
               </div>
