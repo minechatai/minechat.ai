@@ -512,22 +512,25 @@ export default function BusinessInfo() {
               )}
             />
 
-            <div className="flex justify-end space-x-3 pt-6">
-              <Button 
-                type="button" 
-                variant="outline"
-                className="border-gray-300 text-gray-700 hover:bg-gray-50"
-                onClick={() => businessForm.reset()}
-              >
-                Reset
-              </Button>
-              <Button 
-                type="submit" 
-                className="bg-primary text-white hover:bg-primary-dark px-6"
-                disabled={businessMutation.isPending}
-              >
-                {businessMutation.isPending ? "Saving..." : "Save Business Information"}
-              </Button>
+            {/* Business Information Form Buttons */}
+            <div className="border-t pt-6 mt-6">
+              <div className="flex justify-end space-x-3">
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                  onClick={() => businessForm.reset()}
+                >
+                  Reset
+                </Button>
+                <Button 
+                  type="submit" 
+                  className="bg-primary text-white hover:bg-primary-dark px-6"
+                  disabled={businessMutation.isPending}
+                >
+                  {businessMutation.isPending ? "Saving..." : "Save Business Information"}
+                </Button>
+              </div>
             </div>
           </form>
         </Form>
