@@ -129,6 +129,50 @@ export default function BusinessInfo() {
     },
   });
 
+  // Function to parse FAQ entries from saved text
+  const parseFaqEntries = (faqText: string): FaqEntry[] => {
+    const entries: FaqEntry[] = [];
+    const lines = faqText.split('\n');
+    let currentQuestion = '';
+    let currentAnswer = '';
+    let isQuestion = false;
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      
+      // Check if line starts with ### (our FAQ format)
+      if (line.startsWith('###')) {
+        // Save previous entry if exists
+        if (currentQuestion && currentAnswer) {
+          entries.push({
+            id: Date.now().toString() + Math.random(),
+            question: currentQuestion,
+            answer: currentAnswer.trim(),
+          });
+        }
+        
+        // Start new entry
+        currentQuestion = line.replace('###', '').trim();
+        currentAnswer = '';
+        isQuestion = true;
+      } else if (isQuestion && line) {
+        // This is the answer part
+        currentAnswer += (currentAnswer ? '\n' : '') + line;
+      }
+    }
+    
+    // Add last entry
+    if (currentQuestion && currentAnswer) {
+      entries.push({
+        id: Date.now().toString() + Math.random(),
+        question: currentQuestion,
+        answer: currentAnswer.trim(),
+      });
+    }
+    
+    return entries;
+  };
+
   // Update form when data is loaded
   useEffect(() => {
     console.log("Business data from API:", business);
@@ -162,6 +206,12 @@ export default function BusinessInfo() {
       
       console.log("FAQ data to populate:", faqData);
       faqForm.reset(faqData);
+      
+      // Parse individual FAQ entries from saved text
+      if (faqData.faqs) {
+        const parsedEntries = parseFaqEntries(faqData.faqs);
+        setFaqEntries(parsedEntries);
+      }
       
       console.log("Forms updated successfully!");
     }
@@ -398,7 +448,22 @@ export default function BusinessInfo() {
   };
 
   const onFaqSubmit = (data: FaqFormData) => {
-    faqMutation.mutate(data);
+    // Combine individual FAQ entries with the main FAQ text
+    let combinedFaqs = data.faqs || "";
+    
+    if (faqEntries.length > 0) {
+      const individualFaqsText = faqEntries.map(entry => 
+        `### ${entry.question}\n\n${entry.answer}`
+      ).join('\n\n');
+      
+      if (combinedFaqs) {
+        combinedFaqs = `${combinedFaqs}\n\n${individualFaqsText}`;
+      } else {
+        combinedFaqs = individualFaqsText;
+      }
+    }
+    
+    faqMutation.mutate({ faqs: combinedFaqs });
   };
 
   // Individual FAQ functions
@@ -408,20 +473,49 @@ export default function BusinessInfo() {
       question: data.question,
       answer: data.answer,
     };
-    setFaqEntries(prev => [...prev, newEntry]);
+    
+    const updatedEntries = [...faqEntries, newEntry];
+    setFaqEntries(updatedEntries);
+    
+    // Automatically save to database with combined FAQs
+    const currentFaqText = faqForm.getValues().faqs || "";
+    const individualFaqsText = updatedEntries.map(entry => 
+      `### ${entry.question}\n\n${entry.answer}`
+    ).join('\n\n');
+    
+    const combinedFaqs = currentFaqText ? 
+      `${currentFaqText}\n\n${individualFaqsText}` : 
+      individualFaqsText;
+    
+    faqMutation.mutate({ faqs: combinedFaqs });
+    
     individualFaqForm.reset();
     setShowAddFaqForm(false);
     toast({
       title: "Success",
-      description: "FAQ entry added successfully",
+      description: "FAQ entry added and saved successfully",
     });
   };
 
   const removeFaqEntry = (id: string) => {
-    setFaqEntries(prev => prev.filter(entry => entry.id !== id));
+    const updatedEntries = faqEntries.filter(entry => entry.id !== id);
+    setFaqEntries(updatedEntries);
+    
+    // Automatically save to database with updated combined FAQs
+    const currentFaqText = faqForm.getValues().faqs || "";
+    const individualFaqsText = updatedEntries.map(entry => 
+      `### ${entry.question}\n\n${entry.answer}`
+    ).join('\n\n');
+    
+    const combinedFaqs = currentFaqText && updatedEntries.length > 0 ? 
+      `${currentFaqText}\n\n${individualFaqsText}` : 
+      (updatedEntries.length > 0 ? individualFaqsText : currentFaqText);
+    
+    faqMutation.mutate({ faqs: combinedFaqs });
+    
     toast({
       title: "Success", 
-      description: "FAQ entry removed successfully",
+      description: "FAQ entry removed and saved successfully",
     });
   };
 
