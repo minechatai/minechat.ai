@@ -45,6 +45,7 @@ type BusinessFormData = z.infer<typeof businessSchema>;
 type ProductFormData = z.infer<typeof productSchema>;
 
 export default function BusinessInfo() {
+  const [currentSubSection, setCurrentSubSection] = useState("business-information");
   const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [productImages, setProductImages] = useState<string[]>([]);
@@ -379,12 +380,49 @@ export default function BusinessInfo() {
 
   return (
     <div className="space-y-8">
+      {/* Sub-section Navigation */}
+      <div className="border-b border-gray-200">
+        <nav className="flex space-x-8">
+          <button
+            onClick={() => setCurrentSubSection("business-information")}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              currentSubSection === "business-information"
+                ? "border-primary text-primary"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            }`}
+          >
+            Business Information
+          </button>
+          <button
+            onClick={() => setCurrentSubSection("products-services")}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              currentSubSection === "products-services"
+                ? "border-primary text-primary"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            }`}
+          >
+            Products & Services
+          </button>
+          <button
+            onClick={() => setCurrentSubSection("faqs")}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              currentSubSection === "faqs"
+                ? "border-primary text-primary"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            }`}
+          >
+            FAQs
+          </button>
+        </nav>
+      </div>
+
       {/* Business Information Section */}
-      <div>
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Business Information</h2>
-          <span className="text-sm text-blue-600 cursor-pointer hover:underline">(watch tutorial video)</span>
-        </div>
+      {currentSubSection === "business-information" && (
+        <div>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">Business Information</h2>
+            <span className="text-sm text-blue-600 cursor-pointer hover:underline">(watch tutorial video)</span>
+          </div>
         
         <div className="mb-8">
           <p className="text-sm text-gray-600 mb-4">Upload files you want to import new business document</p>
@@ -667,228 +705,24 @@ export default function BusinessInfo() {
             </div>
           </form>
         </Form>
-      </div>
+        </div>
+      )}
 
-      {/* Products and Services Section */}
-      <div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">Products and Services</h2>
-        
-        <Form {...productForm}>
-          <form onSubmit={productForm.handleSubmit(onProductSubmit)} className="space-y-6">
-            <FormField
-              control={productForm.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-gray-700">Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter Name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+      {/* Products and Services Section - Coming Soon */}
+      {currentSubSection === "products-services" && (
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">Products & Services</h2>
+          <p className="text-gray-600">Coming soon...</p>
+        </div>
+      )}
 
-            <FormField
-              control={productForm.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-gray-700">Description</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Enter Description" 
-                      rows={3}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={productForm.control}
-              name="price"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-gray-700">Price</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter Price" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Image Upload Section */}
-            <div>
-              <FormLabel className="text-sm font-medium text-gray-700 mb-3 block">Upload Images</FormLabel>
-              <div className="grid grid-cols-4 gap-4">
-                {productImages.map((image, index) => (
-                  <div key={index} className="relative aspect-square">
-                    <img 
-                      src={image} 
-                      alt={`Product ${index + 1}`}
-                      className="w-full h-full object-cover rounded-lg border border-gray-200"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setProductImages(prev => prev.filter((_, i) => i !== index))}
-                      className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
-                
-                {productImages.length < 4 && (
-                  <label htmlFor="product-image-upload" className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 transition-colors">
-                    <Camera className="w-6 h-6 text-gray-400 mb-1" />
-                    <span className="text-xs text-gray-500">Add Image</span>
-                    <input
-                      id="product-image-upload"
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleImageUpload}
-                      disabled={uploadingImage}
-                    />
-                  </label>
-                )}
-              </div>
-              {uploadingImage && (
-                <p className="text-sm text-gray-500 mt-2">Uploading image...</p>
-              )}
-            </div>
-
-            <FormField
-              control={productForm.control}
-              name="faqs"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-gray-700">FAQs</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Enter FAQs" 
-                      rows={3}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={productForm.control}
-              name="paymentDetails"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-gray-700">Payment Details</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Enter Payment Details" 
-                      rows={3}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={productForm.control}
-              name="discounts"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-gray-700">Discounts</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Enter Discounts" 
-                      rows={3}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={productForm.control}
-              name="policy"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-gray-700">Policy</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Enter Policy" 
-                      rows={3}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={productForm.control}
-              name="additionalNotes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-gray-700">Additional Notes</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Enter Additional Notes" 
-                      rows={3}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={productForm.control}
-              name="thankYouMessage"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-gray-700">Thank you message</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Enter Thank you message" 
-                      rows={3}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="flex justify-end space-x-3 pt-4">
-              <Button 
-                type="button" 
-                variant="outline"
-                className="border-gray-300 text-gray-700 hover:bg-gray-50"
-              >
-                Cancel
-              </Button>
-              <Button 
-                type="submit" 
-                className="bg-primary text-white hover:bg-primary-dark px-6"
-                disabled={productMutation.isPending}
-              >
-                {productMutation.isPending ? "Saving..." : "Save"}
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </div>
+      {/* FAQs Section - Coming Soon */}
+      {currentSubSection === "faqs" && (
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-6">FAQs</h2>
+          <p className="text-gray-600">Coming soon...</p>
+        </div>
+      )}
     </div>
   );
 }

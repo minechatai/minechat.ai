@@ -39,7 +39,7 @@ export default function Setup() {
   useEffect(() => {
     if (!section) {
       setLocation("/setup/ai-assistant");
-    } else if (!["ai-assistant", "business-info", "channels"].includes(section)) {
+    } else if (!["ai-assistant", "business", "channels"].includes(section)) {
       setLocation("/setup/ai-assistant");
     }
   }, [section, setLocation]);
@@ -48,8 +48,8 @@ export default function Setup() {
     switch (section) {
       case "ai-assistant":
         return "AI Assistant";
-      case "business-info":
-        return "Business Information";
+      case "business":
+        return "Business";
       case "channels":
         return "Channels";
       default:
@@ -61,7 +61,7 @@ export default function Setup() {
     switch (currentSection) {
       case "ai-assistant":
         return <AiAssistant />;
-      case "business-info":
+      case "business":
         return <BusinessInfo />;
       case "channels":
         return <Channels />;
@@ -114,8 +114,8 @@ export default function Setup() {
           </div>
         </div>
 
-        {/* AI Testing Panel - only show for AI Assistant and Business Information */}
-        {(currentSection === "ai-assistant" || currentSection === "business-info") && (
+        {/* AI Testing Panel - only show for AI Assistant and Business */}
+        {(currentSection === "ai-assistant" || currentSection === "business") && (
           <AiTestingPanel />
         )}
       </div>
