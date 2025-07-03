@@ -623,31 +623,24 @@ export default function BusinessInfo() {
                         {/* Flag and dropdown section */}
                         <div className="flex items-center bg-gray-50 px-3 py-2 border-r border-gray-300">
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-4 bg-blue-500 border border-gray-300 rounded-sm flex items-center justify-center text-white text-xs font-bold">
-                              {selectedCountry.code}
-                            </div>
+                            <span className="text-lg">{selectedCountry.flag}</span>
                             <Select 
                               value={selectedCountry.phoneCode} 
                               onValueChange={(value) => {
                                 const country = countries.find(c => c.phoneCode === value);
                                 if (country) {
                                   setSelectedCountry(country);
-                                  const phoneNumberValue = field.value || '';
-                                  const phoneWithoutCode = phoneNumberValue.replace(/^\+\d+\s*/, '');
-                                  field.onChange(country.phoneCode + ' ' + phoneWithoutCode);
                                 }
                               }}
                             >
-                              <SelectTrigger className="w-8 h-8 border-0 bg-transparent p-0">
-                                <span className="text-gray-400">▼</span>
+                              <SelectTrigger className="w-6 h-6 border-0 bg-transparent p-0 [&>svg]:hidden">
+                                <SelectValue />
                               </SelectTrigger>
                               <SelectContent className="max-h-60 w-[300px]">
                                 {countries.map((country) => (
                                   <SelectItem key={country.code} value={country.phoneCode}>
                                     <div className="flex items-center gap-3 w-full">
-                                      <div className="w-6 h-4 bg-blue-500 border border-gray-300 rounded-sm flex items-center justify-center text-white text-xs font-bold">
-                                        {country.code}
-                                      </div>
+                                      <span className="text-lg">{country.flag}</span>
                                       <span className="font-medium text-sm min-w-[50px]">{country.phoneCode}</span>
                                       <span className="text-sm text-gray-600 flex-1 truncate">{country.name}</span>
                                     </div>
@@ -665,6 +658,9 @@ export default function BusinessInfo() {
                           value={selectedCountry.phoneCode}
                           onChange={(e) => {
                             const value = e.target.value;
+                            field.onChange(value + ' ');
+                            
+                            // Auto-detect country when user types
                             if (value.startsWith('+')) {
                               const detectedCountry = detectCountryFromPhone(value);
                               if (detectedCountry && detectedCountry.phoneCode !== selectedCountry.phoneCode) {
