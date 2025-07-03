@@ -129,11 +129,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Ensure proper field mapping for frontend
       const mappedProducts = products.map(product => ({
         ...product,
-        // Ensure all fields are properly mapped
-        paymentDetails: product.paymentDetails || product.payment_details || "",
-        additionalNotes: product.additionalNotes || product.additional_notes || "",
-        thankYouMessage: product.thankYouMessage || product.thank_you_message || "",
-        imageUrl: product.imageUrl || product.image_url || "",
+        // Ensure all fields are properly mapped (Drizzle handles camelCase conversion)
+        paymentDetails: product.paymentDetails || "",
+        additionalNotes: product.additionalNotes || "",
+        thankYouMessage: product.thankYouMessage || "",
+        imageUrl: product.imageUrl || "",
         faqs: product.faqs || "",
         discounts: product.discounts || "",
         policy: product.policy || ""

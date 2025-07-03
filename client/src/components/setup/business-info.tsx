@@ -66,9 +66,9 @@ export default function BusinessInfo() {
 
   // Debug log for products data
   useEffect(() => {
-    if (products && products.length > 0) {
+    if (products && Array.isArray(products) && products.length > 0) {
       console.log("Products loaded from API:", products);
-      products.forEach((product, index) => {
+      products.forEach((product: any, index: number) => {
         console.log(`Product ${index + 1} full data:`, product);
         console.log(`Product ${index + 1} specific fields:`, {
           id: product.id,
@@ -785,6 +785,90 @@ export default function BusinessInfo() {
                         )}
                       />
 
+                      <FormField
+                        control={editProductForm.control}
+                        name="faqs"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>FAQs</FormLabel>
+                            <FormControl>
+                              <Textarea placeholder="Enter FAQs" rows={3} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={editProductForm.control}
+                        name="paymentDetails"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Payment Details</FormLabel>
+                            <FormControl>
+                              <Textarea placeholder="Enter Payment Details" rows={3} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={editProductForm.control}
+                        name="discounts"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Discounts</FormLabel>
+                            <FormControl>
+                              <Textarea placeholder="Enter Discounts/Special Offers" rows={2} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={editProductForm.control}
+                        name="policy"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Policy</FormLabel>
+                            <FormControl>
+                              <Textarea placeholder="Enter policies and terms" rows={2} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={editProductForm.control}
+                        name="additionalNotes"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Additional Notes</FormLabel>
+                            <FormControl>
+                              <Textarea placeholder="Enter additional notes" rows={2} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={editProductForm.control}
+                        name="thankYouMessage"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Thank You Message</FormLabel>
+                            <FormControl>
+                              <Textarea placeholder="Enter thank you message" rows={2} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
                       <div className="flex gap-4 pt-4">
                         <Button type="submit" disabled={updateProductMutation.isPending}>
                           {updateProductMutation.isPending ? "Saving..." : "Save Changes"}
@@ -1020,6 +1104,114 @@ export default function BusinessInfo() {
                           <FormLabel className="text-sm font-medium text-gray-700">Price</FormLabel>
                           <FormControl>
                             <Input placeholder="Enter Price" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={newProductForm.control}
+                      name="faqs"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-gray-700">FAQs</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Enter FAQs" 
+                              rows={3}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={newProductForm.control}
+                      name="paymentDetails"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-gray-700">Payment Details</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Enter Payment Details" 
+                              rows={3}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={newProductForm.control}
+                      name="discounts"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-gray-700">Discounts</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Enter Discounts/Special Offers" 
+                              rows={2}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={newProductForm.control}
+                      name="policy"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-gray-700">Policy</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Enter policies and terms" 
+                              rows={2}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={newProductForm.control}
+                      name="additionalNotes"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-gray-700">Additional Notes</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Enter additional notes" 
+                              rows={2}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={newProductForm.control}
+                      name="thankYouMessage"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium text-gray-700">Thank You Message</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Enter thank you message" 
+                              rows={2}
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
