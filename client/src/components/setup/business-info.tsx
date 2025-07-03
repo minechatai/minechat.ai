@@ -140,6 +140,8 @@ export default function BusinessInfo() {
       
       console.log("FAQ data to populate:", faqData);
       faqForm.reset(faqData);
+      
+      console.log("Forms updated successfully!");
     }
   }, [business, businessForm, faqForm, businessLoading]);
 
