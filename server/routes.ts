@@ -486,6 +486,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (business.phoneNumber) knowledgeBase += `Phone: ${business.phoneNumber}\n`;
         if (business.address) knowledgeBase += `Address: ${business.address}\n`;
         if (business.companyStory) knowledgeBase += `Company Story: ${business.companyStory}\n`;
+        if (business.faqs) knowledgeBase += `FAQs: ${business.faqs}\n`;
+        if (business.paymentDetails) knowledgeBase += `Payment Details: ${business.paymentDetails}\n`;
+        if (business.discounts) knowledgeBase += `Discounts: ${business.discounts}\n`;
+        if (business.policy) knowledgeBase += `Policy: ${business.policy}\n`;
+        if (business.additionalNotes) knowledgeBase += `Additional Notes: ${business.additionalNotes}\n`;
+        if (business.thankYouMessage) knowledgeBase += `Thank You Message: ${business.thankYouMessage}\n`;
         knowledgeBase += `\n`;
       }
       
@@ -1046,6 +1052,12 @@ You represent ${business?.companyName || "this business"} and customers expect a
             if (business.phoneNumber) facebookKnowledgeBase += `Phone: ${business.phoneNumber}\n`;
             if (business.address) facebookKnowledgeBase += `Address: ${business.address}\n`;
             if (business.companyStory) facebookKnowledgeBase += `Company Story: ${business.companyStory}\n`;
+            if (business.faqs) facebookKnowledgeBase += `FAQs: ${business.faqs}\n`;
+            if (business.paymentDetails) facebookKnowledgeBase += `Payment Details: ${business.paymentDetails}\n`;
+            if (business.discounts) facebookKnowledgeBase += `Discounts: ${business.discounts}\n`;
+            if (business.policy) facebookKnowledgeBase += `Policy: ${business.policy}\n`;
+            if (business.additionalNotes) facebookKnowledgeBase += `Additional Notes: ${business.additionalNotes}\n`;
+            if (business.thankYouMessage) facebookKnowledgeBase += `Thank You Message: ${business.thankYouMessage}\n`;
             facebookKnowledgeBase += `\n`;
           }
           
