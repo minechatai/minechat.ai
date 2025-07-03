@@ -983,30 +983,9 @@ export default function BusinessInfo() {
               </Button>
             </div>
             
-            {/* Display existing FAQ entries */}
-            {faqEntries.length > 0 && (
-              <div className="space-y-4 mb-6">
-                {faqEntries.map((entry) => (
-                  <div key={entry.id} className="border rounded-lg p-4 bg-gray-50">
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-medium text-gray-900">Q: {entry.question}</h4>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeFaqEntry(entry.id)}
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </div>
-                    <p className="text-gray-700">A: {entry.answer}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-            
             {/* Add FAQ Form */}
             {showAddFaqForm && (
-              <Card className="p-6 border border-gray-200">
+              <Card className="p-6 border border-gray-200 mb-6">
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="text-lg font-medium text-gray-900">Add New FAQ</h4>
                   <Button
@@ -1081,6 +1060,28 @@ export default function BusinessInfo() {
                 </Form>
               </Card>
             )}
+            
+            {/* Display existing FAQ entries */}
+            {faqEntries.length > 0 && (
+              <div className="space-y-4 mb-6">
+                {faqEntries.map((entry) => (
+                  <div key={entry.id} className="border rounded-lg p-4 bg-gray-50">
+                    <div className="flex justify-between items-start mb-2">
+                      <h4 className="font-medium text-gray-900">Q: {entry.question}</h4>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeFaqEntry(entry.id)}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    <p className="text-gray-700">A: {entry.answer}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
           </div>
           
           <Form {...faqForm}>
