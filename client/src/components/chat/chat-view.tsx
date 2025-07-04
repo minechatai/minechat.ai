@@ -241,14 +241,18 @@ export default function ChatView({ conversationId }: ChatViewProps) {
         </div>
       </div>
 
+      {/* Sticky Mode Indicator */}
+      <div className="bg-gray-50 border-b border-gray-200 py-2 px-4">
+        <div className="text-center">
+          <span className="text-sm text-gray-500 bg-white px-3 py-1 rounded-full shadow-sm">
+            {isAiMode ? 'AI Enabled' : 'Human Mode'}
+          </span>
+        </div>
+      </div>
+
       {/* Chat Messages */}
       <div className="flex-1 p-4 overflow-y-auto bg-gray-50">
         <div className="max-w-none mx-auto space-y-4 pr-4">
-          <div className="text-center">
-            <span className="text-sm text-gray-500 bg-white px-3 py-1 rounded-full">
-              {isAiMode ? 'AI Enabled' : 'Human Mode'}
-            </span>
-          </div>
           
           {messages.length === 0 ? (
             <div className="text-center py-8">

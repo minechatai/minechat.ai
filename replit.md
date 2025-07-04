@@ -165,6 +165,11 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Implemented complete Facebook multiple image support: sends all product images instead of just first one
   - Removed redundant Facebook image captions: AI response contains full product details, images sent without individual captions
   - Fixed TypeScript safety issues in Facebook webhook image handling with proper array and null checks
+- July 4, 2025: Sticky Mode Indicator Implementation
+  - Made AI/Human mode indicator permanently visible at the top of chat interfaces
+  - Applied sticky positioning to both main Chat tab and Facebook Chat tab
+  - Mode indicator stays visible while scrolling through messages
+  - Enhanced visibility with subtle shadow for better visual distinction
 
 # User Preferences
 

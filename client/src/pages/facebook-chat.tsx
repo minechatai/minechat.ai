@@ -338,6 +338,15 @@ export default function FacebookChat() {
                 </div>
               </div>
 
+              {/* Sticky Mode Indicator */}
+              <div className="bg-gray-50 border-b border-gray-200 py-2 px-4">
+                <div className="text-center">
+                  <span className="text-sm text-gray-500 bg-white px-3 py-1 rounded-full shadow-sm">
+                    {selectedConversation.mode === 'ai' ? 'AI Enabled' : 'Human Mode'}
+                  </span>
+                </div>
+              </div>
+
               {/* Messages */}
               <ScrollArea className="flex-1 p-4 bg-gray-50">
                 {messagesLoading ? (
@@ -346,11 +355,6 @@ export default function FacebookChat() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <div className="text-center">
-                      <span className="text-sm text-gray-500 bg-white px-3 py-1 rounded-full">
-                        {selectedConversation.mode === 'ai' ? 'AI Enabled' : 'Human Mode'}
-                      </span>
-                    </div>
                     {messages.map((message: FacebookMessage) => (
                       <div
                         key={message.id}
