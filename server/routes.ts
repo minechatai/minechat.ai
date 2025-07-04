@@ -373,6 +373,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Messages endpoint that frontend expects
+  app.get('/api/messages/:conversationId', isAuthenticated, async (req: any, res) => {
+    try {
+      const conversationId = parseInt(req.params.conversationId);
+      const messages = await storage.getMessages(conversationId);
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      res.status(500).json({ message: "Failed to fetch messages" });
+    }
+  });
+
+  // Individual conversation endpoint
+  app.get('/api/conversations/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      const conversation = await storage.getConversation(conversationId);
+      if (!conversation) {
+        return res.status(404).json({ message: "Conversation not found" });
+      }
+      res.json(conversation);
+    } catch (error) {
+      console.error("Error fetching conversation:", error);
+      res.status(500).json({ message: "Failed to fetch conversation" });
+    }
+  });
+
   // Analytics routes
   app.get('/api/analytics', isAuthenticated, async (req: any, res) => {
     try {
