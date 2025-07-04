@@ -181,7 +181,6 @@ export default function AiAssistant() {
                   <RichTextarea 
                     placeholder="Enter Intro Message" 
                     rows={4}
-                    className="resize-none"
                     value={field.value}
                     onChange={field.onChange}
                   />
@@ -201,7 +200,6 @@ export default function AiAssistant() {
                   <RichTextarea 
                     placeholder="Enter Description" 
                     rows={4}
-                    className="resize-none"
                     value={field.value}
                     onChange={field.onChange}
                   />
@@ -221,7 +219,6 @@ export default function AiAssistant() {
                   <RichTextarea 
                     placeholder="Enter AI guidelines..." 
                     rows={6}
-                    className="resize-none"
                     value={field.value}
                     onChange={field.onChange}
                   />

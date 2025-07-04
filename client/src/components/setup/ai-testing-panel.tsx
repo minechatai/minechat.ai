@@ -9,6 +9,7 @@ interface Message {
   content: string;
   isUser: boolean;
   timestamp: Date;
+  images?: string[];
 }
 
 export default function AiTestingPanel() {
@@ -53,6 +54,7 @@ export default function AiTestingPanel() {
         content: data.message,
         isUser: false,
         timestamp: new Date(),
+        images: data.images || []
       };
       
       setMessages((prev) => [...prev, aiMessage]);
@@ -120,6 +122,18 @@ export default function AiTestingPanel() {
                     <div>
                       <div className="bg-gray-100 p-3 rounded-lg shadow-sm">
                         <p className="text-sm text-gray-900">{msg.content}</p>
+                        {msg.images && msg.images.length > 0 && (
+                          <div className="mt-2 grid grid-cols-2 gap-2">
+                            {msg.images.map((image, index) => (
+                              <img
+                                key={index}
+                                src={image}
+                                alt={`Product image ${index + 1}`}
+                                className="w-full h-32 object-cover rounded-lg border"
+                              />
+                            ))}
+                          </div>
+                        )}
                       </div>
                       <p className="text-xs text-gray-500 mt-1">{formatTime(msg.timestamp)}</p>
                     </div>

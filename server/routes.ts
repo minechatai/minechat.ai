@@ -883,9 +883,29 @@ You represent ${business?.companyName || "our business"} and customers expect ac
 
       await storage.upsertAnalytics(userId, analyticsData);
 
+      // Check if the message is about products and include relevant images
+      let images: string[] = [];
+      const messageWords = message.toLowerCase().split(' ');
+      
+      for (const product of products) {
+        if (product.name && product.imageUrls) {
+          const productNameWords = product.name.toLowerCase().split(' ');
+          // Check if message mentions this product by name or if AI response mentions it
+          const mentionsProduct = productNameWords.some(word => 
+            messageWords.includes(word) || aiMessage.toLowerCase().includes(word)
+          );
+          
+          if (mentionsProduct) {
+            // Add all images for this product
+            images.push(...product.imageUrls);
+          }
+        }
+      }
+
       res.json({
         message: aiMessage,
-        conversationId: conversation.id
+        conversationId: conversation.id,
+        images: images
       });
 
     } catch (error) {
