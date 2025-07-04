@@ -1364,9 +1364,12 @@ You represent ${business?.companyName || "our business"} and customers expect ac
           // Send images for all products that have them
           for (let i = 0; i < productsWithImages.length; i++) {
             const product = productsWithImages[i];
-            const fullImageUrl = product.imageUrl.startsWith('http') 
-              ? product.imageUrl 
-              : `${protocol}://${domain}${product.imageUrl}`;
+            if (!product.imageUrl) continue;
+            
+            const imageUrl = product.imageUrl; // TypeScript knows this is not null due to the continue above
+            const fullImageUrl = imageUrl.startsWith('http') 
+              ? imageUrl 
+              : `${protocol}://${domain}${imageUrl}`;
             
             console.log(`Attempting to send image ${i + 1}: ${fullImageUrl}`);
             

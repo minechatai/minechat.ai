@@ -686,33 +686,42 @@ export default function BusinessInfo() {
   }
 
   const handleProductImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
 
     setUploadingImage(true);
-    const formData = new FormData();
-    formData.append('image', file);
+    const uploadedUrls: string[] = [];
 
     try {
-      const response = await fetch('/api/upload/image', {
-        method: 'POST',
-        body: formData,
-      });
+      // Upload each file separately
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const formData = new FormData();
+        formData.append('image', file);
 
-      if (response.ok) {
-        const result = await response.json();
-        setProductImages([...productImages, result.imageUrl]);
-        toast({
-          title: "Success",
-          description: "Image uploaded successfully",
+        const response = await fetch('/api/products/upload-image', {
+          method: 'POST',
+          body: formData,
         });
-      } else {
-        throw new Error('Failed to upload image');
+
+        if (response.ok) {
+          const result = await response.json();
+          uploadedUrls.push(result.imageUrl);
+        } else {
+          throw new Error(`Failed to upload ${file.name}`);
+        }
       }
+
+      // Add all uploaded images to the state
+      setProductImages([...productImages, ...uploadedUrls]);
+      toast({
+        title: "Success",
+        description: `${uploadedUrls.length} image(s) uploaded successfully`,
+      });
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to upload image",
+        description: error instanceof Error ? error.message : "Failed to upload images",
         variant: "destructive",
       });
     } finally {
@@ -1481,12 +1490,13 @@ export default function BusinessInfo() {
                             className="cursor-pointer"
                             disabled={uploadingImage}
                           >
-                            {uploadingImage ? "Uploading..." : "Choose Image"}
+                            {uploadingImage ? "Uploading..." : "Choose Images"}
                           </Button>
                           <input
                             id="product-image-upload"
                             type="file"
                             accept="image/*"
+                            multiple
                             className="hidden"
                             onChange={handleProductImageUpload}
                           />
