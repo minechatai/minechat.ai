@@ -311,6 +311,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/products/upload-image', isAuthenticated, imageUpload.single('image'), async (req: any, res) => {
     try {
       console.log("Image upload request received");
+      console.log("User authenticated:", req.user ? 'Yes' : 'No');
       console.log("req.file:", req.file);
       console.log("req.body:", req.body);
       console.log("Content-Type:", req.headers['content-type']);

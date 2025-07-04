@@ -702,13 +702,17 @@ export default function BusinessInfo() {
         const response = await fetch('/api/products/upload-image', {
           method: 'POST',
           body: formData,
+          credentials: 'include', // Include cookies for authentication
         });
 
         if (response.ok) {
           const result = await response.json();
           uploadedUrls.push(result.imageUrl);
+          console.log(`Successfully uploaded ${file.name}:`, result);
         } else {
-          throw new Error(`Failed to upload ${file.name}`);
+          const errorText = await response.text();
+          console.error(`Failed to upload ${file.name}:`, response.status, errorText);
+          throw new Error(`Failed to upload ${file.name}: ${response.status} ${errorText}`);
         }
       }
 
