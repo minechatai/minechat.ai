@@ -1,14 +1,34 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import MainLayout from "@/components/layout/main-layout";
 import ConversationList from "@/components/chat/conversation-list";
 import ChatView from "@/components/chat/chat-view";
+import { Conversation } from "@shared/schema";
 
 export default function Chat() {
   const [selectedConversation, setSelectedConversation] = useState<number | null>(null);
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
+
+  // Auto-select most recent conversation
+  const { data: conversations } = useQuery<Conversation[]>({
+    queryKey: ["/api/conversations"],
+    enabled: isAuthenticated,
+  });
+
+  useEffect(() => {
+    if (conversations && conversations.length > 0 && !selectedConversation) {
+      // Sort by lastMessageAt and select the most recent
+      const sortedConversations = [...conversations].sort((a, b) => {
+        const aTime = new Date(a.lastMessageAt || a.createdAt || 0).getTime();
+        const bTime = new Date(b.lastMessageAt || b.createdAt || 0).getTime();
+        return bTime - aTime;
+      });
+      setSelectedConversation(sortedConversations[0].id);
+    }
+  }, [conversations, selectedConversation]);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -53,7 +73,12 @@ export default function Chat() {
           selectedConversation={selectedConversation}
           onSelectConversation={setSelectedConversation}
         />
-        <ChatView conversationId={selectedConversation} />
+        <div className="w-1/2">
+          <ChatView conversationId={selectedConversation} />
+        </div>
+        <div className="flex-1 bg-gray-50">
+          {/* Right side empty space */}
+        </div>
       </div>
     </MainLayout>
   );

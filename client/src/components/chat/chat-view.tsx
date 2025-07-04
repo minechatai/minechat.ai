@@ -183,31 +183,25 @@ export default function ChatView({ conversationId }: ChatViewProps) {
         </div>
       </div>
 
-      {/* Message Input */}
-      <div className="bg-white border-t border-gray-200 p-4">
-        <form onSubmit={handleSendMessage} className="flex items-center space-x-3">
+      {/* Message Input - Smaller */}
+      <div className="bg-white border-t border-gray-200 p-3">
+        <form onSubmit={handleSendMessage} className="flex items-center space-x-2">
           <div className="flex-1 relative">
             <Input
               type="text"
               placeholder="Send a message"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="pr-32"
+              className="pr-20 h-9"
             />
-            <div className="absolute right-3 top-3 flex items-center space-x-2">
-              <Button type="button" variant="ghost" size="sm" className="p-0 w-5 h-5">
-                <Paperclip className="w-4 h-4 text-gray-400" />
-              </Button>
-              <Button type="button" variant="ghost" size="sm" className="p-0 w-5 h-5">
-                <Image className="w-4 h-4 text-gray-400" />
-              </Button>
-              <Button type="button" variant="ghost" size="sm" className="p-0 w-5 h-5">
-                <Mic className="w-4 h-4 text-gray-400" />
+            <div className="absolute right-2 top-2 flex items-center space-x-1">
+              <Button type="button" variant="ghost" size="sm" className="p-0 w-4 h-4">
+                <Paperclip className="w-3 h-3 text-gray-400" />
               </Button>
             </div>
           </div>
-          <Button type="submit" className="bg-primary hover:bg-primary-dark">
-            <Send className="w-4 h-4" />
+          <Button type="submit" size="sm" className="bg-primary hover:bg-primary-dark h-9">
+            <Send className="w-3 h-3" />
           </Button>
         </form>
       </div>

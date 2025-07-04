@@ -91,7 +91,7 @@ export default function ConversationList({ selectedConversation, onSelectConvers
 
   if (isLoading) {
     return (
-      <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
+      <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
         <div className="p-4 border-b border-gray-200">
           <div className="animate-pulse space-y-4">
             <div className="h-6 bg-gray-200 rounded w-20"></div>
@@ -116,7 +116,7 @@ export default function ConversationList({ selectedConversation, onSelectConvers
   }
 
   return (
-    <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
+    <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center justify-between mb-4">
