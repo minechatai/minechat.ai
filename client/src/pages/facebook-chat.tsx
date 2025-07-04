@@ -291,18 +291,14 @@ export default function FacebookChat() {
                             <div className={`px-4 py-3 rounded-lg ${
                               message.senderType === 'human' 
                                 ? 'bg-blue-600 text-white' 
-                                : 'bg-white text-gray-900 border border-gray-200'
+                                : 'bg-[#E1E1EB] text-gray-900'
                             }`}>
                               <div className="flex items-center space-x-2 mb-2">
-                                <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
-                                  message.senderType === 'human' 
-                                    ? 'bg-white' 
-                                    : 'bg-primary'
-                                }`}>
+                                <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center">
                                   {message.senderType === 'human' ? (
                                     <User className="w-3 h-3 text-blue-600" />
                                   ) : (
-                                    <Bot className="w-3 h-3 text-white" />
+                                    <Bot className="w-3 h-3 text-gray-600" />
                                   )}
                                 </div>
                                 <span className={`text-xs font-medium ${
