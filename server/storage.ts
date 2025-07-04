@@ -228,29 +228,31 @@ export class DatabaseStorage implements IStorage {
 
   // Conversation operations
   async getConversations(userId: string): Promise<ConversationWithLastMessage[]> {
-    const conversationsWithMessages = await db
-      .select({
-        id: conversations.id,
-        userId: conversations.userId,
-        customerName: conversations.customerName,
-        customerEmail: conversations.customerEmail,
-        customerProfilePicture: conversations.customerProfilePicture,
-        status: conversations.status,
-        source: conversations.source,
-        facebookSenderId: conversations.facebookSenderId,
-        lastMessageAt: conversations.lastMessageAt,
-        createdAt: conversations.createdAt,
-        lastMessage: sql<string | null>`(
-          SELECT m.content 
-          FROM messages m 
-          WHERE m.conversation_id = ${conversations.id} 
-          ORDER BY m.created_at DESC 
-          LIMIT 1
-        )`
-      })
+    // First get all conversations for the user
+    const allConversations = await db
+      .select()
       .from(conversations)
       .where(eq(conversations.userId, userId))
       .orderBy(desc(conversations.lastMessageAt));
+    
+    // Then get the last message for each conversation
+    const conversationsWithMessages = await Promise.all(
+      allConversations.map(async (conversation) => {
+        console.log(`Debug: Looking for messages for conversation ${conversation.id}`);
+        const [lastMessage] = await db
+          .select({ content: messages.content })
+          .from(messages)
+          .where(eq(messages.conversationId, conversation.id))
+          .orderBy(desc(messages.createdAt))
+          .limit(1);
+        
+        console.log(`Debug: Found message for conversation ${conversation.id}:`, lastMessage);
+        return {
+          ...conversation,
+          lastMessage: lastMessage?.content || null
+        };
+      })
+    );
     
     console.log("Storage Debug - Conversations with messages:", JSON.stringify(conversationsWithMessages, null, 2));
     return conversationsWithMessages;
