@@ -120,17 +120,23 @@ export default function BusinessInfo() {
 
   // Function to parse FAQ entries from saved text
   const parseFaqEntries = (faqText: string): FaqEntry[] => {
+    console.log("🔍 Parsing FAQ entries from text:", faqText);
     const entries: FaqEntry[] = [];
     
     // Split by ### to get sections
     const sections = faqText.split('###').filter(section => section.trim());
+    console.log("🔍 Found sections:", sections.length);
     
-    sections.forEach(section => {
+    sections.forEach((section, index) => {
+      console.log(`🔍 Processing section ${index}:`, section);
       const lines = section.trim().split('\n');
       if (lines.length >= 2) {
         const question = lines[0].trim();
         // Join all remaining lines as the answer, filtering out empty lines
         const answer = lines.slice(1).filter(line => line.trim()).join('\n').trim();
+        
+        console.log(`🔍 Parsed question: "${question}"`);
+        console.log(`🔍 Parsed answer: "${answer}"`);
         
         if (question && answer) {
           entries.push({
@@ -142,6 +148,7 @@ export default function BusinessInfo() {
       }
     });
     
+    console.log("🔍 Final parsed entries:", entries);
     return entries;
   };
 
@@ -554,10 +561,17 @@ export default function BusinessInfo() {
     // Combine individual FAQ entries with the main FAQ text
     let combinedFaqs = data.faqs || "";
     
+    console.log("🔍 FAQ Submit - Original data.faqs:", data.faqs);
+    console.log("🔍 FAQ Submit - FAQ entries count:", faqEntries.length);
+    
     if (faqEntries.length > 0) {
-      const individualFaqsText = faqEntries.map(entry => 
-        `### ${entry.question}\n\n${entry.answer}`
-      ).join('\n\n');
+      const individualFaqsText = faqEntries.map(entry => {
+        console.log("🔍 FAQ Entry question:", entry.question);
+        console.log("🔍 FAQ Entry answer:", entry.answer);
+        return `### ${entry.question}\n\n${entry.answer}`;
+      }).join('\n\n');
+      
+      console.log("🔍 Individual FAQs text:", individualFaqsText);
       
       if (combinedFaqs) {
         combinedFaqs = `${combinedFaqs}\n\n${individualFaqsText}`;
@@ -566,16 +580,22 @@ export default function BusinessInfo() {
       }
     }
     
+    console.log("🔍 Final combined FAQs to save:", combinedFaqs);
     faqMutation.mutate({ faqs: combinedFaqs });
   };
 
   // Individual FAQ functions
   const addFaqEntry = (data: IndividualFaqData) => {
+    console.log("🔍 Adding FAQ entry - question:", data.question);
+    console.log("🔍 Adding FAQ entry - answer:", data.answer);
+    
     const newEntry: FaqEntry = {
       id: Date.now().toString(),
       question: data.question,
       answer: data.answer,
     };
+    
+    console.log("🔍 New entry created:", newEntry);
     
     const updatedEntries = [newEntry, ...faqEntries];
     setFaqEntries(updatedEntries);
@@ -586,10 +606,13 @@ export default function BusinessInfo() {
       `### ${entry.question}\n\n${entry.answer}`
     ).join('\n\n');
     
+    console.log("🔍 Individual FAQs text to save:", individualFaqsText);
+    
     const combinedFaqs = currentFaqText ? 
       `${currentFaqText}\n\n${individualFaqsText}` : 
       individualFaqsText;
     
+    console.log("🔍 Combined FAQs to save:", combinedFaqs);
     faqMutation.mutate({ faqs: combinedFaqs });
     
     individualFaqForm.reset();
