@@ -81,7 +81,8 @@ export const products = pgTable("products", {
   policy: text("policy"),
   additionalNotes: text("additional_notes"),
   thankYouMessage: text("thank_you_message"),
-  imageUrl: varchar("image_url"),
+  imageUrl: varchar("image_url"), // Legacy field for backward compatibility
+  imageUrls: text("image_urls").array(), // New field for multiple images
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

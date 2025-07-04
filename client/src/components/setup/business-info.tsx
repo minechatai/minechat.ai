@@ -351,6 +351,8 @@ export default function BusinessInfo() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
+      setShowProductForm(false);
+      setEditingProduct(null);
       productForm.reset();
       setProductImages([]);
       toast({
@@ -673,7 +675,8 @@ export default function BusinessInfo() {
   const onProductSubmit = (data: ProductFormData) => {
     const productData = {
       ...data,
-      imageUrl: productImages[0] || "",
+      imageUrl: productImages[0] || "", // Keep first image for backward compatibility
+      imageUrls: productImages, // Save all images
     };
 
     if (editingProduct) {
@@ -754,9 +757,13 @@ export default function BusinessInfo() {
       description: product.description || "",
       price: product.price || "",
     });
-    // Set existing product image
-    if (product.imageUrl) {
+    // Set existing product images (prioritize imageUrls array, fallback to single imageUrl)
+    if (product.imageUrls && product.imageUrls.length > 0) {
+      setProductImages(product.imageUrls);
+    } else if (product.imageUrl) {
       setProductImages([product.imageUrl]);
+    } else {
+      setProductImages([]);
     }
   };
 
@@ -1397,7 +1404,12 @@ export default function BusinessInfo() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Product Management</h3>
               <Button 
-                onClick={() => setShowProductForm(true)}
+                onClick={() => {
+                  setEditingProduct(null);
+                  setProductImages([]);
+                  productForm.reset();
+                  setShowProductForm(true);
+                }}
                 className="bg-primary text-white hover:bg-primary-dark"
                 size="sm"
               >
@@ -1542,6 +1554,8 @@ export default function BusinessInfo() {
                         variant="outline"
                         onClick={() => {
                           setShowProductForm(false);
+                          setEditingProduct(null);
+                          setProductImages([]);
                           productForm.reset();
                         }}
                       >
