@@ -83,17 +83,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("📝 Business save request - userId:", userId);
       console.log("📝 Business save request - body:", req.body);
       console.log("📝 Business save request - FAQs specifically:", req.body.faqs);
-      console.log("📝 Business save request - FAQs char codes:", req.body.faqs ? [...req.body.faqs].map(c => c.charCodeAt(0)).join(',') : 'null');
+      // Log emoji presence for debugging
+      console.log("📝 Business save request - contains emoji:", req.body.faqs ? req.body.faqs.includes('📞') : false);
       
       const validatedData = insertBusinessSchema.parse(req.body);
       console.log("📝 Business save - validated data:", validatedData);
       console.log("📝 Business save - validated FAQs:", validatedData.faqs);
-      console.log("📝 Business save - validated FAQs char codes:", validatedData.faqs ? [...validatedData.faqs].map(c => c.charCodeAt(0)).join(',') : 'null');
+      console.log("📝 Business save - validated contains emoji:", validatedData.faqs ? validatedData.faqs.includes('📞') : false);
       
       const business = await storage.upsertBusiness(userId, { ...validatedData, userId });
       console.log("📝 Business save - result:", business);
       console.log("📝 Business save - result FAQs:", business.faqs);
-      console.log("📝 Business save - result FAQs char codes:", business.faqs ? [...business.faqs].map(c => c.charCodeAt(0)).join(',') : 'null');
+      console.log("📝 Business save - result contains emoji:", business.faqs ? business.faqs.includes('📞') : false);
       res.json(business);
     } catch (error) {
       console.error("Error saving business:", error);
@@ -657,8 +658,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const [question, ...answerParts] = section.split('\n\n');
               if (question && answerParts.length > 0) {
                 const answer = answerParts.join('\n\n').trim();
-                // Only include the first 300 characters of long answers to save space
-                const truncatedAnswer = answer.length > 300 ? answer.substring(0, 300) + '...' : answer;
+                // Preserve emojis by not truncating short answers, increase limit for longer ones
+                const truncatedAnswer = answer.length > 500 ? answer.substring(0, 500) + '...' : answer;
                 console.log(`🔍 FAQ ${index + 1}: Q: ${question.trim()}`);
                 knowledgeBase += `Q: ${question.trim()}\nA: ${truncatedAnswer}\n\n`;
               }
@@ -1240,8 +1241,8 @@ You represent ${business?.companyName || "our business"} and customers expect ac
                   const [question, ...answerParts] = section.split('\n\n');
                   if (question && answerParts.length > 0) {
                     const answer = answerParts.join('\n\n').trim();
-                    // Only include the first 200 characters for FAQ answers to save space
-                    const truncatedAnswer = answer.length > 200 ? answer.substring(0, 200) + '...' : answer;
+                    // Preserve emojis by not truncating short answers, increase limit for longer ones
+                    const truncatedAnswer = answer.length > 500 ? answer.substring(0, 500) + '...' : answer;
                     knowledgeBase += `Q: ${question.trim()}\nA: ${truncatedAnswer}\n\n`;
                   }
                 });

@@ -121,7 +121,7 @@ export default function BusinessInfo() {
   // Function to parse FAQ entries from saved text
   const parseFaqEntries = (faqText: string): FaqEntry[] => {
     console.log("🔍 Parsing FAQ entries from text:", faqText);
-    console.log("🔍 FAQ text char codes:", faqText ? [...faqText].map(c => c.charCodeAt(0)).join(',') : 'null');
+    console.log("🔍 FAQ text contains emoji:", faqText ? faqText.includes('📞') : false);
     const entries: FaqEntry[] = [];
     
     // Split by ### to get sections
@@ -138,7 +138,7 @@ export default function BusinessInfo() {
         
         console.log(`🔍 Parsed question: "${question}"`);
         console.log(`🔍 Parsed answer: "${answer}"`);
-        console.log(`🔍 Parsed answer char codes:`, answer ? [...answer].map(c => c.charCodeAt(0)).join(',') : 'null');
+        console.log(`🔍 Parsed answer contains emoji:`, answer ? answer.includes('📞') : false);
         
         if (question && answer) {
           entries.push({
