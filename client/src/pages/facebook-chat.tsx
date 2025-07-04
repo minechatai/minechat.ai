@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import { Search, MessageCircle, User, Facebook, Clock } from "lucide-react";
+import { Search, MessageCircle, User, Bot, Facebook, Clock } from "lucide-react";
 
 interface FacebookConversation {
   id: number;
@@ -277,20 +277,49 @@ export default function FacebookChat() {
                         key={message.id}
                         className={`flex ${message.senderType === 'user' ? 'justify-end' : 'justify-start'}`}
                       >
-                        <div
-                          className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                            message.senderType === 'user'
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-white text-gray-900 border border-gray-200'
-                          }`}
-                        >
-                          <p className="text-sm">{message.content}</p>
-                          <p className={`text-xs mt-1 ${
-                            message.senderType === 'user' ? 'text-blue-200' : 'text-gray-500'
-                          }`}>
-                            {formatMessageTime(message.createdAt)}
-                          </p>
-                        </div>
+                        {message.senderType === 'user' ? (
+                          <div
+                            className="max-w-xs lg:max-w-md px-4 py-2 rounded-lg bg-blue-600 text-white"
+                          >
+                            <p className="text-sm">{message.content}</p>
+                            <p className="text-xs mt-1 text-blue-200">
+                              {formatMessageTime(message.createdAt)}
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="max-w-xs lg:max-w-md">
+                            <div className={`px-4 py-3 rounded-lg ${
+                              message.senderType === 'human' 
+                                ? 'bg-blue-600 text-white' 
+                                : 'bg-white text-gray-900 border border-gray-200'
+                            }`}>
+                              <div className="flex items-center space-x-2 mb-2">
+                                <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
+                                  message.senderType === 'human' 
+                                    ? 'bg-white' 
+                                    : 'bg-primary'
+                                }`}>
+                                  {message.senderType === 'human' ? (
+                                    <User className="w-3 h-3 text-blue-600" />
+                                  ) : (
+                                    <Bot className="w-3 h-3 text-white" />
+                                  )}
+                                </div>
+                                <span className={`text-xs font-medium ${
+                                  message.senderType === 'human' 
+                                    ? 'text-white/80' 
+                                    : 'text-gray-600'
+                                }`}>
+                                  {message.senderType === 'human' ? 'Human Agent' : 'AI Assistant'}
+                                </span>
+                              </div>
+                              <p className="text-sm">{message.content}</p>
+                            </div>
+                            <p className="text-xs mt-1 text-gray-500">
+                              {formatMessageTime(message.createdAt)}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>

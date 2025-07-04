@@ -254,12 +254,22 @@ export default function ChatView({ conversationId }: ChatViewProps) {
                   </div>
                 ) : (
                   <div className="max-w-md lg:max-w-lg">
-                    <div className="bg-primary text-white p-4 rounded-lg shadow-sm">
+                    <div className={`p-4 rounded-lg shadow-sm ${
+                      msg.senderType === 'human' 
+                        ? 'bg-blue-600 text-white' 
+                        : 'bg-primary text-white'
+                    }`}>
                       <div className="flex items-center space-x-2 mb-2">
                         <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                          <Bot className="w-3 h-3 text-primary" />
+                          {msg.senderType === 'human' ? (
+                            <User className="w-3 h-3 text-blue-600" />
+                          ) : (
+                            <Bot className="w-3 h-3 text-primary" />
+                          )}
                         </div>
-                        <span className="text-xs font-medium text-white/80">AI Assistant</span>
+                        <span className="text-xs font-medium text-white/80">
+                          {msg.senderType === 'human' ? 'Human Agent' : 'AI Assistant'}
+                        </span>
                       </div>
                       <p className="text-sm">{msg.content}</p>
                     </div>
