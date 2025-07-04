@@ -602,20 +602,16 @@ export default function BusinessInfo() {
     const updatedEntries = [newEntry, ...faqEntries];
     setFaqEntries(updatedEntries);
     
-    // Automatically save to database with combined FAQs
-    const currentFaqText = faqForm.getValues().faqs || "";
-    const individualFaqsText = updatedEntries.map(entry => 
+    // Create new FAQ text from all entries (including the new one)
+    const updatedFaqText = updatedEntries.map(entry => 
       `### ${entry.question}\n\n${entry.answer}`
     ).join('\n\n');
     
-    console.log("🔍 Individual FAQs text to save:", individualFaqsText);
+    console.log("🔍 Updated FAQ text to save:", updatedFaqText);
     
-    const combinedFaqs = currentFaqText ? 
-      `${currentFaqText}\n\n${individualFaqsText}` : 
-      individualFaqsText;
-    
-    console.log("🔍 Combined FAQs to save:", combinedFaqs);
-    faqMutation.mutate({ faqs: combinedFaqs });
+    // Update the form field and save to database
+    faqForm.setValue("faqs", updatedFaqText);
+    faqMutation.mutate({ faqs: updatedFaqText });
     
     individualFaqForm.reset();
     setShowAddFaqForm(false);
@@ -629,17 +625,14 @@ export default function BusinessInfo() {
     const updatedEntries = faqEntries.filter(entry => entry.id !== id);
     setFaqEntries(updatedEntries);
     
-    // Automatically save to database with updated combined FAQs
-    const currentFaqText = faqForm.getValues().faqs || "";
-    const individualFaqsText = updatedEntries.map(entry => 
+    // Create new FAQ text from remaining entries only
+    const updatedFaqText = updatedEntries.map(entry => 
       `### ${entry.question}\n\n${entry.answer}`
     ).join('\n\n');
     
-    const combinedFaqs = currentFaqText && updatedEntries.length > 0 ? 
-      `${currentFaqText}\n\n${individualFaqsText}` : 
-      (updatedEntries.length > 0 ? individualFaqsText : currentFaqText);
-    
-    faqMutation.mutate({ faqs: combinedFaqs });
+    // Update the form field and save to database
+    faqForm.setValue("faqs", updatedFaqText);
+    faqMutation.mutate({ faqs: updatedFaqText });
     
     toast({
       title: "Success", 
@@ -672,17 +665,14 @@ export default function BusinessInfo() {
     );
     setFaqEntries(updatedEntries);
     
-    // Automatically save to database with updated combined FAQs
-    const currentFaqText = faqForm.getValues().faqs || "";
-    const individualFaqsText = updatedEntries.map(entry => 
+    // Create new FAQ text from updated entries
+    const updatedFaqText = updatedEntries.map(entry => 
       `### ${entry.question}\n\n${entry.answer}`
     ).join('\n\n');
     
-    const combinedFaqs = currentFaqText ? 
-      `${currentFaqText}\n\n${individualFaqsText}` : 
-      individualFaqsText;
-    
-    faqMutation.mutate({ faqs: combinedFaqs });
+    // Update the form field and save to database
+    faqForm.setValue("faqs", updatedFaqText);
+    faqMutation.mutate({ faqs: updatedFaqText });
     
     setEditingFaqId(null);
     individualFaqForm.reset();
