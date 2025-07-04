@@ -22,12 +22,6 @@ export default function ConversationList({ selectedConversation, onSelectConvers
   const { data: conversations = [], isLoading } = useQuery({
     queryKey: ["/api/conversations"],
     refetchInterval: 3000, // Refresh every 3 seconds
-    onSuccess: (data) => {
-      console.log("Conversations data:", data);
-      if (data?.[0]) {
-        console.log("First conversation structure:", data[0]);
-      }
-    }
   });
 
   const { data: facebookConnection, isLoading: facebookLoading } = useQuery({
@@ -225,7 +219,7 @@ export default function ConversationList({ selectedConversation, onSelectConvers
                   </span>
                 </div>
                 <p className="text-sm text-gray-600 truncate">
-                  {conversation.lastMessage || 'No messages yet'}
+                  {(conversation as any).lastMessage || 'No messages yet'}
                 </p>
               </div>
             </div>
