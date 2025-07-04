@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Bot, User, MoreVertical, Paperclip, Image, Mic, Send } from "lucide-react";
 import { Message, Conversation } from "@shared/schema";
+import { useToast } from "@/hooks/use-toast";
 
 interface ChatViewProps {
   conversationId: number | null;
@@ -13,6 +14,8 @@ interface ChatViewProps {
 export default function ChatView({ conversationId }: ChatViewProps) {
   const [message, setMessage] = useState("");
   const [isAiMode, setIsAiMode] = useState(true);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { data: conversation, isLoading: conversationLoading } = useQuery<Conversation>({
     queryKey: [`/api/conversations/${conversationId}`],
@@ -28,12 +31,47 @@ export default function ChatView({ conversationId }: ChatViewProps) {
 
   const isLoading = conversationLoading || messagesLoading;
 
+  const sendMessageMutation = useMutation({
+    mutationFn: async (messageData: { conversationId: number; content: string; senderType: string }) => {
+      const response = await fetch('/api/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(messageData),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to send message');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      // Invalidate and refetch messages
+      queryClient.invalidateQueries({ queryKey: [`/api/messages/${conversationId}`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim()) return;
+    if (!message.trim() || !conversationId) return;
     
-    // TODO: Implement message sending
-    console.log("Sending message:", message);
+    // Send message from human agent (when in Human Mode)
+    sendMessageMutation.mutate({
+      conversationId,
+      content: message.trim(),
+      senderType: 'human'
+    });
+    
     setMessage("");
   };
 
@@ -191,19 +229,29 @@ export default function ChatView({ conversationId }: ChatViewProps) {
           <div className="flex-1 relative">
             <Input
               type="text"
-              placeholder="Send a message"
+              placeholder={isAiMode ? "AI mode is enabled - switch to Human mode to send messages" : "Send a message"}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               className="pr-20 h-9"
+              disabled={isAiMode}
             />
             <div className="absolute right-2 top-2 flex items-center space-x-1">
-              <Button type="button" variant="ghost" size="sm" className="p-0 w-4 h-4">
+              <Button type="button" variant="ghost" size="sm" className="p-0 w-4 h-4" disabled={isAiMode}>
                 <Paperclip className="w-3 h-3 text-gray-400" />
               </Button>
             </div>
           </div>
-          <Button type="submit" size="sm" className="bg-primary hover:bg-primary-dark h-9">
-            <Send className="w-3 h-3" />
+          <Button 
+            type="submit" 
+            size="sm" 
+            className="bg-primary hover:bg-primary-dark h-9"
+            disabled={isAiMode || sendMessageMutation.isPending}
+          >
+            {sendMessageMutation.isPending ? (
+              <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              <Send className="w-3 h-3" />
+            )}
           </Button>
         </form>
       </div>

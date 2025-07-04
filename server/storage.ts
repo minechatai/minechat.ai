@@ -32,7 +32,7 @@ import {
   type ConversationWithLastMessage,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, sql } from "drizzle-orm";
+import { eq, desc, and, sql, update } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
@@ -64,6 +64,7 @@ export interface IStorage {
   getConversations(userId: string): Promise<ConversationWithLastMessage[]>;
   getConversation(id: number): Promise<Conversation | undefined>;
   createConversation(userId: string, conversation: InsertConversation): Promise<Conversation>;
+  updateConversationLastMessage(conversationId: number): Promise<void>;
 
   // Message operations
   getMessages(conversationId: number): Promise<Message[]>;
@@ -238,7 +239,6 @@ export class DatabaseStorage implements IStorage {
     // Then get the last message for each conversation
     const conversationsWithMessages = await Promise.all(
       allConversations.map(async (conversation) => {
-        console.log(`Debug: Looking for messages for conversation ${conversation.id}`);
         const [lastMessage] = await db
           .select({ content: messages.content })
           .from(messages)
@@ -246,7 +246,6 @@ export class DatabaseStorage implements IStorage {
           .orderBy(desc(messages.createdAt))
           .limit(1);
         
-        console.log(`Debug: Found message for conversation ${conversation.id}:`, lastMessage);
         return {
           ...conversation,
           lastMessage: lastMessage?.content || null
@@ -254,7 +253,6 @@ export class DatabaseStorage implements IStorage {
       })
     );
     
-    console.log("Storage Debug - Conversations with messages:", JSON.stringify(conversationsWithMessages, null, 2));
     return conversationsWithMessages;
   }
 
@@ -272,6 +270,13 @@ export class DatabaseStorage implements IStorage {
       .values({ ...conversationData, userId })
       .returning();
     return conversation;
+  }
+
+  async updateConversationLastMessage(conversationId: number): Promise<void> {
+    await db
+      .update(conversations)
+      .set({ lastMessageAt: new Date() })
+      .where(eq(conversations.id, conversationId));
   }
 
   // Message operations

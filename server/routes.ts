@@ -398,6 +398,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Send message endpoint
+  app.post('/api/messages', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { conversationId, content, senderType } = req.body;
+      
+      // Verify conversation belongs to user
+      const conversation = await storage.getConversation(conversationId);
+      if (!conversation || conversation.userId !== userId) {
+        return res.status(404).json({ message: "Conversation not found" });
+      }
+      
+      // Create message
+      const message = await storage.createMessage({
+        conversationId,
+        senderId: userId,
+        senderType,
+        content,
+        messageType: 'text'
+      });
+      
+      // Update conversation's lastMessageAt timestamp
+      await storage.updateConversationLastMessage(conversationId);
+      
+      res.json(message);
+    } catch (error) {
+      console.error("Error sending message:", error);
+      res.status(500).json({ message: "Failed to send message" });
+    }
+  });
+
   // Individual conversation endpoint
   app.get('/api/conversations/:id', isAuthenticated, async (req: any, res) => {
     try {
