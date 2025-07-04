@@ -73,10 +73,7 @@ export default function Chat() {
           selectedConversation={selectedConversation}
           onSelectConversation={setSelectedConversation}
         />
-        <div className="flex-1 bg-gray-50">
-          {/* Middle expanded space */}
-        </div>
-        <div className="w-1/2">
+        <div className="flex-1">
           <ChatView conversationId={selectedConversation} />
         </div>
       </div>

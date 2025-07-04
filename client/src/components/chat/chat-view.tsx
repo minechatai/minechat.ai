@@ -130,8 +130,8 @@ export default function ChatView({ conversationId }: ChatViewProps) {
       </div>
 
       {/* Chat Messages */}
-      <div className="flex-1 p-6 overflow-y-auto bg-gray-50">
-        <div className="max-w-4xl mx-auto space-y-6">
+      <div className="flex-1 p-4 overflow-y-auto bg-gray-50">
+        <div className="max-w-3xl mx-auto space-y-4">
           <div className="text-center">
             <span className="text-sm text-gray-500 bg-white px-3 py-1 rounded-full">Today</span>
           </div>
