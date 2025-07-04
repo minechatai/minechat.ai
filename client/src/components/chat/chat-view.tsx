@@ -131,7 +131,7 @@ export default function ChatView({ conversationId }: ChatViewProps) {
 
       {/* Chat Messages */}
       <div className="flex-1 p-4 overflow-y-auto bg-gray-50">
-        <div className="max-w-3xl mx-auto space-y-4">
+        <div className="max-w-none mx-auto space-y-4 pr-4">
           <div className="text-center">
             <span className="text-sm text-gray-500 bg-white px-3 py-1 rounded-full">Today</span>
           </div>
@@ -146,7 +146,7 @@ export default function ChatView({ conversationId }: ChatViewProps) {
             messages.map((msg: Message) => (
               <div key={msg.id} className={`flex ${msg.senderType === 'user' ? 'justify-start' : 'justify-end'}`}>
                 {msg.senderType === 'user' ? (
-                  <div className="flex space-x-3 max-w-xs lg:max-w-md">
+                  <div className="flex space-x-3 max-w-md lg:max-w-lg">
                     <Avatar className="w-8 h-8 flex-shrink-0">
                       <AvatarImage 
                         src={conversation?.customerProfilePicture || undefined} 
@@ -164,7 +164,7 @@ export default function ChatView({ conversationId }: ChatViewProps) {
                     </div>
                   </div>
                 ) : (
-                  <div className="max-w-xs lg:max-w-md">
+                  <div className="max-w-md lg:max-w-lg">
                     <div className="bg-primary text-white p-4 rounded-lg shadow-sm">
                       <div className="flex items-center space-x-2 mb-2">
                         <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
