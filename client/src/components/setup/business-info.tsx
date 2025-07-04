@@ -1115,7 +1115,7 @@ export default function BusinessInfo() {
                         onClick={handleBusinessReset}
                         className="bg-red-600 hover:bg-red-700"
                       >
-                        Reset Forever
+                        Delete
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
@@ -1387,7 +1387,7 @@ export default function BusinessInfo() {
                                     onClick={() => confirmRemoveFaqEntry(entry.id)}
                                     className="bg-red-600 hover:bg-red-700"
                                   >
-                                    Delete Forever
+                                    Delete
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
@@ -1452,7 +1452,7 @@ export default function BusinessInfo() {
                           onClick={handleFaqReset}
                           className="bg-red-600 hover:bg-red-700"
                         >
-                          Reset Forever
+                          Delete
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>

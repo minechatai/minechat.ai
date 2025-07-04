@@ -282,7 +282,7 @@ export default function AiAssistant() {
                     onClick={handleReset}
                     className="bg-red-600 hover:bg-red-700"
                   >
-                    Reset Forever
+                    Delete
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
