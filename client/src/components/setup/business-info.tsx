@@ -6,6 +6,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { ResizableTextarea } from "@/components/ui/resizable-textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
@@ -979,10 +980,9 @@ export default function BusinessInfo() {
                 <FormItem>
                   <FormLabel className="text-sm font-medium text-gray-700">Company Story or Other Information</FormLabel>
                   <FormControl>
-                    <Textarea 
+                    <ResizableTextarea 
                       placeholder="Enter company story or other information" 
                       rows={4}
-                      className="resize-none"
                       {...field}
                     />
                   </FormControl>
@@ -1000,10 +1000,9 @@ export default function BusinessInfo() {
                 <FormItem>
                   <FormLabel className="text-sm font-medium text-gray-700">Payment Details</FormLabel>
                   <FormControl>
-                    <Textarea 
+                    <ResizableTextarea 
                       placeholder="Enter payment information and methods" 
                       rows={3}
-                      className="resize-none"
                       {...field}
                     />
                   </FormControl>
@@ -1019,10 +1018,9 @@ export default function BusinessInfo() {
                 <FormItem>
                   <FormLabel className="text-sm font-medium text-gray-700">Discounts</FormLabel>
                   <FormControl>
-                    <Textarea 
+                    <ResizableTextarea 
                       placeholder="Enter discount information and promotions" 
                       rows={3}
-                      className="resize-none"
                       {...field}
                     />
                   </FormControl>
@@ -1038,10 +1036,9 @@ export default function BusinessInfo() {
                 <FormItem>
                   <FormLabel className="text-sm font-medium text-gray-700">Policy</FormLabel>
                   <FormControl>
-                    <Textarea 
+                    <ResizableTextarea 
                       placeholder="Enter business policies and terms" 
                       rows={3}
-                      className="resize-none"
                       {...field}
                     />
                   </FormControl>
@@ -1057,10 +1054,9 @@ export default function BusinessInfo() {
                 <FormItem>
                   <FormLabel className="text-sm font-medium text-gray-700">Additional Notes</FormLabel>
                   <FormControl>
-                    <Textarea 
+                    <ResizableTextarea 
                       placeholder="Enter any additional information" 
                       rows={3}
-                      className="resize-none"
                       {...field}
                     />
                   </FormControl>
@@ -1076,10 +1072,9 @@ export default function BusinessInfo() {
                 <FormItem>
                   <FormLabel className="text-sm font-medium text-gray-700">Thank You Message</FormLabel>
                   <FormControl>
-                    <Textarea 
+                    <ResizableTextarea 
                       placeholder="Enter thank you message for customers" 
                       rows={3}
-                      className="resize-none"
                       {...field}
                     />
                   </FormControl>
@@ -1627,10 +1622,10 @@ export default function BusinessInfo() {
                         <FormItem>
                           <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">Description</FormLabel>
                           <FormControl>
-                            <Textarea 
+                            <ResizableTextarea 
                               placeholder="Enter product description"
                               rows={3}
-                              className="resize-none bg-white dark:bg-gray-700"
+                              className="bg-white dark:bg-gray-700"
                               {...field}
                             />
                           </FormControl>
