@@ -576,7 +576,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         knowledgeBase += `\n`;
       }
 
-      const systemPrompt = `You are ${aiAssistant?.name || "an AI assistant"}${business?.companyName ? ` working for ${business.companyName}` : ""}. 
+      const systemPrompt = `You are ${aiAssistant?.name || "an AI assistant"} working for ${business?.companyName || "this business"}. 
 
 CRITICAL INSTRUCTIONS:
 1. You have access to complete business information below - USE IT to answer questions
@@ -601,7 +601,7 @@ CONVERSATION CONTEXT:
 - Build on previous questions and answers
 - Reference earlier parts of our conversation when relevant
 
-You represent ${business?.companyName || "our business"} and customers expect accurate, specific information from our knowledge base.`;
+You represent ${business?.companyName || "this business"} and customers expect accurate, specific information from our knowledge base.`;
 
       let aiMessage = "";
       
@@ -1154,7 +1154,7 @@ You represent ${business?.companyName || "our business"} and customers expect ac
             });
           }
 
-          const systemPrompt = `You are ${aiAssistant?.name || "an AI assistant"}${business?.companyName ? ` working for ${business.companyName}` : ""}. 
+          const systemPrompt = `You are ${aiAssistant?.name || "an AI assistant"} working for ${business?.companyName || "this business"}. 
 
 CRITICAL INSTRUCTIONS:
 1. You have access to complete business information below - USE IT to answer questions
@@ -1179,7 +1179,7 @@ CONVERSATION CONTEXT:
 - Build on previous questions and answers
 - Reference earlier parts of our conversation when relevant
 
-You represent ${business?.companyName || "our business"} and customers expect accurate, specific information from our knowledge base.`;
+You represent ${business?.companyName || "this business"} and customers expect accurate, specific information from our knowledge base.`;
 
           console.log("=== FACEBOOK AI DEBUG ===");
           // Build conversation history for context
