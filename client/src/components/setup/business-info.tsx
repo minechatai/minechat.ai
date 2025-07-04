@@ -353,7 +353,11 @@ export default function BusinessInfo() {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       setShowProductForm(false);
       setEditingProduct(null);
-      productForm.reset();
+      productForm.reset({
+        name: "",
+        description: "",
+        price: "",
+      });
       setProductImages([]);
       toast({
         title: "Success",
@@ -428,7 +432,11 @@ export default function BusinessInfo() {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
       setEditingProduct(null);
       setShowProductForm(false);
-      productForm.reset();
+      productForm.reset({
+        name: "",
+        description: "",
+        price: "",
+      });
       setProductImages([]);
       toast({
         title: "Success",
@@ -756,6 +764,7 @@ export default function BusinessInfo() {
   };
 
   const startEditingProduct = (product: any) => {
+    console.log("Starting to edit product:", product);
     setEditingProduct(product);
     setShowProductForm(true);
     productForm.reset({
@@ -1411,9 +1420,16 @@ export default function BusinessInfo() {
               <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Product Management</h3>
               <Button 
                 onClick={() => {
+                  console.log("Add New Product clicked - clearing form");
+                  console.log("Current form values before reset:", productForm.getValues());
                   setEditingProduct(null);
                   setProductImages([]);
-                  productForm.reset();
+                  productForm.reset({
+                    name: "",
+                    description: "",
+                    price: "",
+                  });
+                  console.log("Form values after reset:", productForm.getValues());
                   setShowProductForm(true);
                 }}
                 className="bg-primary text-white hover:bg-primary-dark"
@@ -1567,7 +1583,11 @@ export default function BusinessInfo() {
                           setShowProductForm(false);
                           setEditingProduct(null);
                           setProductImages([]);
-                          productForm.reset();
+                          productForm.reset({
+                            name: "",
+                            description: "",
+                            price: "",
+                          });
                         }}
                       >
                         Cancel
