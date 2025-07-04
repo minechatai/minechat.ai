@@ -42,8 +42,8 @@ export default function FacebookChat() {
 
   const handleViewProfile = (facebookSenderId: string) => {
     if (facebookSenderId) {
-      // Open Facebook profile in new tab
-      window.open(`https://facebook.com/${facebookSenderId}`, '_blank');
+      // Open Facebook Messenger conversation in new tab (more reliable than profile)
+      window.open(`https://m.me/${facebookSenderId}`, '_blank');
     }
   };
 
@@ -267,7 +267,7 @@ export default function FacebookChat() {
                         className="text-sm text-blue-600 cursor-pointer hover:underline"
                         onClick={() => handleViewProfile(selectedConversation.facebookSenderId)}
                       >
-                        View profile
+                        Message on Facebook
                       </p>
                     </div>
                   </div>
