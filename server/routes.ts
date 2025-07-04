@@ -308,33 +308,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Image upload route for products
-  app.post('/api/products/upload-image', isAuthenticated, imageUpload.single('image'), async (req: any, res) => {
-    try {
-      console.log("Image upload request received");
-      console.log("User authenticated:", req.user ? 'Yes' : 'No');
-      console.log("req.file:", req.file);
-      console.log("req.body:", req.body);
-      console.log("Content-Type:", req.headers['content-type']);
-      
-      if (!req.file) {
-        console.log("No file found in request");
-        return res.status(400).json({ message: "No image file provided" });
+  app.post('/api/products/upload-image', isAuthenticated, (req, res, next) => {
+    console.log("Image upload request received");
+    console.log("User authenticated:", req.user ? 'Yes' : 'No');
+    console.log("Headers:", req.headers);
+    
+    imageUpload.single('image')(req, res, (err) => {
+      if (err) {
+        console.error("Multer error:", err);
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(400).json({ message: "File too large. Maximum size is 5MB." });
+        }
+        return res.status(400).json({ message: err.message });
       }
+      
+      try {
+        console.log("req.file:", req.file);
+        console.log("req.body:", req.body);
+        
+        if (!req.file) {
+          console.log("No file found in request");
+          return res.status(400).json({ message: "No image file provided" });
+        }
 
-      console.log("File uploaded successfully:", req.file.filename);
-      
-      // Generate a unique URL for the uploaded image
-      const imageUrl = `/uploads/images/${req.file.filename}`;
-      
-      res.json({ 
-        imageUrl,
-        originalName: req.file.originalname,
-        size: req.file.size 
-      });
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      res.status(500).json({ message: "Failed to upload image" });
-    }
+        console.log("File uploaded successfully:", req.file.filename);
+        
+        // Generate a unique URL for the uploaded image
+        const imageUrl = `/uploads/images/${req.file.filename}`;
+        
+        res.json({ 
+          imageUrl,
+          originalName: req.file.originalname,
+          size: req.file.size 
+        });
+      } catch (error) {
+        console.error("Error processing upload:", error);
+        res.status(500).json({ message: "Failed to upload image" });
+      }
+    });
   });
 
   // Conversation routes
