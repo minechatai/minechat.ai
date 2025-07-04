@@ -29,9 +29,10 @@ import {
   type InsertChannel,
   type FacebookConnection,
   type InsertFacebookConnection,
+  type ConversationWithLastMessage,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, sql } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
@@ -60,7 +61,7 @@ export interface IStorage {
   deleteDocument(id: number): Promise<void>;
 
   // Conversation operations
-  getConversations(userId: string): Promise<Conversation[]>;
+  getConversations(userId: string): Promise<ConversationWithLastMessage[]>;
   getConversation(id: number): Promise<Conversation | undefined>;
   createConversation(userId: string, conversation: InsertConversation): Promise<Conversation>;
 
@@ -226,12 +227,32 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Conversation operations
-  async getConversations(userId: string): Promise<Conversation[]> {
-    return await db
-      .select()
+  async getConversations(userId: string): Promise<ConversationWithLastMessage[]> {
+    const conversationsWithMessages = await db
+      .select({
+        id: conversations.id,
+        userId: conversations.userId,
+        customerName: conversations.customerName,
+        customerEmail: conversations.customerEmail,
+        customerProfilePicture: conversations.customerProfilePicture,
+        status: conversations.status,
+        source: conversations.source,
+        facebookSenderId: conversations.facebookSenderId,
+        lastMessageAt: conversations.lastMessageAt,
+        createdAt: conversations.createdAt,
+        lastMessage: sql<string>`(
+          SELECT content 
+          FROM messages 
+          WHERE conversation_id = ${conversations.id} 
+          ORDER BY created_at DESC 
+          LIMIT 1
+        )`
+      })
       .from(conversations)
       .where(eq(conversations.userId, userId))
       .orderBy(desc(conversations.lastMessageAt));
+    
+    return conversationsWithMessages;
   }
 
   async getConversation(id: number): Promise<Conversation | undefined> {

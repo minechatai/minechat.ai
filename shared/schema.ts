@@ -261,6 +261,11 @@ export type Document = typeof documents.$inferSelect;
 export type InsertConversation = typeof conversations.$inferInsert;
 export type Conversation = typeof conversations.$inferSelect;
 
+// Extended conversation type with last message
+export type ConversationWithLastMessage = Conversation & {
+  lastMessage?: string | null;
+};
+
 export type InsertMessage = typeof messages.$inferInsert;
 export type Message = typeof messages.$inferSelect;
 

@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { Search, Plus, MessageSquare } from "lucide-react";
-import { Conversation } from "@shared/schema";
+import { ConversationWithLastMessage } from "@shared/schema";
 
 interface ConversationListProps {
   selectedConversation: number | null;
@@ -67,7 +67,7 @@ export default function ConversationList({ selectedConversation, onSelectConvers
     connectFacebookMutation.mutate();
   };
 
-  const filteredConversations = conversations.filter((conversation: Conversation) => {
+  const filteredConversations = conversations.filter((conversation: ConversationWithLastMessage) => {
     if (searchQuery) {
       return conversation.customerName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
              conversation.customerEmail?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -190,7 +190,7 @@ export default function ConversationList({ selectedConversation, onSelectConvers
             <p className="text-xs text-gray-400 mt-1">Start a conversation to see it here</p>
           </div>
         ) : (
-          filteredConversations.map((conversation: Conversation) => (
+          filteredConversations.map((conversation: ConversationWithLastMessage) => (
             <div
               key={conversation.id}
               className={`flex items-center space-x-3 p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 ${
@@ -218,7 +218,7 @@ export default function ConversationList({ selectedConversation, onSelectConvers
                   </span>
                 </div>
                 <p className="text-sm text-gray-600 truncate">
-                  Start a conversation...
+                  {conversation.lastMessage || 'No messages yet'}
                 </p>
               </div>
             </div>
