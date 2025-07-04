@@ -1069,14 +1069,6 @@ export default function BusinessInfo() {
         </div>
       )}
 
-      {/* Products and Services Section - Coming Soon */}
-      {currentSubSection === "products-services" && (
-        <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">Products & Services</h2>
-          <p className="text-gray-600">Coming soon...</p>
-        </div>
-      )}
-
       {/* FAQs Section */}
       {currentSubSection === "faqs" && (
         <div>
