@@ -422,7 +422,7 @@ export default function BusinessInfo() {
 
   const updateProductMutation = useMutation({
     mutationFn: async ({ id, ...data }: { id: number } & ProductFormData) => {
-      return await apiRequest("PUT", `/api/products/${id}`, data);
+      return await apiRequest("PATCH", `/api/products/${id}`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
@@ -679,11 +679,17 @@ export default function BusinessInfo() {
       imageUrls: productImages, // Save all images
     };
 
+    console.log("Product submission data:", productData);
+    console.log("Current productImages:", productImages);
+    console.log("Is editing:", !!editingProduct);
+
     if (editingProduct) {
       // Update existing product
+      console.log("Updating product with ID:", editingProduct.id);
       updateProductMutation.mutate({ id: editingProduct.id, ...productData });
     } else {
       // Create new product
+      console.log("Creating new product");
       productMutation.mutate(productData);
     }
   }
@@ -1420,9 +1426,14 @@ export default function BusinessInfo() {
 
             {/* Add Product Form */}
             {showProductForm && (
-              <Card className="p-6 border border-gray-200 dark:border-gray-700 mb-6">
+              <Card className={`p-6 mb-6 ${editingProduct 
+                ? 'border-2 border-blue-200 dark:border-blue-600 bg-blue-50 dark:bg-blue-900/20' 
+                : 'border border-gray-200 dark:border-gray-700'
+              }`}>
                 <div className="flex items-center justify-between mb-4">
-                  <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100">Add New Product</h4>
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                    {editingProduct ? "Edit Product" : "Add New Product"}
+                  </h4>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -1564,9 +1575,12 @@ export default function BusinessInfo() {
                       <Button
                         type="submit"
                         className="bg-primary text-white hover:bg-primary-dark"
-                        disabled={productMutation.isPending}
+                        disabled={productMutation.isPending || updateProductMutation.isPending}
                       >
-                        {productMutation.isPending ? "Adding..." : "Add Product"}
+                        {editingProduct 
+                          ? (updateProductMutation.isPending ? "Saving..." : "Save Changes")
+                          : (productMutation.isPending ? "Adding..." : "Add Product")
+                        }
                       </Button>
                     </div>
                   </form>
