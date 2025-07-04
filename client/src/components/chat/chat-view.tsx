@@ -15,12 +15,12 @@ export default function ChatView({ conversationId }: ChatViewProps) {
   const [isAiMode, setIsAiMode] = useState(true);
 
   const { data: conversation, isLoading: conversationLoading } = useQuery({
-    queryKey: ["/api/conversations", conversationId],
+    queryKey: [`/api/conversations/${conversationId}`],
     enabled: !!conversationId,
   });
 
   const { data: messages = [], isLoading: messagesLoading } = useQuery({
-    queryKey: ["/api/messages", conversationId],
+    queryKey: [`/api/messages/${conversationId}`],
     enabled: !!conversationId,
   });
 

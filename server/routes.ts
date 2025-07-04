@@ -376,7 +376,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Messages endpoint that frontend expects
   app.get('/api/messages/:conversationId', isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const conversationId = parseInt(req.params.conversationId);
+      
+      // Verify conversation belongs to user
+      const conversation = await storage.getConversation(conversationId);
+      if (!conversation || conversation.userId !== userId) {
+        return res.status(404).json({ message: "Conversation not found" });
+      }
+      
       const messages = await storage.getMessages(conversationId);
       res.json(messages);
     } catch (error) {
