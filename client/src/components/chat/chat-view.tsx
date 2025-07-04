@@ -125,8 +125,10 @@ export default function ChatView({ conversationId }: ChatViewProps) {
 
   const handleViewProfile = () => {
     if (conversation?.facebookSenderId) {
-      // Open Facebook profile in new tab
-      window.open(`https://facebook.com/${conversation.facebookSenderId}`, '_blank');
+      // Note: Facebook PSIDs (Page-Scoped IDs) cannot be used to access user profiles directly
+      // This is a privacy feature - businesses cannot access customer profiles via page interactions
+      // We'll try the search approach as a fallback
+      window.open(`https://www.facebook.com/search/people/?q=${conversation.customerName || conversation.facebookSenderId}`, '_blank');
     }
   };
 
