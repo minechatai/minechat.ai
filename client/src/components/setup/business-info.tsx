@@ -689,6 +689,7 @@ export default function BusinessInfo() {
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
+    console.log("Starting image upload for", files.length, "files");
     setUploadingImage(true);
     const uploadedUrls: string[] = [];
 
@@ -696,6 +697,8 @@ export default function BusinessInfo() {
       // Upload each file separately
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
+        console.log(`Uploading file ${i + 1}:`, file.name, file.type, file.size, "bytes");
+        
         const formData = new FormData();
         formData.append('image', file);
 
@@ -705,6 +708,8 @@ export default function BusinessInfo() {
           credentials: 'include', // Include cookies for authentication
         });
 
+        console.log(`Response for ${file.name}:`, response.status, response.statusText);
+
         if (response.ok) {
           const result = await response.json();
           uploadedUrls.push(result.imageUrl);
@@ -712,7 +717,7 @@ export default function BusinessInfo() {
         } else {
           const errorText = await response.text();
           console.error(`Failed to upload ${file.name}:`, response.status, errorText);
-          throw new Error(`Failed to upload ${file.name}: ${response.status} ${errorText}`);
+          throw new Error(`Failed to upload ${file.name}: ${response.status} - ${errorText}`);
         }
       }
 
@@ -723,8 +728,9 @@ export default function BusinessInfo() {
         description: `${uploadedUrls.length} image(s) uploaded successfully`,
       });
     } catch (error) {
+      console.error("Image upload error:", error);
       toast({
-        title: "Error",
+        title: "Error", 
         description: error instanceof Error ? error.message : "Failed to upload images",
         variant: "destructive",
       });

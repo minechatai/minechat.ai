@@ -309,9 +309,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Image upload route for products
   app.post('/api/products/upload-image', isAuthenticated, (req, res, next) => {
-    console.log("Image upload request received");
+    console.log("=== Image upload request received ===");
     console.log("User authenticated:", req.user ? 'Yes' : 'No');
-    console.log("Headers:", req.headers);
+    console.log("User ID:", req.user?.id);
+    console.log("Request headers:", JSON.stringify(req.headers, null, 2));
+    console.log("Session:", req.session ? 'Present' : 'Missing');
     
     imageUpload.single('image')(req, res, (err) => {
       if (err) {
