@@ -578,6 +578,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const systemPrompt = `You are ${aiAssistant?.name || "an AI assistant"}${business?.companyName ? ` working for ${business.companyName}` : ""}. 
 
+IMPORTANT: If you don't have specific business information provided below, DO NOT invent or assume any company names. Only use information explicitly provided in the knowledge base.
+
 CRITICAL INSTRUCTIONS:
 1. You have access to complete business information below - USE IT to answer questions
 2. NEVER say "I'll be happy to answer questions related to our business" unless the question is completely unrelated to business (like asking about weather, sports, etc.)
@@ -617,15 +619,18 @@ You represent ${business?.companyName || "our business"} and customers expect ac
       // Build conversation history for OpenAI
       const messages = [{ role: 'system', content: systemPrompt }];
       
-      // Add recent conversation history (last 10 messages for context)
-      const recentMessages = conversationMessages.slice(-10);
-      recentMessages.forEach(msg => {
-        if (msg.senderType === "user") {
-          messages.push({ role: 'user', content: msg.content });
-        } else if (msg.senderType === "ai") {
-          messages.push({ role: 'assistant', content: msg.content });
-        }
-      });
+      // Skip conversation history when no business data exists to ensure fresh start
+      if (business?.companyName) {
+        // Add recent conversation history (last 10 messages for context)
+        const recentMessages = conversationMessages.slice(-10);
+        recentMessages.forEach(msg => {
+          if (msg.senderType === "user") {
+            messages.push({ role: 'user', content: msg.content });
+          } else if (msg.senderType === "ai") {
+            messages.push({ role: 'assistant', content: msg.content });
+          }
+        });
+      }
       
       // Add current user message
       messages.push({ role: 'user', content: message });
@@ -1156,6 +1161,8 @@ You represent ${business?.companyName || "our business"} and customers expect ac
 
           const systemPrompt = `You are ${aiAssistant?.name || "an AI assistant"}${business?.companyName ? ` working for ${business.companyName}` : ""}. 
 
+IMPORTANT: If you don't have specific business information provided below, DO NOT invent or assume any company names. Only use information explicitly provided in the knowledge base.
+
 CRITICAL INSTRUCTIONS:
 1. You have access to complete business information below - USE IT to answer questions
 2. NEVER say "I'll be happy to answer questions related to our business" unless the question is completely unrelated to business (like asking about weather, sports, etc.)
@@ -1186,15 +1193,18 @@ You represent ${business?.companyName || "our business"} and customers expect ac
           const conversationMessages = [];
           conversationMessages.push({ role: "system", content: systemPrompt });
           
-          // Add recent conversation history (last 10 messages)
-          const recentMessages = messages.slice(-10);
-          recentMessages.forEach(msg => {
-            if (msg.senderType === "user") {
-              conversationMessages.push({ role: "user", content: msg.content });
-            } else if (msg.senderType === "ai") {
-              conversationMessages.push({ role: "assistant", content: msg.content });
-            }
-          });
+          // Skip conversation history when no business data exists to ensure fresh start
+          if (business?.companyName) {
+            // Add recent conversation history (last 10 messages)
+            const recentMessages = messages.slice(-10);
+            recentMessages.forEach(msg => {
+              if (msg.senderType === "user") {
+                conversationMessages.push({ role: "user", content: msg.content });
+              } else if (msg.senderType === "ai") {
+                conversationMessages.push({ role: "assistant", content: msg.content });
+              }
+            });
+          }
           
           // Add current user message
           conversationMessages.push({ role: "user", content: messageText });
