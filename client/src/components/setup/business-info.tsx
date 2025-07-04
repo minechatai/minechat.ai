@@ -240,6 +240,53 @@ export default function BusinessInfo() {
     },
   });
 
+  const businessResetMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest("DELETE", "/api/business");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/business"] });
+      businessForm.reset({
+        companyName: "",
+        phoneNumber: "",
+        address: "",
+        email: "",
+        companyStory: "",
+        paymentDetails: "",
+        discounts: "",
+        policy: "",
+        additionalNotes: "",
+        thankYouMessage: "",
+      });
+      toast({
+        title: "Success",
+        description: "Business information reset successfully",
+      });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error as Error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to reset business information",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleBusinessReset = () => {
+    businessResetMutation.mutate();
+  };
+
   const faqMutation = useMutation({
     mutationFn: async (data: FaqFormData) => {
       await apiRequest("POST", "/api/business", data);
@@ -270,6 +317,45 @@ export default function BusinessInfo() {
       });
     },
   });
+
+  const faqResetMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest("POST", "/api/business", { faqs: "" });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/business"] });
+      faqForm.reset({
+        faqs: "",
+      });
+      setFaqEntries([]);
+      toast({
+        title: "Success",
+        description: "FAQ information reset successfully",
+      });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error as Error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to reset FAQ information",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleFaqReset = () => {
+    faqResetMutation.mutate();
+  };
 
   const productMutation = useMutation({
     mutationFn: async (data: ProductFormData) => {
@@ -982,9 +1068,10 @@ export default function BusinessInfo() {
                   type="button" 
                   variant="outline"
                   className="border-gray-300 text-gray-700 hover:bg-gray-50"
-                  onClick={() => businessForm.reset()}
+                  onClick={handleBusinessReset}
+                  disabled={businessResetMutation.isPending}
                 >
-                  Reset
+                  {businessResetMutation.isPending ? "Resetting..." : "Reset"}
                 </Button>
                 <Button 
                   type="submit" 
@@ -1286,9 +1373,10 @@ export default function BusinessInfo() {
                     type="button" 
                     variant="outline"
                     className="border-gray-300 text-gray-700 hover:bg-gray-50"
-                    onClick={() => faqForm.reset()}
+                    onClick={handleFaqReset}
+                    disabled={faqResetMutation.isPending}
                   >
-                    Reset
+                    {faqResetMutation.isPending ? "Resetting..." : "Reset"}
                   </Button>
                   <Button 
                     type="submit" 

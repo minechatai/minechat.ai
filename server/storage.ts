@@ -41,10 +41,12 @@ export interface IStorage {
   // Business operations
   getBusiness(userId: string): Promise<Business | undefined>;
   upsertBusiness(userId: string, business: InsertBusiness): Promise<Business>;
+  deleteBusiness(userId: string): Promise<void>;
 
   // AI Assistant operations
   getAiAssistant(userId: string): Promise<AiAssistant | undefined>;
   upsertAiAssistant(userId: string, assistant: InsertAiAssistant): Promise<AiAssistant>;
+  deleteAiAssistant(userId: string): Promise<void>;
 
   // Product operations
   getProducts(userId: string): Promise<Product[]>;
@@ -132,6 +134,12 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async deleteBusiness(userId: string): Promise<void> {
+    await db
+      .delete(businesses)
+      .where(eq(businesses.userId, userId));
+  }
+
   // AI Assistant operations
   async getAiAssistant(userId: string): Promise<AiAssistant | undefined> {
     const [assistant] = await db
@@ -158,6 +166,12 @@ export class DatabaseStorage implements IStorage {
         .returning();
       return assistant;
     }
+  }
+
+  async deleteAiAssistant(userId: string): Promise<void> {
+    await db
+      .delete(aiAssistants)
+      .where(eq(aiAssistants.userId, userId));
   }
 
   // Product operations

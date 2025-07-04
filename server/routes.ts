@@ -96,6 +96,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete('/api/business', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      await storage.deleteBusiness(userId);
+      res.json({ message: "Business information deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting business:", error);
+      res.status(500).json({ message: "Failed to delete business" });
+    }
+  });
+
   // AI Assistant routes
   app.get('/api/ai-assistant', isAuthenticated, async (req: any, res) => {
     try {
@@ -117,6 +128,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error saving AI assistant:", error);
       res.status(500).json({ message: "Failed to save AI assistant" });
+    }
+  });
+
+  app.delete('/api/ai-assistant', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      await storage.deleteAiAssistant(userId);
+      res.json({ message: "AI Assistant settings deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting AI assistant:", error);
+      res.status(500).json({ message: "Failed to delete AI assistant" });
     }
   });
 

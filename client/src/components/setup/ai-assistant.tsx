@@ -45,13 +45,13 @@ export default function AiAssistant() {
   useEffect(() => {
     if (aiAssistant) {
       form.reset({
-        name: aiAssistant.name || "",
-        introMessage: aiAssistant.introMessage || "",
-        description: aiAssistant.description || "",
-        guidelines: aiAssistant.guidelines || "",
-        responseLength: aiAssistant.responseLength || "normal",
+        name: (aiAssistant as any).name || "",
+        introMessage: (aiAssistant as any).introMessage || "",
+        description: (aiAssistant as any).description || "",
+        guidelines: (aiAssistant as any).guidelines || "",
+        responseLength: (aiAssistant as any).responseLength || "normal",
       });
-      setResponseLength(aiAssistant.responseLength || "normal");
+      setResponseLength((aiAssistant as any).responseLength || "normal");
     }
   }, [aiAssistant, form]);
 
@@ -88,6 +88,49 @@ export default function AiAssistant() {
 
   const onSubmit = (data: AiAssistantFormData) => {
     mutation.mutate({ ...data, responseLength });
+  };
+
+  const resetMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest("DELETE", "/api/ai-assistant");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/ai-assistant"] });
+      form.reset({
+        name: "",
+        introMessage: "",
+        description: "",
+        guidelines: "",
+        responseLength: "normal",
+      });
+      setResponseLength("normal");
+      toast({
+        title: "Success",
+        description: "AI Assistant settings reset successfully",
+      });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error as Error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to reset AI Assistant settings",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleReset = () => {
+    resetMutation.mutate();
   };
 
   if (isLoading) {
@@ -213,7 +256,16 @@ export default function AiAssistant() {
             </div>
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex justify-end space-x-3">
+            <Button 
+              type="button" 
+              variant="outline"
+              className="border-gray-300 text-gray-700 hover:bg-gray-50"
+              onClick={handleReset}
+              disabled={resetMutation.isPending}
+            >
+              {resetMutation.isPending ? "Resetting..." : "Reset"}
+            </Button>
             <Button 
               type="submit" 
               className="bg-primary text-white hover:bg-primary-dark"
