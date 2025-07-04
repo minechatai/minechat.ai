@@ -144,8 +144,8 @@ export default function ChatView({ conversationId }: ChatViewProps) {
             </div>
           ) : (
             messages.map((msg: Message) => (
-              <div key={msg.id} className={`flex ${msg.senderType === 'customer' ? 'justify-start' : 'justify-end'}`}>
-                {msg.senderType === 'customer' ? (
+              <div key={msg.id} className={`flex ${msg.senderType === 'user' ? 'justify-start' : 'justify-end'}`}>
+                {msg.senderType === 'user' ? (
                   <div className="flex space-x-3 max-w-xs lg:max-w-md">
                     <Avatar className="w-8 h-8 flex-shrink-0">
                       <AvatarImage 
