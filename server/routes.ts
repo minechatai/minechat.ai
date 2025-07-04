@@ -578,7 +578,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const systemPrompt = `You are ${aiAssistant?.name || "an AI assistant"}${business?.companyName ? ` working for ${business.companyName}` : ""}. 
 
-IMPORTANT: If you don't have specific business information provided below, DO NOT invent or assume any company names. Only use information explicitly provided in the knowledge base.
+CRITICAL: You are a knowledge-base driven AI assistant. You must ONLY use information explicitly provided in the knowledge base below. DO NOT invent, assume, or make up any business names, company information, products, or services that are not explicitly listed in the knowledge base.
+
+If someone asks about business information that is not in your knowledge base, respond with: "I don't have that information available. Please contact the business owner to get accurate details."
 
 CRITICAL INSTRUCTIONS:
 1. You have access to complete business information below - USE IT to answer questions
@@ -1161,7 +1163,9 @@ You represent ${business?.companyName || "our business"} and customers expect ac
 
           const systemPrompt = `You are ${aiAssistant?.name || "an AI assistant"}${business?.companyName ? ` working for ${business.companyName}` : ""}. 
 
-IMPORTANT: If you don't have specific business information provided below, DO NOT invent or assume any company names. Only use information explicitly provided in the knowledge base.
+CRITICAL: You are a knowledge-base driven AI assistant. You must ONLY use information explicitly provided in the knowledge base below. DO NOT invent, assume, or make up any business names, company information, products, or services that are not explicitly listed in the knowledge base.
+
+If someone asks about business information that is not in your knowledge base, respond with: "I don't have that information available. Please contact the business owner to get accurate details."
 
 CRITICAL INSTRUCTIONS:
 1. You have access to complete business information below - USE IT to answer questions

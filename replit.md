@@ -150,6 +150,14 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Reset buttons clear both form fields and corresponding database entries
   - FAQ reset functionality included within Business tab reset
   - Enhanced user experience with loading states for reset operations
+- July 4, 2025: Knowledge-Base Driven AI System Implementation
+  - Fixed hardcoded company name references that persisted after resets
+  - Implemented strict knowledge-base driven AI responses: AI only uses explicitly provided information
+  - Added conversation history isolation: when no business data exists, AI starts fresh without previous context
+  - Enhanced system prompts with explicit instructions to prevent AI from inventing business information
+  - AI now responds with "I don't have that information available" when asked about non-existent business details
+  - Eliminated all fallback responses that could reference non-existent company data
+  - Both web chat and Facebook webhook now operate with identical knowledge-base constraints
 
 # User Preferences
 
