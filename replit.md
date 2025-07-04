@@ -179,6 +179,11 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Enhanced FAQ input fields with improved placeholder text and sizing for emoji content
   - Implemented verbatim FAQ response system ensuring AI answers match saved FAQ content exactly
   - Fixed database persistence issues ensuring reset/delete operations completely remove data
+- July 4, 2025: Confirmation Dialog Button Standardization and UI Layout Enhancement
+  - Updated all confirmation dialog buttons from "Reset Forever"/"Delete Forever" to "Delete" for consistency
+  - Standardized destructive action confirmations across AI Assistant, Business Information, and FAQ management
+  - Enhanced AI Testing panel layout by increasing width from 384px to 800px for better space utilization
+  - Improved visual balance between main content area and AI Testing panel in Setup sections
 
 # User Preferences
 
