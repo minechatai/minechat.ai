@@ -5,6 +5,11 @@
 @tailwind utilities;
 
 * {
+  font-family: 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif !important;
+}
+
+/* Brand logo maintains Poppins font for brand identity */
+.logo-brand {
   font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, sans-serif !important;
 }
 

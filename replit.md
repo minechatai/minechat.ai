@@ -184,6 +184,11 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Standardized destructive action confirmations across AI Assistant, Business Information, and FAQ management
   - Enhanced AI Testing panel layout by increasing width from 384px to 800px for better space utilization
   - Improved visual balance between main content area and AI Testing panel in Setup sections
+- July 4, 2025: SF Pro Font Implementation with Brand Identity Preservation
+  - Changed platform-wide font from Poppins to SF Pro Display/SF Pro Text for modern system appearance
+  - Preserved Poppins font specifically for minechat.ai logo text to maintain brand identity
+  - Updated both CSS global styles and Tailwind configuration for consistent SF Pro usage
+  - Added logo-brand CSS class to maintain Poppins font for brand elements only
 
 # User Preferences
 
