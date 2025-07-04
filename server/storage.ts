@@ -65,6 +65,7 @@ export interface IStorage {
   getConversation(id: number): Promise<Conversation | undefined>;
   createConversation(userId: string, conversation: InsertConversation): Promise<Conversation>;
   updateConversationLastMessage(conversationId: number): Promise<void>;
+  updateConversationMode(conversationId: number, mode: string): Promise<void>;
 
   // Message operations
   getMessages(conversationId: number): Promise<Message[]>;
@@ -276,6 +277,13 @@ export class DatabaseStorage implements IStorage {
     await db
       .update(conversations)
       .set({ lastMessageAt: new Date() })
+      .where(eq(conversations.id, conversationId));
+  }
+
+  async updateConversationMode(conversationId: number, mode: string): Promise<void> {
+    await db
+      .update(conversations)
+      .set({ mode: mode })
       .where(eq(conversations.id, conversationId));
   }
 

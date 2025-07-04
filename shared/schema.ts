@@ -109,6 +109,7 @@ export const conversations = pgTable("conversations", {
   status: varchar("status").default("active"),
   source: varchar("source").default("web"), // web, facebook, etc.
   facebookSenderId: varchar("facebook_sender_id"), // For Facebook Messenger integration
+  mode: varchar("mode").default("ai"), // "ai" or "human" - controls whether AI responds automatically
   lastMessageAt: timestamp("last_message_at").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
 });

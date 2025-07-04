@@ -398,6 +398,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update conversation mode endpoint
+  app.patch('/api/conversations/:id/mode', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const conversationId = parseInt(req.params.id);
+      const { mode } = req.body;
+      
+      // Verify conversation belongs to user
+      const conversation = await storage.getConversation(conversationId);
+      if (!conversation || conversation.userId !== userId) {
+        return res.status(404).json({ message: "Conversation not found" });
+      }
+      
+      // Update conversation mode
+      await storage.updateConversationMode(conversationId, mode);
+      
+      res.json({ success: true, mode });
+    } catch (error) {
+      console.error("Error updating conversation mode:", error);
+      res.status(500).json({ message: "Failed to update conversation mode" });
+    }
+  });
+
   // Send message endpoint
   app.post('/api/messages', isAuthenticated, async (req: any, res) => {
     try {
@@ -1176,6 +1199,15 @@ You represent ${business?.companyName || "our business"} and customers expect ac
         content: messageText,
         messageType: "text"
       });
+
+      // Update conversation's lastMessageAt timestamp
+      await storage.updateConversationLastMessage(conversation.id);
+
+      // Check if conversation is in AI mode before generating response
+      if (conversation.mode === 'human') {
+        console.log(`Conversation ${conversation.id} is in human mode - skipping AI response`);
+        return;
+      }
 
       // Generate AI response using the same logic as the chat endpoint
       let aiMessage = "";

@@ -23,6 +23,13 @@ export default function ChatView({ conversationId }: ChatViewProps) {
     refetchInterval: 3000, // Refresh every 3 seconds
   });
 
+  // Sync toggle state with conversation mode from database
+  useEffect(() => {
+    if (conversation) {
+      setIsAiMode(conversation.mode === 'ai' || !conversation.mode);
+    }
+  }, [conversation]);
+
   const { data: messages = [], isLoading: messagesLoading } = useQuery<Message[]>({
     queryKey: [`/api/messages/${conversationId}`],
     enabled: !!conversationId,
@@ -61,6 +68,36 @@ export default function ChatView({ conversationId }: ChatViewProps) {
     }
   });
 
+  const updateModeMutation = useMutation({
+    mutationFn: async (data: { conversationId: number; mode: string }) => {
+      const response = await fetch(`/api/conversations/${data.conversationId}/mode`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ mode: data.mode }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update conversation mode');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      // Invalidate and refetch conversation data
+      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}`] });
+      queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update mode. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim() || !conversationId) return;
@@ -73,6 +110,16 @@ export default function ChatView({ conversationId }: ChatViewProps) {
     });
     
     setMessage("");
+  };
+
+  const handleModeToggle = (mode: 'ai' | 'human') => {
+    if (!conversationId) return;
+    
+    setIsAiMode(mode === 'ai');
+    updateModeMutation.mutate({
+      conversationId,
+      mode
+    });
   };
 
   const formatTime = (date: Date | string | null) => {
@@ -149,14 +196,16 @@ export default function ChatView({ conversationId }: ChatViewProps) {
             <div className="flex items-center space-x-2">
               <Button 
                 className={`${isAiMode ? 'bg-primary text-white' : 'border border-gray-300 text-gray-700'}`}
-                onClick={() => setIsAiMode(true)}
+                onClick={() => handleModeToggle('ai')}
+                disabled={updateModeMutation.isPending}
               >
                 <Bot className="w-4 h-4 mr-2" />
                 AI Assistant
               </Button>
               <Button 
                 className={`${!isAiMode ? 'bg-primary text-white' : 'border border-gray-300 text-gray-700'}`}
-                onClick={() => setIsAiMode(false)}
+                onClick={() => handleModeToggle('human')}
+                disabled={updateModeMutation.isPending}
               >
                 <User className="w-4 h-4 mr-2" />
                 Human
