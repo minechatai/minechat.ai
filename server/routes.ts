@@ -410,7 +410,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Conversation not found" });
       }
       
-      // Create message
+      // Create message in database
       const message = await storage.createMessage({
         conversationId,
         senderId: userId,
@@ -421,6 +421,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Update conversation's lastMessageAt timestamp
       await storage.updateConversationLastMessage(conversationId);
+      
+      // If this is a human message and the conversation is from Facebook, send to Facebook
+      if (senderType === 'human' && conversation.source === 'facebook' && conversation.facebookSenderId) {
+        try {
+          const facebookConnection = await storage.getFacebookConnection(userId);
+          if (facebookConnection?.accessToken) {
+            await sendFacebookMessage(
+              facebookConnection.accessToken,
+              conversation.facebookSenderId,
+              content
+            );
+            console.log(`Human message sent to Facebook for conversation ${conversationId}`);
+          } else {
+            console.log(`No Facebook connection found for user ${userId}`);
+          }
+        } catch (facebookError) {
+          console.error("Error sending message to Facebook:", facebookError);
+          // Don't fail the API call if Facebook sending fails
+        }
+      }
       
       res.json(message);
     } catch (error) {

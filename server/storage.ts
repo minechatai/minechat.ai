@@ -32,7 +32,7 @@ import {
   type ConversationWithLastMessage,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, sql, update } from "drizzle-orm";
+import { eq, desc, and, sql } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
