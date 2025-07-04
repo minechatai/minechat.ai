@@ -83,12 +83,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("📝 Business save request - userId:", userId);
       console.log("📝 Business save request - body:", req.body);
       console.log("📝 Business save request - FAQs specifically:", req.body.faqs);
+      console.log("📝 Business save request - FAQs char codes:", req.body.faqs ? [...req.body.faqs].map(c => c.charCodeAt(0)).join(',') : 'null');
+      
       const validatedData = insertBusinessSchema.parse(req.body);
       console.log("📝 Business save - validated data:", validatedData);
       console.log("📝 Business save - validated FAQs:", validatedData.faqs);
+      console.log("📝 Business save - validated FAQs char codes:", validatedData.faqs ? [...validatedData.faqs].map(c => c.charCodeAt(0)).join(',') : 'null');
+      
       const business = await storage.upsertBusiness(userId, { ...validatedData, userId });
       console.log("📝 Business save - result:", business);
       console.log("📝 Business save - result FAQs:", business.faqs);
+      console.log("📝 Business save - result FAQs char codes:", business.faqs ? [...business.faqs].map(c => c.charCodeAt(0)).join(',') : 'null');
       res.json(business);
     } catch (error) {
       console.error("Error saving business:", error);
