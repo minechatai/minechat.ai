@@ -38,7 +38,7 @@
   --card-foreground: hsl(20, 14.3%, 4.1%);
   --border: hsl(20, 5.9%, 90%);
   --input: hsl(20, 5.9%, 90%);
-  --primary: hsl(344, 47%, 35%);
+  --primary: hsl(324, 43%, 31%);
   --primary-foreground: hsl(0, 0%, 100%);
   --secondary: hsl(60, 4.8%, 95.9%);
   --secondary-foreground: hsl(24, 9.8%, 10%);
@@ -50,7 +50,7 @@
   --radius: 0.5rem;
   --sidebar-background: hsl(0, 0%, 100%);
   --sidebar-foreground: hsl(20, 14.3%, 4.1%);
-  --sidebar-primary: hsl(344, 47%, 35%);
+  --sidebar-primary: hsl(324, 43%, 31%);
   --sidebar-primary-foreground: hsl(0, 0%, 100%);
   --sidebar-accent: hsl(60, 4.8%, 95.9%);
 }
@@ -66,7 +66,7 @@
   --card-foreground: hsl(0, 0%, 98%);
   --border: hsl(215, 13.8%, 23.9%);
   --input: hsl(215, 13.8%, 23.9%);
-  --primary: hsl(344, 47%, 50%);
+  --primary: hsl(324, 43%, 40%);
   --primary-foreground: hsl(0, 0%, 100%);
   --secondary: hsl(215, 13.8%, 23.9%);
   --secondary-foreground: hsl(0, 0%, 98%);
@@ -77,7 +77,7 @@
   --ring: hsl(215, 20.2%, 65.1%);
   --sidebar-background: hsl(215, 28%, 17%);
   --sidebar-foreground: hsl(0, 0%, 98%);
-  --sidebar-primary: hsl(344, 47%, 50%);
+  --sidebar-primary: hsl(324, 43%, 40%);
   --sidebar-primary-foreground: hsl(0, 0%, 100%);
   --sidebar-accent: hsl(215, 13.8%, 23.9%);
   --sidebar-accent-foreground: hsl(24, 9.8%, 10%);
@@ -101,7 +101,7 @@
   --card-foreground: hsl(0, 0%, 98%);
   --border: hsl(215, 13.8%, 23.9%);
   --input: hsl(215, 13.8%, 23.9%);
-  --primary: hsl(344, 47%, 35%);
+  --primary: hsl(324, 43%, 40%);
   --primary-foreground: hsl(0, 0%, 100%);
   --secondary: hsl(240, 3.7%, 15.9%);
   --secondary-foreground: hsl(0, 0%, 98%);
@@ -113,17 +113,22 @@
   --radius: 0.5rem;
   --sidebar-background: hsl(240, 10%, 3.9%);
   --sidebar-foreground: hsl(0, 0%, 98%);
-  --sidebar-primary: hsl(344, 47%, 35%);
+  --sidebar-primary: hsl(324, 43%, 40%);
   --sidebar-primary-foreground: hsl(0, 0%, 100%);
   --sidebar-accent: hsl(240, 3.7%, 15.9%);
   --sidebar-accent-foreground: hsl(0, 0%, 98%);
   --sidebar-border: hsl(240, 3.7%, 15.9%);
   --sidebar-ring: hsl(240, 4.9%, 83.9%);
-  --chart-1: hsl(344, 47%, 35%);
+  --chart-1: hsl(324, 43%, 40%);
   --chart-2: hsl(25, 5.3%, 44.7%);
   --chart-3: hsl(240, 3.7%, 15.9%);
   --chart-4: hsl(0, 62.8%, 30.6%);
   --chart-5: hsl(207, 90%, 54%);
+  
+  /* Minechat Red Brand Colors */
+  --minechat-red-start: #8b1950;
+  --minechat-red-mid: #b33054;
+  --minechat-red-end: #b73850;
 }
 
 @layer base {
@@ -138,29 +143,47 @@
 
 /* Custom styles for minechat.ai */
 .primary-burgundy {
-  background-color: hsl(344, 47%, 35%);
+  background-color: hsl(324, 43%, 31%);
 }
 
 .text-primary-burgundy {
-  color: hsl(344, 47%, 35%);
+  color: hsl(324, 43%, 31%);
 }
 
 .border-primary-burgundy {
-  border-color: hsl(344, 47%, 35%);
+  border-color: hsl(324, 43%, 31%);
 }
 
 .hover\:bg-primary-burgundy:hover {
-  background-color: hsl(344, 47%, 30%);
+  background-color: hsl(324, 43%, 26%);
 }
 
 /* Ensure consistent button styling */
 .btn-primary {
-  background-color: hsl(344, 47%, 35%);
+  background-color: hsl(324, 43%, 31%);
   color: hsl(0, 0%, 100%);
 }
 
 .btn-primary:hover {
-  background-color: hsl(344, 47%, 30%);
+  background-color: hsl(324, 43%, 26%);
+}
+
+/* Minechat Red Brand Gradient */
+.minechat-red-gradient {
+  background: linear-gradient(135deg, var(--minechat-red-start), var(--minechat-red-mid), var(--minechat-red-end));
+}
+
+.minechat-red-gradient-hover:hover {
+  background: linear-gradient(135deg, var(--minechat-red-start), var(--minechat-red-mid), var(--minechat-red-end));
+}
+
+/* Minechat Red for solid backgrounds */
+.minechat-red-bg {
+  background-color: var(--minechat-red-mid);
+}
+
+.minechat-red-text {
+  color: var(--minechat-red-mid);
 }
 
 /* Chart customizations */

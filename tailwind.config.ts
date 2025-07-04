@@ -65,6 +65,13 @@ export default {
           border: "var(--sidebar-border)",
           ring: "var(--sidebar-ring)",
         },
+        minechat: {
+          red: {
+            start: "var(--minechat-red-start)",
+            mid: "var(--minechat-red-mid)",
+            end: "var(--minechat-red-end)",
+          },
+        },
       },
       keyframes: {
         "accordion-down": {
