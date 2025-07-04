@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Bot, Paperclip, Image, Mic, Send } from "lucide-react";
+import chatbotIcon from "@assets/Frame_1751633918219.png";
 
 interface Message {
   id: string;
@@ -88,7 +89,11 @@ export default function AiTestingPanel() {
       <div className="flex-1 p-4 overflow-y-auto custom-scrollbar">
         {messages.length === 0 ? (
           <div className="text-center text-gray-500 mt-8">
-            <Bot className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+            <img 
+              src={chatbotIcon} 
+              alt="AI Assistant" 
+              className="w-12 h-12 mx-auto mb-4 opacity-30 grayscale"
+            />
             <p className="text-sm">Test your AI assistant here</p>
             <p className="text-xs text-gray-400 mt-1">Send a message to start testing</p>
           </div>
@@ -105,8 +110,12 @@ export default function AiTestingPanel() {
                   </div>
                 ) : (
                   <div className="flex space-x-2 max-w-xs">
-                    <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                      <Bot className="w-3 h-3 text-white" />
+                    <div className="w-6 h-6 bg-gray-400 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                      <img 
+                        src={chatbotIcon} 
+                        alt="AI Assistant" 
+                        className="w-3 h-3"
+                      />
                     </div>
                     <div>
                       <div className="bg-gray-100 p-3 rounded-lg shadow-sm">
@@ -121,8 +130,12 @@ export default function AiTestingPanel() {
             {isLoading && (
               <div className="flex justify-start">
                 <div className="flex space-x-2 max-w-xs">
-                  <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                    <Bot className="w-3 h-3 text-white" />
+                  <div className="w-6 h-6 bg-gray-400 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <img 
+                      src={chatbotIcon} 
+                      alt="AI Assistant" 
+                      className="w-3 h-3"
+                    />
                   </div>
                   <div className="bg-gray-100 p-3 rounded-lg shadow-sm">
                     <div className="flex space-x-1">
