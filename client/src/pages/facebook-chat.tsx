@@ -294,7 +294,11 @@ export default function FacebookChat() {
                                   {message.senderType === 'human' ? (
                                     <User className="w-3 h-3 text-blue-600" />
                                   ) : (
-                                    <Bot className="w-3 h-3 text-gray-600" />
+                                    <img 
+                                      src="/attached_assets/Frame_1751633918219.png" 
+                                      alt="AI Assistant" 
+                                      className="w-3 h-3"
+                                    />
                                   )}
                                 </div>
                                 <span className="text-xs font-medium text-gray-600">

@@ -227,7 +227,11 @@ export default function ChatView({ conversationId }: ChatViewProps) {
           
           {messages.length === 0 ? (
             <div className="text-center py-8">
-              <Bot className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <img 
+                src="/attached_assets/Frame_1751633918219.png" 
+                alt="AI Assistant" 
+                className="w-12 h-12 mx-auto mb-4 opacity-30"
+              />
               <p className="text-gray-500">No messages yet</p>
               <p className="text-sm text-gray-400">Send a message to start the conversation</p>
             </div>
@@ -260,7 +264,11 @@ export default function ChatView({ conversationId }: ChatViewProps) {
                           {msg.senderType === 'human' ? (
                             <User className="w-3 h-3 text-blue-600" />
                           ) : (
-                            <Bot className="w-3 h-3 text-gray-600" />
+                            <img 
+                              src="/attached_assets/Frame_1751633918219.png" 
+                              alt="AI Assistant" 
+                              className="w-4 h-4"
+                            />
                           )}
                         </div>
                         <span className="text-xs font-medium text-gray-600">
