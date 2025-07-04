@@ -1369,7 +1369,9 @@ You represent ${business?.companyName || "our business"} and customers expect ac
 
       // Send product photos if relevant and available
       if (shouldSendPhoto && products.length > 0) {
-        const productsWithImages = products.filter(p => p.imageUrls?.length > 0 || p.imageUrl);
+        const productsWithImages = products.filter(p => 
+          (Array.isArray(p.imageUrls) && p.imageUrls.length > 0) || p.imageUrl
+        );
         if (productsWithImages.length > 0) {
           // Get the domain from environment variables
           const domain = process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000';
@@ -1380,7 +1382,9 @@ You represent ${business?.companyName || "our business"} and customers expect ac
           // Send images for all products that have them
           for (const product of productsWithImages) {
             // Use imageUrls array if available, otherwise fall back to single imageUrl
-            const imagesToSend = product.imageUrls?.length > 0 ? product.imageUrls : [product.imageUrl].filter(Boolean);
+            const imagesToSend = Array.isArray(product.imageUrls) && product.imageUrls.length > 0
+              ? product.imageUrls 
+              : product.imageUrl ? [product.imageUrl] : [];
             
             for (const imageUrl of imagesToSend) {
               if (!imageUrl) continue;
@@ -1396,8 +1400,8 @@ You represent ${business?.companyName || "our business"} and customers expect ac
                 await new Promise(resolve => setTimeout(resolve, 1000));
               }
               
-              const caption = `${product.name || "Our Product"}${product.price ? ` - $${product.price}` : ""}`;
-              await sendFacebookImage(connection.accessToken, senderId, fullImageUrl, caption);
+              // Send image without caption since AI response already contains product details
+              await sendFacebookImage(connection.accessToken, senderId, fullImageUrl);
               
               imageCount++;
             }
