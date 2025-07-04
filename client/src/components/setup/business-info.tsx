@@ -1492,25 +1492,24 @@ export default function BusinessInfo() {
                       <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
                         <Camera className="w-8 h-8 text-gray-400 mx-auto mb-2" />
                         <p className="text-gray-600 dark:text-gray-400 mb-2 text-sm">Upload product image</p>
-                        <label htmlFor="product-image-upload">
-                          <Button 
-                            type="button" 
-                            variant="outline" 
-                            size="sm" 
-                            className="cursor-pointer"
-                            disabled={uploadingImage}
-                          >
-                            {uploadingImage ? "Uploading..." : "Choose Images"}
-                          </Button>
-                          <input
-                            id="product-image-upload"
-                            type="file"
-                            accept="image/*"
-                            multiple
-                            className="hidden"
-                            onChange={handleProductImageUpload}
-                          />
-                        </label>
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          size="sm" 
+                          className="cursor-pointer"
+                          disabled={uploadingImage}
+                          onClick={() => document.getElementById('product-image-upload')?.click()}
+                        >
+                          {uploadingImage ? "Uploading..." : "Choose Images"}
+                        </Button>
+                        <input
+                          id="product-image-upload"
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          className="hidden"
+                          onChange={handleProductImageUpload}
+                        />
                         
                         {productImages.length > 0 && (
                           <div className="mt-4 flex flex-wrap gap-2">
