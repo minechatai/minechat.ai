@@ -916,23 +916,10 @@ export default function BusinessInfo() {
                   <FormItem>
                     <FormLabel className="text-sm font-medium text-gray-700">Phone Number</FormLabel>
                     <FormControl>
-                      <div className="flex">
-                        <Select defaultValue="+44">
-                          <SelectTrigger className="w-20 rounded-r-none">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="+44">🇬🇧 +44</SelectItem>
-                            <SelectItem value="+1">🇺🇸 +1</SelectItem>
-                            <SelectItem value="+880">🇧🇩 +880</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <Input 
-                          placeholder="XXXX XXX XXXX" 
-                          className="rounded-l-none"
-                          {...field} 
-                        />
-                      </div>
+                      <Input 
+                        placeholder="Enter Phone Number" 
+                        {...field} 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
