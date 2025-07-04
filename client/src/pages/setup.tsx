@@ -93,7 +93,7 @@ export default function Setup() {
 
   return (
     <MainLayout title="Setup">
-      <div className="flex h-full">
+      <div className="flex h-full min-h-0">
         {/* Main Content */}
         <div className="flex-1 p-6 overflow-y-auto">
           <div className="max-w-4xl">
@@ -116,7 +116,9 @@ export default function Setup() {
 
         {/* AI Testing Panel - only show for AI Assistant and Business */}
         {(currentSection === "ai-assistant" || currentSection === "business") && (
-          <AiTestingPanel />
+          <div className="h-full flex flex-col">
+            <AiTestingPanel />
+          </div>
         )}
       </div>
     </MainLayout>
