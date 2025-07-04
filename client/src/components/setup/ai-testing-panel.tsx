@@ -112,11 +112,11 @@ export default function AiTestingPanel() {
                   </div>
                 ) : (
                   <div className="flex space-x-2 max-w-xs">
-                    <div className="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                    <div className="flex items-center justify-center flex-shrink-0 mt-1">
                       <img 
                         src={chatbotIcon} 
                         alt="AI Assistant" 
-                        className="w-5 h-5"
+                        className="w-7 h-7"
                       />
                     </div>
                     <div>
@@ -144,11 +144,11 @@ export default function AiTestingPanel() {
             {isLoading && (
               <div className="flex justify-start">
                 <div className="flex space-x-2 max-w-xs">
-                  <div className="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <div className="flex items-center justify-center flex-shrink-0 mt-1">
                     <img 
                       src={chatbotIcon} 
                       alt="AI Assistant" 
-                      className="w-5 h-5"
+                      className="w-7 h-7"
                     />
                   </div>
                   <div className="bg-gray-100 p-3 rounded-lg shadow-sm">
