@@ -40,6 +40,13 @@ export default function FacebookChat() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
 
+  const handleViewProfile = (facebookSenderId: string) => {
+    if (facebookSenderId) {
+      // Open Facebook profile in new tab
+      window.open(`https://facebook.com/${facebookSenderId}`, '_blank');
+    }
+  };
+
   // Redirect to login if not authenticated
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -256,7 +263,12 @@ export default function FacebookChat() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900">{selectedConversation.customerName}</h3>
-                      <p className="text-sm text-gray-500">Facebook Messenger</p>
+                      <p 
+                        className="text-sm text-blue-600 cursor-pointer hover:underline"
+                        onClick={() => handleViewProfile(selectedConversation.facebookSenderId)}
+                      >
+                        View profile
+                      </p>
                     </div>
                   </div>
                   <Badge variant="outline" className="text-blue-600 border-blue-600">

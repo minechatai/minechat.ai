@@ -123,6 +123,13 @@ export default function ChatView({ conversationId }: ChatViewProps) {
     });
   };
 
+  const handleViewProfile = () => {
+    if (conversation?.facebookSenderId) {
+      // Open Facebook profile in new tab
+      window.open(`https://facebook.com/${conversation.facebookSenderId}`, '_blank');
+    }
+  };
+
   const formatTime = (date: Date | string | null) => {
     if (!date) return "";
     const d = new Date(date);
@@ -190,7 +197,12 @@ export default function ChatView({ conversationId }: ChatViewProps) {
             </Avatar>
             <div>
               <h3 className="font-semibold text-gray-900">{conversation?.customerName || 'Customer'}</h3>
-              <p className="text-sm text-blue-600 cursor-pointer hover:underline">View profile</p>
+              <p 
+                className="text-sm text-blue-600 cursor-pointer hover:underline"
+                onClick={handleViewProfile}
+              >
+                View profile
+              </p>
             </div>
           </div>
           <div className="flex items-center space-x-4">
