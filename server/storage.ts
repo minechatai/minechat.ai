@@ -240,11 +240,11 @@ export class DatabaseStorage implements IStorage {
         facebookSenderId: conversations.facebookSenderId,
         lastMessageAt: conversations.lastMessageAt,
         createdAt: conversations.createdAt,
-        lastMessage: sql<string>`(
-          SELECT content 
-          FROM messages 
-          WHERE conversation_id = ${conversations.id} 
-          ORDER BY created_at DESC 
+        lastMessage: sql<string | null>`(
+          SELECT m.content 
+          FROM messages m 
+          WHERE m.conversation_id = ${conversations.id} 
+          ORDER BY m.created_at DESC 
           LIMIT 1
         )`
       })
