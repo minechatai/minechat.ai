@@ -73,11 +73,11 @@ export default function Chat() {
           selectedConversation={selectedConversation}
           onSelectConversation={setSelectedConversation}
         />
+        <div className="flex-1 bg-gray-50">
+          {/* Middle expanded space */}
+        </div>
         <div className="w-1/2">
           <ChatView conversationId={selectedConversation} />
-        </div>
-        <div className="flex-1 bg-gray-50">
-          {/* Right side empty space */}
         </div>
       </div>
     </MainLayout>
