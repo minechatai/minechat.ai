@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { RichTextarea } from "@/components/ui/rich-textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -257,15 +258,35 @@ export default function AiAssistant() {
           </div>
 
           <div className="flex justify-end space-x-3">
-            <Button 
-              type="button" 
-              variant="outline"
-              className="border-gray-300 text-gray-700 hover:bg-gray-50"
-              onClick={handleReset}
-              disabled={resetMutation.isPending}
-            >
-              {resetMutation.isPending ? "Resetting..." : "Reset"}
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                  disabled={resetMutation.isPending}
+                >
+                  {resetMutation.isPending ? "Resetting..." : "Reset"}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Reset AI Assistant</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action will permanently delete all AI Assistant settings and cannot be undone. Do you still wish to proceed?
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleReset}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    Reset Forever
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
             <Button 
               type="submit" 
               className="bg-primary text-white hover:bg-primary-dark"

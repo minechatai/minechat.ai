@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -39,8 +40,8 @@ const faqSchema = z.object({
 });
 
 const individualFaqSchema = z.object({
-  question: z.string().min(1, "Question is required"),
-  answer: z.string().min(1, "Answer is required"),
+  question: z.string().min(1, "Question is required").max(500, "Question must be under 500 characters"),
+  answer: z.string().min(1, "Answer is required").max(1000, "Answer must be under 1000 characters"),
 });
 
 type BusinessFormData = z.infer<typeof businessSchema>;
@@ -621,7 +622,7 @@ export default function BusinessInfo() {
     });
   };
 
-  const removeFaqEntry = (id: string) => {
+  const confirmRemoveFaqEntry = (id: string) => {
     const updatedEntries = faqEntries.filter(entry => entry.id !== id);
     setFaqEntries(updatedEntries);
     
@@ -1089,15 +1090,35 @@ export default function BusinessInfo() {
             {/* Business Information Form Buttons */}
             <div className="border-t pt-6 mt-6">
               <div className="flex justify-end space-x-3">
-                <Button 
-                  type="button" 
-                  variant="outline"
-                  className="border-gray-300 text-gray-700 hover:bg-gray-50"
-                  onClick={handleBusinessReset}
-                  disabled={businessResetMutation.isPending}
-                >
-                  {businessResetMutation.isPending ? "Resetting..." : "Reset"}
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button 
+                      type="button" 
+                      variant="outline"
+                      className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                      disabled={businessResetMutation.isPending}
+                    >
+                      {businessResetMutation.isPending ? "Resetting..." : "Reset"}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Reset Business Information</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action will permanently delete all business information and cannot be undone. Do you still wish to proceed?
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleBusinessReset}
+                        className="bg-red-600 hover:bg-red-700"
+                      >
+                        Reset Forever
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
                 <Button 
                   type="submit" 
                   className="bg-primary text-white hover:bg-primary-dark px-6"
@@ -1229,8 +1250,8 @@ export default function BusinessInfo() {
                           <FormLabel className="text-sm font-medium text-gray-700">Answer</FormLabel>
                           <FormControl>
                             <Textarea 
-                              placeholder="Enter your answer" 
-                              rows={3}
+                              placeholder="Enter your answer (can include emojis)"
+                              rows={4}
                               className="resize-none"
                               {...field}
                             />
@@ -1298,8 +1319,8 @@ export default function BusinessInfo() {
                                 <FormLabel className="text-sm font-medium text-gray-700 dark:text-gray-300">Answer</FormLabel>
                                 <FormControl>
                                   <Textarea 
-                                    placeholder="Enter the answer"
-                                    rows={3}
+                                    placeholder="Enter the answer (can include emojis)"
+                                    rows={4}
                                     className="resize-none bg-white dark:bg-gray-700"
                                     {...field}
                                   />
@@ -1342,14 +1363,34 @@ export default function BusinessInfo() {
                             >
                               <Edit className="w-4 h-4" />
                             </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeFaqEntry(entry.id)}
-                              className="text-red-600 hover:text-red-800 hover:bg-red-50"
-                            >
-                              <X className="w-4 h-4" />
-                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                                >
+                                  <X className="w-4 h-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete FAQ Entry</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    This action will permanently delete this FAQ entry. This cannot be undone. Do you still wish to proceed?
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => confirmRemoveFaqEntry(entry.id)}
+                                    className="bg-red-600 hover:bg-red-700"
+                                  >
+                                    Delete Forever
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           </div>
                         </div>
                         <p className="text-gray-700 dark:text-gray-300">A: {entry.answer}</p>
@@ -1386,15 +1427,35 @@ export default function BusinessInfo() {
               {/* FAQ Form Buttons */}
               <div className="border-t pt-6 mt-6">
                 <div className="flex justify-end space-x-3">
-                  <Button 
-                    type="button" 
-                    variant="outline"
-                    className="border-gray-300 text-gray-700 hover:bg-gray-50"
-                    onClick={handleFaqReset}
-                    disabled={faqResetMutation.isPending}
-                  >
-                    {faqResetMutation.isPending ? "Resetting..." : "Reset"}
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button 
+                        type="button" 
+                        variant="outline"
+                        className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                        disabled={faqResetMutation.isPending}
+                      >
+                        {faqResetMutation.isPending ? "Resetting..." : "Reset"}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Reset FAQ Data</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action will permanently delete all FAQ entries and cannot be undone. Do you still wish to proceed?
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleFaqReset}
+                          className="bg-red-600 hover:bg-red-700"
+                        >
+                          Reset Forever
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                   <Button 
                     type="submit" 
                     className="bg-primary text-white hover:bg-primary-dark px-6"
