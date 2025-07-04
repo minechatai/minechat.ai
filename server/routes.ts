@@ -1364,10 +1364,10 @@ You represent ${business?.companyName || "our business"} and customers expect ac
         (lowerMessage.includes('price') && products.length > 0)
       );
 
-      // Send text response
+      // Send text response first
       await sendFacebookMessage(connection.accessToken, senderId, aiMessage);
 
-      // Send product photos if relevant and available
+      // Then send product photos if relevant and available
       if (shouldSendPhoto && products.length > 0) {
         const productsWithImages = products.filter(p => 
           (Array.isArray(p.imageUrls) && p.imageUrls.length > 0) || p.imageUrl
