@@ -14,12 +14,12 @@ export default function ChatView({ conversationId }: ChatViewProps) {
   const [message, setMessage] = useState("");
   const [isAiMode, setIsAiMode] = useState(true);
 
-  const { data: conversation, isLoading: conversationLoading } = useQuery({
+  const { data: conversation, isLoading: conversationLoading } = useQuery<Conversation>({
     queryKey: [`/api/conversations/${conversationId}`],
     enabled: !!conversationId,
   });
 
-  const { data: messages = [], isLoading: messagesLoading } = useQuery({
+  const { data: messages = [], isLoading: messagesLoading } = useQuery<Message[]>({
     queryKey: [`/api/messages/${conversationId}`],
     enabled: !!conversationId,
   });
@@ -35,7 +35,8 @@ export default function ChatView({ conversationId }: ChatViewProps) {
     setMessage("");
   };
 
-  const formatTime = (date: Date | string) => {
+  const formatTime = (date: Date | string | null) => {
+    if (!date) return "";
     const d = new Date(date);
     return d.toLocaleTimeString('en-US', { 
       hour: 'numeric', 
@@ -169,8 +170,9 @@ export default function ChatView({ conversationId }: ChatViewProps) {
                         <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
                           <Bot className="w-3 h-3 text-primary" />
                         </div>
-                        <span className="text-xs font-medium">{msg.content}</span>
+                        <span className="text-xs font-medium text-white/80">AI Assistant</span>
                       </div>
+                      <p className="text-sm">{msg.content}</p>
                     </div>
                     <p className="text-xs text-gray-500 mt-1 text-right">{formatTime(msg.createdAt)}</p>
                   </div>
