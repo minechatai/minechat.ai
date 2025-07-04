@@ -252,6 +252,7 @@ export class DatabaseStorage implements IStorage {
       .where(eq(conversations.userId, userId))
       .orderBy(desc(conversations.lastMessageAt));
     
+    console.log("Storage Debug - Conversations with messages:", JSON.stringify(conversationsWithMessages, null, 2));
     return conversationsWithMessages;
   }
 
