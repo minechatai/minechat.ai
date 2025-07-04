@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Bot, User, MoreVertical, Paperclip, Image, Mic, Send } from "lucide-react";
-import { Message } from "@shared/schema";
+import { Message, Conversation } from "@shared/schema";
 
 interface ChatViewProps {
   conversationId: number | null;
@@ -14,10 +14,17 @@ export default function ChatView({ conversationId }: ChatViewProps) {
   const [message, setMessage] = useState("");
   const [isAiMode, setIsAiMode] = useState(true);
 
-  const { data: messages = [], isLoading } = useQuery({
-    queryKey: ["/api/conversations", conversationId, "messages"],
+  const { data: conversation, isLoading: conversationLoading } = useQuery({
+    queryKey: ["/api/conversations", conversationId],
     enabled: !!conversationId,
   });
+
+  const { data: messages = [], isLoading: messagesLoading } = useQuery({
+    queryKey: ["/api/messages", conversationId],
+    enabled: !!conversationId,
+  });
+
+  const isLoading = conversationLoading || messagesLoading;
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,12 +91,16 @@ export default function ChatView({ conversationId }: ChatViewProps) {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Avatar className="w-10 h-10">
+              <AvatarImage 
+                src={conversation?.customerProfilePicture || undefined} 
+                alt={conversation?.customerName || 'Customer'}
+              />
               <AvatarFallback className="bg-primary text-white">
-                GS
+                {conversation?.customerName?.charAt(0).toUpperCase() || 'C'}
               </AvatarFallback>
             </Avatar>
             <div>
-              <h3 className="font-semibold text-gray-900">Grace Spencer</h3>
+              <h3 className="font-semibold text-gray-900">{conversation?.customerName || 'Customer'}</h3>
               <p className="text-sm text-blue-600 cursor-pointer hover:underline">View profile</p>
             </div>
           </div>
@@ -136,7 +147,13 @@ export default function ChatView({ conversationId }: ChatViewProps) {
                 {msg.senderType === 'customer' ? (
                   <div className="flex space-x-3 max-w-xs lg:max-w-md">
                     <Avatar className="w-8 h-8 flex-shrink-0">
-                      <AvatarFallback className="bg-primary text-white text-xs">GS</AvatarFallback>
+                      <AvatarImage 
+                        src={conversation?.customerProfilePicture || undefined} 
+                        alt={conversation?.customerName || 'Customer'}
+                      />
+                      <AvatarFallback className="bg-primary text-white text-xs">
+                        {conversation?.customerName?.charAt(0).toUpperCase() || 'C'}
+                      </AvatarFallback>
                     </Avatar>
                     <div>
                       <div className="bg-white p-3 rounded-lg shadow-sm">

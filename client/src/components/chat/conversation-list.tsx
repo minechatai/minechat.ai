@@ -199,6 +199,10 @@ export default function ConversationList({ selectedConversation, onSelectConvers
               onClick={() => onSelectConversation(conversation.id)}
             >
               <Avatar className="w-12 h-12 flex-shrink-0">
+                <AvatarImage 
+                  src={conversation.customerProfilePicture || undefined} 
+                  alt={conversation.customerName || 'Customer'}
+                />
                 <AvatarFallback className="bg-primary text-white">
                   {getInitials(conversation.customerName)}
                 </AvatarFallback>
