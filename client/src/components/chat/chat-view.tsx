@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Bot, User, MoreVertical, Paperclip, Image, Mic, Send } from "lucide-react";
 import { Message, Conversation } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
+import chatbotIcon from "@assets/Frame_1751633918219.png";
 
 interface ChatViewProps {
   conversationId: number | null;
@@ -228,7 +229,7 @@ export default function ChatView({ conversationId }: ChatViewProps) {
           {messages.length === 0 ? (
             <div className="text-center py-8">
               <img 
-                src="/attached_assets/Frame_1751633918219.png" 
+                src={chatbotIcon} 
                 alt="AI Assistant" 
                 className="w-12 h-12 mx-auto mb-4 opacity-30"
               />
@@ -265,7 +266,7 @@ export default function ChatView({ conversationId }: ChatViewProps) {
                             <User className="w-3 h-3 text-blue-600" />
                           ) : (
                             <img 
-                              src="/attached_assets/Frame_1751633918219.png" 
+                              src={chatbotIcon} 
                               alt="AI Assistant" 
                               className="w-4 h-4"
                             />

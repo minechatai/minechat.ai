@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { Search, MessageCircle, User, Bot, Facebook, Clock } from "lucide-react";
+import chatbotIcon from "@assets/Frame_1751633918219.png";
 
 interface FacebookConversation {
   id: number;
@@ -295,7 +296,7 @@ export default function FacebookChat() {
                                     <User className="w-3 h-3 text-blue-600" />
                                   ) : (
                                     <img 
-                                      src="/attached_assets/Frame_1751633918219.png" 
+                                      src={chatbotIcon} 
                                       alt="AI Assistant" 
                                       className="w-3 h-3"
                                     />
