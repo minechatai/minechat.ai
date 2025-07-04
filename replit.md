@@ -170,6 +170,15 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Applied sticky positioning to both main Chat tab and Facebook Chat tab
   - Mode indicator stays visible while scrolling through messages
   - Enhanced visibility with subtle shadow for better visual distinction
+- July 4, 2025: Enhanced FAQ System and Destructive Action Safety
+  - Added confirmation dialogs for all destructive actions (FAQ deletion, business reset, AI assistant reset)
+  - All confirmation dialogs display "Do you still wish to proceed?" message as requested
+  - Fixed FAQ deletion to properly remove data from database instead of just frontend
+  - Updated FAQ reset functionality to use DELETE endpoint ensuring complete database cleanup
+  - Increased FAQ character limits from 200-300 to 500-1000 characters for better emoji support
+  - Enhanced FAQ input fields with improved placeholder text and sizing for emoji content
+  - Implemented verbatim FAQ response system ensuring AI answers match saved FAQ content exactly
+  - Fixed database persistence issues ensuring reset/delete operations completely remove data
 
 # User Preferences
 
