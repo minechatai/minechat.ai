@@ -729,11 +729,12 @@ COMPLETE KNOWLEDGE BASE:
 ${knowledgeBase}
 
 RESPONSE RULES:
+- For FAQ questions: Use the FAQ answers VERBATIM - copy the exact text including all emojis, punctuation, and formatting
 - For contact questions: Use exact email (${business?.email}), phone (${business?.phoneNumber}), address (${business?.address})
 - For company questions: Use company story and business information
 - For product questions: Provide detailed product info including prices
-- For FAQ questions: Use the specific FAQ content from products
 - For greeting: Use the intro message if available
+- When a question matches any FAQ: Respond with the exact FAQ answer, don't paraphrase or rewrite it
 - Only give generic responses for truly irrelevant questions (weather, sports, unrelated topics)
 
 CONVERSATION CONTEXT:
@@ -1295,7 +1296,22 @@ You represent ${business?.companyName || "our business"} and customers expect ac
             if (business.phoneNumber) facebookKnowledgeBase += `Phone: ${business.phoneNumber}\n`;
             if (business.address) facebookKnowledgeBase += `Address: ${business.address}\n`;
             if (business.companyStory) facebookKnowledgeBase += `Company Story: ${business.companyStory}\n`;
-            if (business.faqs) facebookKnowledgeBase += `FAQs: ${business.faqs}\n`;
+            if (business.faqs) {
+              // Extract individual FAQ entries and format them more efficiently
+              const faqSections = business.faqs.split('### ').filter(section => section.trim());
+              if (faqSections.length > 0) {
+                facebookKnowledgeBase += `Frequently Asked Questions:\n`;
+                faqSections.forEach(section => {
+                  const [question, ...answerParts] = section.split('\n\n');
+                  if (question && answerParts.length > 0) {
+                    const answer = answerParts.join('\n\n').trim();
+                    // Preserve emojis by not truncating short answers, increase limit for longer ones
+                    const truncatedAnswer = answer.length > 500 ? answer.substring(0, 500) + '...' : answer;
+                    facebookKnowledgeBase += `Q: ${question.trim()}\nA: ${truncatedAnswer}\n\n`;
+                  }
+                });
+              }
+            }
             if (business.paymentDetails) facebookKnowledgeBase += `Payment Details: ${business.paymentDetails}\n`;
             if (business.discounts) facebookKnowledgeBase += `Discounts: ${business.discounts}\n`;
             if (business.policy) facebookKnowledgeBase += `Policy: ${business.policy}\n`;
@@ -1352,12 +1368,13 @@ COMPLETE KNOWLEDGE BASE:
 ${facebookKnowledgeBase}
 
 RESPONSE RULES:
+- For FAQ questions: Use the FAQ answers VERBATIM - copy the exact text including all emojis, punctuation, and formatting
 - For contact questions: Use exact email (${business?.email}), phone (${business?.phoneNumber}), address (${business?.address})
 - For company questions: Use company story and business information
 - For product questions: Provide detailed product info including prices from the knowledge base
 - For specific product requests (like "picture of [product name]" or "tell me about [product name]"): Search the knowledge base for that exact product name and provide its details
-- For FAQ questions: Use the specific FAQ content from products
 - For greeting: Use the intro message if available
+- When a question matches any FAQ: Respond with the exact FAQ answer, don't paraphrase or rewrite it
 - PRODUCT EXAMPLES: If someone asks about "JJ" and you see "Name: JJ" in the PRODUCTS/SERVICES section, provide that product's information
 - IMPORTANT: When asked about specific products by name, always check if that product exists in the knowledge base before saying you don't have information
 - Only give generic responses for truly irrelevant questions (weather, sports, unrelated topics)
