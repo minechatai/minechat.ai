@@ -17,11 +17,13 @@ export default function ChatView({ conversationId }: ChatViewProps) {
   const { data: conversation, isLoading: conversationLoading } = useQuery<Conversation>({
     queryKey: [`/api/conversations/${conversationId}`],
     enabled: !!conversationId,
+    refetchInterval: 3000, // Refresh every 3 seconds
   });
 
   const { data: messages = [], isLoading: messagesLoading } = useQuery<Message[]>({
     queryKey: [`/api/messages/${conversationId}`],
     enabled: !!conversationId,
+    refetchInterval: 3000, // Refresh every 3 seconds
   });
 
   const isLoading = conversationLoading || messagesLoading;

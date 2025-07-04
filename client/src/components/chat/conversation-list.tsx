@@ -21,6 +21,7 @@ export default function ConversationList({ selectedConversation, onSelectConvers
 
   const { data: conversations = [], isLoading } = useQuery({
     queryKey: ["/api/conversations"],
+    refetchInterval: 3000, // Refresh every 3 seconds
   });
 
   const { data: facebookConnection, isLoading: facebookLoading } = useQuery({

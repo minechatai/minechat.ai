@@ -285,6 +285,15 @@ export class DatabaseStorage implements IStorage {
       .insert(messages)
       .values(messageData)
       .returning();
+    
+    // Update conversation's lastMessageAt timestamp
+    if (messageData.conversationId) {
+      await db
+        .update(conversations)
+        .set({ lastMessageAt: new Date() })
+        .where(eq(conversations.id, messageData.conversationId));
+    }
+    
     return message;
   }
 
