@@ -379,13 +379,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const conversationId = parseInt(req.params.conversationId);
       
+      console.log("Messages API Debug:", { userId, conversationId });
+      
       // Verify conversation belongs to user
       const conversation = await storage.getConversation(conversationId);
+      console.log("Conversation found:", !!conversation, conversation?.userId === userId);
+      
       if (!conversation || conversation.userId !== userId) {
         return res.status(404).json({ message: "Conversation not found" });
       }
       
       const messages = await storage.getMessages(conversationId);
+      console.log("Messages retrieved:", messages.length);
       res.json(messages);
     } catch (error) {
       console.error("Error fetching messages:", error);
