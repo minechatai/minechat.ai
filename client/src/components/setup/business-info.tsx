@@ -318,23 +318,11 @@ export default function BusinessInfo() {
 
   const faqResetMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest("DELETE", "/api/business");
+      await apiRequest("POST", "/api/business", { faqs: "" });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/business"] });
-      // Reset both forms since entire business record is deleted
-      businessForm.reset({
-        companyName: "",
-        phoneNumber: "",
-        address: "",
-        email: "",
-        companyStory: "",
-        paymentDetails: "",
-        discounts: "",
-        policy: "",
-        additionalNotes: "",
-        thankYouMessage: "",
-      });
+      // Only reset FAQ form, keep business information intact  
       faqForm.reset({
         faqs: "",
       });
