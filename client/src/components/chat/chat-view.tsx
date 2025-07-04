@@ -237,7 +237,9 @@ export default function ChatView({ conversationId }: ChatViewProps) {
       <div className="flex-1 p-4 overflow-y-auto bg-gray-50">
         <div className="max-w-none mx-auto space-y-4 pr-4">
           <div className="text-center">
-            <span className="text-sm text-gray-500 bg-white px-3 py-1 rounded-full">Today</span>
+            <span className="text-sm text-gray-500 bg-white px-3 py-1 rounded-full">
+              {isAiMode ? 'AI Enabled' : 'Human Mode'}
+            </span>
           </div>
           
           {messages.length === 0 ? (

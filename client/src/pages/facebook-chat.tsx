@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import MainLayout from "@/components/layout/main-layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -21,6 +22,7 @@ interface FacebookConversation {
   lastMessageAt: string;
   source: string;
   status: string;
+  mode: string;
   messageCount?: number;
   lastMessage?: string;
 }
@@ -39,6 +41,7 @@ export default function FacebookChat() {
   const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
+  const queryClient = useQueryClient();
 
   const handleViewProfile = (facebookSenderId: string) => {
     if (facebookSenderId) {
@@ -48,6 +51,33 @@ export default function FacebookChat() {
       const customerName = selectedConversation?.customerName;
       window.open(`https://www.facebook.com/search/people/?q=${customerName || facebookSenderId}`, '_blank');
     }
+  };
+
+  const updateModeMutation = useMutation({
+    mutationFn: ({ conversationId, mode }: { conversationId: number; mode: string }) => 
+      apiRequest(`/api/conversations/${conversationId}/mode`, {
+        method: 'PUT',
+        body: { mode }
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
+      toast({
+        title: "Mode updated successfully",
+        description: "Conversation mode has been updated.",
+      });
+    },
+    onError: (error) => {
+      console.error('Error updating mode:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update conversation mode. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const handleModeToggle = (conversationId: number, mode: string) => {
+    updateModeMutation.mutate({ conversationId, mode });
   };
 
   // Redirect to login if not authenticated
@@ -274,9 +304,29 @@ export default function FacebookChat() {
                       </p>
                     </div>
                   </div>
-                  <Badge variant="outline" className="text-blue-600 border-blue-600">
-                    {selectedConversation.status}
-                  </Badge>
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-2">
+                      <Button 
+                        size="sm"
+                        className={`${selectedConversation.mode === 'ai' ? 'bg-primary text-white' : 'border border-gray-300 text-gray-700'}`}
+                        onClick={() => handleModeToggle(selectedConversation.id, 'ai')}
+                      >
+                        <Bot className="w-4 h-4 mr-2" />
+                        AI Assistant
+                      </Button>
+                      <Button 
+                        size="sm"
+                        className={`${selectedConversation.mode === 'human' ? 'bg-primary text-white' : 'border border-gray-300 text-gray-700'}`}
+                        onClick={() => handleModeToggle(selectedConversation.id, 'human')}
+                      >
+                        <User className="w-4 h-4 mr-2" />
+                        Human
+                      </Button>
+                    </div>
+                    <Badge variant="outline" className="text-blue-600 border-blue-600">
+                      {selectedConversation.status}
+                    </Badge>
+                  </div>
                 </div>
               </div>
 
@@ -288,6 +338,11 @@ export default function FacebookChat() {
                   </div>
                 ) : (
                   <div className="space-y-4">
+                    <div className="text-center">
+                      <span className="text-sm text-gray-500 bg-white px-3 py-1 rounded-full">
+                        {selectedConversation.mode === 'ai' ? 'AI Enabled' : 'Human Mode'}
+                      </span>
+                    </div>
                     {messages.map((message: FacebookMessage) => (
                       <div
                         key={message.id}
