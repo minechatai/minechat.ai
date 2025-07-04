@@ -1191,6 +1191,8 @@ CRITICAL INSTRUCTIONS:
 3. Always search through the knowledge base first before responding
 4. Give specific, detailed answers using the exact information provided
 5. Remember conversation history and build on previous interactions
+6. PRODUCT NAME MATCHING: When a user mentions ANY product name from the knowledge base (like "JJ", "Messenger", etc.), you MUST provide information about that specific product from the knowledge base
+7. NEVER say "I don't have that information" if the product exists in the PRODUCTS/SERVICES section of the knowledge base
 
 COMPLETE KNOWLEDGE BASE:
 ${facebookKnowledgeBase}
@@ -1202,6 +1204,7 @@ RESPONSE RULES:
 - For specific product requests (like "picture of [product name]" or "tell me about [product name]"): Search the knowledge base for that exact product name and provide its details
 - For FAQ questions: Use the specific FAQ content from products
 - For greeting: Use the intro message if available
+- PRODUCT EXAMPLES: If someone asks about "JJ" and you see "Name: JJ" in the PRODUCTS/SERVICES section, provide that product's information
 - IMPORTANT: When asked about specific products by name, always check if that product exists in the knowledge base before saying you don't have information
 - Only give generic responses for truly irrelevant questions (weather, sports, unrelated topics)
 
