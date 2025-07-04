@@ -267,7 +267,7 @@ export default function FacebookChat() {
                         className="text-sm text-blue-600 cursor-pointer hover:underline"
                         onClick={() => handleViewProfile(selectedConversation.facebookSenderId)}
                       >
-                        Message on Facebook
+                        View profile
                       </p>
                     </div>
                   </div>

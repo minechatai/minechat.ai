@@ -201,7 +201,7 @@ export default function ChatView({ conversationId }: ChatViewProps) {
                 className="text-sm text-blue-600 cursor-pointer hover:underline"
                 onClick={handleViewProfile}
               >
-                Message on Facebook
+                View profile
               </p>
             </div>
           </div>
