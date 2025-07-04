@@ -481,22 +481,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Build AI context
       let context = "";
       if (business) {
-        context += `Business: ${business.companyName}\n`;
-        context += `Story: ${business.companyStory}\n`;
-        context += `Contact: ${business.email}, ${business.phoneNumber}\n\n`;
+        if (business.companyName) context += `Business: ${business.companyName}\n`;
+        if (business.companyStory) context += `Story: ${business.companyStory}\n`;
+        if (business.email || business.phoneNumber) {
+          context += `Contact: ${business.email || 'N/A'}, ${business.phoneNumber || 'N/A'}\n\n`;
+        }
       }
       
-      if (products.length > 0) {
+      if (products && products.length > 0) {
         context += "Products/Services:\n";
         products.forEach(product => {
-          context += `- ${product.name}: ${product.description}\n`;
+          context += `- ${product.name || 'Unnamed Product'}: ${product.description || 'No description'}\n`;
           if (product.price) context += `  Price: $${product.price}\n`;
           if (product.faqs) context += `  FAQs: ${product.faqs}\n`;
         });
         context += "\n";
       }
 
-      if (documents.length > 0) {
+      if (documents && documents.length > 0) {
         context += `Available documents: ${documents.map(d => d.originalName).join(", ")}\n\n`;
       }
 
