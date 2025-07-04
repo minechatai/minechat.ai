@@ -1198,9 +1198,11 @@ ${facebookKnowledgeBase}
 RESPONSE RULES:
 - For contact questions: Use exact email (${business?.email}), phone (${business?.phoneNumber}), address (${business?.address})
 - For company questions: Use company story and business information
-- For product questions: Provide detailed product info including prices
+- For product questions: Provide detailed product info including prices from the knowledge base
+- For specific product requests (like "picture of [product name]" or "tell me about [product name]"): Search the knowledge base for that exact product name and provide its details
 - For FAQ questions: Use the specific FAQ content from products
 - For greeting: Use the intro message if available
+- IMPORTANT: When asked about specific products by name, always check if that product exists in the knowledge base before saying you don't have information
 - Only give generic responses for truly irrelevant questions (weather, sports, unrelated topics)
 
 CONVERSATION CONTEXT:
@@ -1351,27 +1353,41 @@ You represent ${business?.companyName || "our business"} and customers expect ac
         messageType: "text"
       });
 
-      // Check if we should send product photos along with the response
+      // Check if we should send product photos and which specific products
       const lowerMessage = messageText.toLowerCase();
-      const shouldSendPhoto = (
-        lowerMessage.includes('product') || 
-        lowerMessage.includes('photo') || 
-        lowerMessage.includes('picture') || 
-        lowerMessage.includes('image') ||
-        lowerMessage.includes('show me') ||
+      
+      // Check for specific product requests
+      const requestedProducts: any[] = [];
+      let sendAllProducts = false;
+      
+      // Check if asking for specific product by name
+      for (const product of products) {
+        if (product.name && lowerMessage.includes(product.name.toLowerCase())) {
+          requestedProducts.push(product);
+        }
+      }
+      
+      // Check for general product inquiries (send all products)
+      if (requestedProducts.length === 0 && (
         lowerMessage.includes('what do you sell') ||
-        lowerMessage.includes('what are your') ||
-        (lowerMessage.includes('price') && products.length > 0)
-      );
+        lowerMessage.includes('what are your products') ||
+        lowerMessage.includes('show me your products') ||
+        (lowerMessage.includes('products') && (lowerMessage.includes('all') || lowerMessage.includes('everything')))
+      )) {
+        sendAllProducts = true;
+      }
 
       // Send text response first
       await sendFacebookMessage(connection.accessToken, senderId, aiMessage);
 
-      // Then send product photos if relevant and available
-      if (shouldSendPhoto && products.length > 0) {
-        const productsWithImages = products.filter(p => 
+      // Then send product photos based on context
+      const productsToSendImages = sendAllProducts ? products : requestedProducts;
+      
+      if (productsToSendImages.length > 0) {
+        const productsWithImages = productsToSendImages.filter(p => 
           (Array.isArray(p.imageUrls) && p.imageUrls.length > 0) || p.imageUrl
         );
+        
         if (productsWithImages.length > 0) {
           // Get the domain from environment variables
           const domain = process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000';
@@ -1379,7 +1395,7 @@ You represent ${business?.companyName || "our business"} and customers expect ac
           
           let imageCount = 0;
           
-          // Send images for all products that have them
+          // Send images for requested products only
           for (const product of productsWithImages) {
             // Use imageUrls array if available, otherwise fall back to single imageUrl
             const imagesToSend = Array.isArray(product.imageUrls) && product.imageUrls.length > 0
@@ -1393,7 +1409,7 @@ You represent ${business?.companyName || "our business"} and customers expect ac
                 ? imageUrl 
                 : `${protocol}://${domain}${imageUrl}`;
               
-              console.log(`Attempting to send image ${imageCount + 1}: ${fullImageUrl}`);
+              console.log(`Attempting to send image ${imageCount + 1} for ${product.name}: ${fullImageUrl}`);
               
               // Add a small delay between images to avoid rate limiting
               if (imageCount > 0) {
