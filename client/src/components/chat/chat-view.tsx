@@ -125,8 +125,8 @@ export default function ChatView({ conversationId }: ChatViewProps) {
 
   const handleViewProfile = () => {
     if (conversation?.facebookSenderId) {
-      // Open Facebook Messenger conversation in new tab (more reliable than profile)
-      window.open(`https://m.me/${conversation.facebookSenderId}`, '_blank');
+      // Open Facebook profile in new tab
+      window.open(`https://facebook.com/${conversation.facebookSenderId}`, '_blank');
     }
   };
 
