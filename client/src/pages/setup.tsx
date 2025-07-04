@@ -97,17 +97,12 @@ export default function Setup() {
         {/* Main Content */}
         <div className="flex-1 p-6 overflow-y-auto">
           <div className="max-w-4xl">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <nav className="text-sm text-gray-500 mb-2 flex items-center">
-                  <span>Setup</span>
-                  <ChevronRight className="w-4 h-4 mx-2" />
-                  <span className="text-gray-900">{getSectionTitle(currentSection)}</span>
-                </nav>
-              </div>
-              <Button className="bg-primary text-white hover:bg-primary-dark">
-                Save
-              </Button>
+            <div className="mb-6">
+              <nav className="text-sm text-gray-500 mb-2 flex items-center">
+                <span>Setup</span>
+                <ChevronRight className="w-4 h-4 mx-2" />
+                <span className="text-gray-900">{getSectionTitle(currentSection)}</span>
+              </nav>
             </div>
 
             {renderSection()}
