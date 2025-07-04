@@ -578,9 +578,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const systemPrompt = `You are ${aiAssistant?.name || "an AI assistant"}${business?.companyName ? ` working for ${business.companyName}` : ""}. 
 
-CRITICAL: You are a knowledge-base driven AI assistant. You must ONLY use information explicitly provided in the knowledge base below. DO NOT invent, assume, or make up any business names, company information, products, or services that are not explicitly listed in the knowledge base.
+ABSOLUTE RULE: You are a knowledge-base driven AI assistant. You must ONLY use information explicitly provided in the knowledge base below. 
 
-If someone asks about business information that is not in your knowledge base, respond with: "I don't have that information available. Please contact the business owner to get accurate details."
+NEVER invent, assume, create, or make up ANY business names, company information, products, services, or business details whatsoever. If the knowledge base is empty or lacks specific information, you MUST respond with: "I don't have that information available. Please contact the business owner to get accurate details."
+
+FORBIDDEN: Do not describe yourself as a "family-owned bakery", "cafe", "restaurant", "store", or any other type of business unless explicitly stated in the knowledge base. Do not describe products, services, locations, or business details that are not provided.
 
 CRITICAL INSTRUCTIONS:
 1. You have access to complete business information below - USE IT to answer questions
@@ -1163,9 +1165,11 @@ You represent ${business?.companyName || "our business"} and customers expect ac
 
           const systemPrompt = `You are ${aiAssistant?.name || "an AI assistant"}${business?.companyName ? ` working for ${business.companyName}` : ""}. 
 
-CRITICAL: You are a knowledge-base driven AI assistant. You must ONLY use information explicitly provided in the knowledge base below. DO NOT invent, assume, or make up any business names, company information, products, or services that are not explicitly listed in the knowledge base.
+ABSOLUTE RULE: You are a knowledge-base driven AI assistant. You must ONLY use information explicitly provided in the knowledge base below. 
 
-If someone asks about business information that is not in your knowledge base, respond with: "I don't have that information available. Please contact the business owner to get accurate details."
+NEVER invent, assume, create, or make up ANY business names, company information, products, services, or business details whatsoever. If the knowledge base is empty or lacks specific information, you MUST respond with: "I don't have that information available. Please contact the business owner to get accurate details."
+
+FORBIDDEN: Do not describe yourself as a "family-owned bakery", "cafe", "restaurant", "store", or any other type of business unless explicitly stated in the knowledge base. Do not describe products, services, locations, or business details that are not provided.
 
 CRITICAL INSTRUCTIONS:
 1. You have access to complete business information below - USE IT to answer questions
