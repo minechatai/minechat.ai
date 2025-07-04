@@ -1009,6 +1009,27 @@ You represent ${business?.companyName || "our business"} and customers expect ac
     }
   }
 
+  async function getFacebookUserProfile(accessToken: string, userId: string) {
+    try {
+      const response = await fetch(`https://graph.facebook.com/v19.0/${userId}?fields=name,profile_pic&access_token=${accessToken}`);
+      
+      if (!response.ok) {
+        const error = await response.text();
+        console.error('Facebook Profile API Error:', error);
+        return null;
+      }
+
+      const data = await response.json();
+      return {
+        name: data.name || `Facebook User ${userId.substring(0, 8)}`,
+        profilePicture: data.profile_pic || null
+      };
+    } catch (error) {
+      console.error('Error fetching Facebook profile:', error);
+      return null;
+    }
+  }
+
   async function handleFacebookMessage(webhookEvent: any) {
     try {
       const senderId = webhookEvent.sender.id;
@@ -1037,13 +1058,17 @@ You represent ${business?.companyName || "our business"} and customers expect ac
       console.log("Business:", JSON.stringify(business, null, 2));
       console.log("Products:", JSON.stringify(products, null, 2));
 
+      // Get Facebook user profile information
+      const userProfile = await getFacebookUserProfile(connection.accessToken, senderId);
+      
       // Create or get conversation
       let conversation = await storage.getConversationByFacebookSender(connection.userId, senderId);
       if (!conversation) {
         conversation = await storage.createConversation(connection.userId, {
           userId: connection.userId,
-          customerName: `Facebook User ${senderId.substring(0, 8)}`,
+          customerName: userProfile?.name || `Facebook User ${senderId.substring(0, 8)}`,
           customerEmail: null,
+          customerProfilePicture: userProfile?.profilePicture || null,
           source: "facebook",
           facebookSenderId: senderId
         });

@@ -33,7 +33,7 @@ interface FacebookMessage {
   messageType: string;
 }
 
-export default function Chat() {
+export default function FacebookChat() {
   const [selectedConversation, setSelectedConversation] = useState<FacebookConversation | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
@@ -111,7 +111,7 @@ export default function Chat() {
 
   if (isLoading || conversationsLoading) {
     return (
-      <MainLayout title="Chat">
+      <MainLayout title="Facebook Chat">
         <div className="flex h-full">
           <div className="w-80 bg-white border-r border-gray-200 animate-pulse">
             <div className="p-4 space-y-4">
@@ -142,7 +142,7 @@ export default function Chat() {
   }
 
   return (
-    <MainLayout title="Chat">
+    <MainLayout title="Facebook Chat">
       <div className="flex h-full">
         {/* Conversations List */}
         <div className="w-80 bg-white border-r border-gray-200 flex flex-col">

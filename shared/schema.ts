@@ -105,6 +105,7 @@ export const conversations = pgTable("conversations", {
   userId: varchar("user_id").notNull().references(() => users.id),
   customerName: varchar("customer_name"),
   customerEmail: varchar("customer_email"),
+  customerProfilePicture: varchar("customer_profile_picture"), // For storing Facebook profile pictures
   status: varchar("status").default("active"),
   source: varchar("source").default("web"), // web, facebook, etc.
   facebookSenderId: varchar("facebook_sender_id"), // For Facebook Messenger integration
