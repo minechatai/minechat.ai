@@ -728,8 +728,6 @@ CRITICAL INSTRUCTIONS:
 COMPLETE KNOWLEDGE BASE:
 ${knowledgeBase}
 
-MANDATORY FAQ RULE: When user asks "What support do I get?" you MUST respond with exactly "Support 📞 Call us anytime!" - do not paraphrase or rewrite it.
-
 RESPONSE RULES:
 - For FAQ questions: Use the FAQ answers VERBATIM - copy the exact text including all emojis, punctuation, and formatting
 - For contact questions: Use exact email (${business?.email}), phone (${business?.phoneNumber}), address (${business?.address})
@@ -1368,8 +1366,6 @@ CRITICAL INSTRUCTIONS:
 
 COMPLETE KNOWLEDGE BASE:
 ${facebookKnowledgeBase}
-
-MANDATORY FAQ RULE: When user asks "What support do I get?" you MUST respond with exactly "Support 📞 Call us anytime!" - do not paraphrase or rewrite it.
 
 RESPONSE RULES:
 - For FAQ questions: Use the FAQ answers VERBATIM - copy the exact text including all emojis, punctuation, and formatting
