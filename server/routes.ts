@@ -1237,7 +1237,7 @@ You represent ${business?.companyName || "this business"} and customers expect a
         console.log("Using fallback response for Facebook message");
         
         // Enhanced fallback that uses knowledge base
-        const businessName = business?.companyName || "Minechat AI";
+        const businessName = business?.companyName || "our company";
         const introMsg = aiAssistant?.introMessage || `Hello! I'm ${aiAssistant?.name || "an AI assistant"} for ${businessName}.`;
         
         const lowerMessage = messageText.toLowerCase();
