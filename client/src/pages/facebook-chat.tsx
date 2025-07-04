@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -42,6 +42,7 @@ export default function FacebookChat() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
   const queryClient = useQueryClient();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const handleViewProfile = (facebookSenderId: string) => {
     if (facebookSenderId) {
@@ -104,6 +105,13 @@ export default function FacebookChat() {
     queryKey: ["/api/messages", selectedConversation?.id],
     enabled: !!selectedConversation,
   });
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
 
   // Handle unauthorized errors
   useEffect(() => {
@@ -385,6 +393,8 @@ export default function FacebookChat() {
                         )}
                       </div>
                     ))}
+                    {/* Scroll anchor for auto-scroll */}
+                    <div ref={messagesEndRef} />
                   </div>
                 )}
               </ScrollArea>

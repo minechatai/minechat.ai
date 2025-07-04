@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,9 +17,16 @@ export default function ChatView({ conversationId }: ChatViewProps) {
   const [isAiMode, setIsAiMode] = useState(true);
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { data: conversation, isLoading: conversationLoading } = useQuery<Conversation>({
     queryKey: [`/api/conversations/${conversationId}`],
+    enabled: !!conversationId,
+    refetchInterval: 3000, // Refresh every 3 seconds
+  });
+
+  const { data: messages = [], isLoading: messagesLoading } = useQuery<Message[]>({
+    queryKey: [`/api/messages/${conversationId}`],
     enabled: !!conversationId,
     refetchInterval: 3000, // Refresh every 3 seconds
   });
@@ -31,11 +38,12 @@ export default function ChatView({ conversationId }: ChatViewProps) {
     }
   }, [conversation]);
 
-  const { data: messages = [], isLoading: messagesLoading } = useQuery<Message[]>({
-    queryKey: [`/api/messages/${conversationId}`],
-    enabled: !!conversationId,
-    refetchInterval: 3000, // Refresh every 3 seconds
-  });
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
 
   const isLoading = conversationLoading || messagesLoading;
 
@@ -300,6 +308,8 @@ export default function ChatView({ conversationId }: ChatViewProps) {
               </div>
             ))
           )}
+          {/* Scroll anchor for auto-scroll */}
+          <div ref={messagesEndRef} />
         </div>
       </div>
 
