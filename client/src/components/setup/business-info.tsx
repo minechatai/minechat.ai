@@ -1416,6 +1416,58 @@ export default function BusinessInfo() {
           </div>
 
           <div className="mb-8">
+            {/* Display existing products first */}
+            {Array.isArray(products) && products.length > 0 && (
+              <div className="space-y-4 mb-8">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Your Products</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {products.map((product: any) => (
+                    <div key={product.id} className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
+                      {/* Show multiple images if available */}
+                      {product.imageUrls && product.imageUrls.length > 0 && (
+                        <div className="mb-3">
+                          <div className="flex flex-wrap gap-2">
+                            {product.imageUrls.map((imageUrl: string, index: number) => (
+                              <img 
+                                key={index}
+                                src={imageUrl} 
+                                alt={`${product.name} ${index + 1}`}
+                                className="w-16 h-16 object-cover rounded-md border border-gray-200 dark:border-gray-600"
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      <div className="flex justify-between items-start mb-2">
+                        <h5 className="font-medium text-gray-900 dark:text-gray-100">{product.name}</h5>
+                        <div className="flex space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => startEditingProduct(product)}
+                            className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => deleteProductMutation.mutate(product.id)}
+                            className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                            disabled={deleteProductMutation.isPending}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <p className="text-gray-700 dark:text-gray-300 text-sm mb-2">{product.description}</p>
+                      <p className="text-primary font-semibold">${product.price}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Product Management</h3>
               <Button 
@@ -1608,49 +1660,7 @@ export default function BusinessInfo() {
               </Card>
             )}
 
-            {/* Display existing products */}
-            {Array.isArray(products) && products.length > 0 && (
-              <div className="space-y-4">
-                <h4 className="font-medium text-gray-900 dark:text-gray-100">Existing Products</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {products.map((product: any) => (
-                    <div key={product.id} className="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
-                      {product.imageUrl && (
-                        <img 
-                          src={product.imageUrl} 
-                          alt={product.name}
-                          className="w-full h-32 object-cover rounded mb-3"
-                        />
-                      )}
-                      <div className="flex justify-between items-start mb-2">
-                        <h5 className="font-medium text-gray-900 dark:text-gray-100">{product.name}</h5>
-                        <div className="flex space-x-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => startEditingProduct(product)}
-                            className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => deleteProductMutation.mutate(product.id)}
-                            className="text-red-600 hover:text-red-800 hover:bg-red-50"
-                            disabled={deleteProductMutation.isPending}
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                      <p className="text-gray-700 dark:text-gray-300 text-sm mb-2">{product.description}</p>
-                      <p className="text-primary font-semibold">${product.price}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+
           </div>
         </div>
       )}
