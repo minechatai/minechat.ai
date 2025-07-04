@@ -288,11 +288,7 @@ export default function FacebookChat() {
                           </div>
                         ) : (
                           <div className="max-w-xs lg:max-w-md">
-                            <div className={`px-4 py-3 rounded-lg ${
-                              message.senderType === 'human' 
-                                ? 'bg-blue-600 text-white' 
-                                : 'bg-[#E1E1EB] text-gray-900'
-                            }`}>
+                            <div className="px-4 py-3 rounded-lg bg-[#E1E1EB] text-gray-900">
                               <div className="flex items-center space-x-2 mb-2">
                                 <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center">
                                   {message.senderType === 'human' ? (
@@ -301,11 +297,7 @@ export default function FacebookChat() {
                                     <Bot className="w-3 h-3 text-gray-600" />
                                   )}
                                 </div>
-                                <span className={`text-xs font-medium ${
-                                  message.senderType === 'human' 
-                                    ? 'text-white/80' 
-                                    : 'text-gray-600'
-                                }`}>
+                                <span className="text-xs font-medium text-gray-600">
                                   {message.senderType === 'human' ? 'Human Agent' : 'AI Assistant'}
                                 </span>
                               </div>
