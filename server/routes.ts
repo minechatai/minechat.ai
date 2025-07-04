@@ -1369,31 +1369,38 @@ You represent ${business?.companyName || "our business"} and customers expect ac
 
       // Send product photos if relevant and available
       if (shouldSendPhoto && products.length > 0) {
-        const productsWithImages = products.filter(p => p.imageUrl);
+        const productsWithImages = products.filter(p => p.imageUrls?.length > 0 || p.imageUrl);
         if (productsWithImages.length > 0) {
           // Get the domain from environment variables
           const domain = process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000';
           const protocol = domain.includes('localhost') ? 'http' : 'https';
           
+          let imageCount = 0;
+          
           // Send images for all products that have them
-          for (let i = 0; i < productsWithImages.length; i++) {
-            const product = productsWithImages[i];
-            if (!product.imageUrl) continue;
+          for (const product of productsWithImages) {
+            // Use imageUrls array if available, otherwise fall back to single imageUrl
+            const imagesToSend = product.imageUrls?.length > 0 ? product.imageUrls : [product.imageUrl].filter(Boolean);
             
-            const imageUrl = product.imageUrl; // TypeScript knows this is not null due to the continue above
-            const fullImageUrl = imageUrl.startsWith('http') 
-              ? imageUrl 
-              : `${protocol}://${domain}${imageUrl}`;
-            
-            console.log(`Attempting to send image ${i + 1}: ${fullImageUrl}`);
-            
-            // Add a small delay between images to avoid rate limiting
-            if (i > 0) {
-              await new Promise(resolve => setTimeout(resolve, 1000));
+            for (const imageUrl of imagesToSend) {
+              if (!imageUrl) continue;
+              
+              const fullImageUrl = imageUrl.startsWith('http') 
+                ? imageUrl 
+                : `${protocol}://${domain}${imageUrl}`;
+              
+              console.log(`Attempting to send image ${imageCount + 1}: ${fullImageUrl}`);
+              
+              // Add a small delay between images to avoid rate limiting
+              if (imageCount > 0) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+              }
+              
+              const caption = `${product.name || "Our Product"}${product.price ? ` - $${product.price}` : ""}`;
+              await sendFacebookImage(connection.accessToken, senderId, fullImageUrl, caption);
+              
+              imageCount++;
             }
-            
-            const caption = `${product.name || "Our Product"}${product.price ? ` - $${product.price}` : ""}`;
-            await sendFacebookImage(connection.accessToken, senderId, fullImageUrl, caption);
           }
         }
       }
