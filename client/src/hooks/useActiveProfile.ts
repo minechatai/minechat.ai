@@ -21,7 +21,7 @@ export function useActiveProfile() {
   const switchProfileMutation = useMutation({
     mutationFn: async (profileId: string) => {
       console.log(`Switching to profile: ${profileId}`);
-      const result = await apiRequest(`/api/user-profiles/${profileId}/activate`, '', 'POST');
+      const result = await apiRequest('POST', `/api/user-profiles/${profileId}/activate`, {});
       console.log('Switch profile API result:', result);
       return result;
     },
