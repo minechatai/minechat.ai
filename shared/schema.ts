@@ -45,6 +45,7 @@ export const businesses = pgTable("businesses", {
   address: text("address"),
   email: varchar("email"),
   companyStory: text("company_story"),
+  logoUrl: varchar("logo_url"), // Company logo image URL
   faqs: text("faqs"),
   paymentDetails: text("payment_details"),
   discounts: text("discounts"),

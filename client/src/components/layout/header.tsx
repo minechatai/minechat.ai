@@ -42,16 +42,24 @@ export default function Header({ title, onMenuClick }: HeaderProps) {
           
           {/* Company Logo */}
           <div className="flex items-center space-x-2 px-3 py-1 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <div 
-              className="w-8 h-8 rounded-full flex items-center justify-center"
-              style={{
-                background: 'linear-gradient(135deg, #8b1950, #b33054, #b73850)'
-              }}
-            >
-              <span className="text-white font-semibold text-sm">
-                {business?.companyName?.[0]?.toUpperCase() || 'S'}
-              </span>
-            </div>
+            {business?.logoUrl ? (
+              <img
+                src={business.logoUrl}
+                alt={`${business.companyName} logo`}
+                className="w-8 h-8 rounded-full object-cover"
+              />
+            ) : (
+              <div 
+                className="w-8 h-8 rounded-full flex items-center justify-center"
+                style={{
+                  background: 'linear-gradient(135deg, #8b1950, #b33054, #b73850)'
+                }}
+              >
+                <span className="text-white font-semibold text-sm">
+                  {business?.companyName?.[0]?.toUpperCase() || 'S'}
+                </span>
+              </div>
+            )}
             <div className="text-sm">
               <div className="font-medium text-gray-900 dark:text-white">
                 {business?.companyName || 'Your Company'}
