@@ -10,6 +10,7 @@ import Landing from "@/pages/landing";
 import Dashboard from "@/pages/dashboard";
 import Chat from "@/pages/chat";
 import Setup from "@/pages/setup";
+import Account from "@/pages/account";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -32,14 +33,7 @@ function Router() {
               </div>
             </div>
           )} />
-          <Route path="/accounts" component={() => (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-              <div className="text-center">
-                <h2 className="text-2xl font-semibold text-gray-600 mb-2">Account Settings Coming Soon</h2>
-                <p className="text-gray-500">Account management features will be available soon.</p>
-              </div>
-            </div>
-          )} />
+          <Route path="/accounts" component={Account} />
         </>
       )}
       <Route component={NotFound} />
