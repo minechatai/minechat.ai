@@ -1966,11 +1966,23 @@ You represent ${business?.companyName || "our business"} and customers expect ac
       const businessOwnerId = req.user.claims.sub;
       const profiles = await storage.getUserProfiles(businessOwnerId);
       
+      console.log(`User profiles for ${businessOwnerId}:`, profiles.map(p => ({ 
+        id: p.id, 
+        name: p.name, 
+        isActive: p.isActive 
+      })));
+      
       // If there are profiles but none are active, set the first one as active
       if (profiles.length > 0 && !profiles.some(p => p.isActive)) {
+        console.log(`Setting first profile as active: ${profiles[0].id}`);
         await storage.setActiveUserProfile(businessOwnerId, profiles[0].id);
         // Refetch profiles to get the updated isActive status
         const updatedProfiles = await storage.getUserProfiles(businessOwnerId);
+        console.log(`Updated profiles:`, updatedProfiles.map(p => ({ 
+          id: p.id, 
+          name: p.name, 
+          isActive: p.isActive 
+        })));
         res.json(updatedProfiles);
       } else {
         res.json(profiles);
