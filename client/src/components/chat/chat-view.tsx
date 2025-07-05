@@ -292,14 +292,14 @@ export default function ChatView({ conversationId }: ChatViewProps) {
                     <div className="p-4 rounded-lg shadow-sm bg-[#E1E1EB] text-gray-900">
                       <div className="flex items-center space-x-2 mb-2">
                         {msg.senderType === 'human' ? (
-                          // Show active user profile for human messages
+                          // Show the actual sender's profile for human messages
                           <Avatar className="w-6 h-6">
                             <AvatarImage 
-                              src={activeProfile?.profileImageUrl || undefined} 
-                              alt={activeProfile?.name || 'Team Member'}
+                              src={(msg as any).humanSenderProfileImageUrl || undefined} 
+                              alt={(msg as any).humanSenderName || 'Team Member'}
                             />
                             <AvatarFallback className="bg-minechat-red text-white text-xs">
-                              {activeProfile?.name?.charAt(0).toUpperCase() || 'T'}
+                              {((msg as any).humanSenderName?.charAt(0).toUpperCase()) || 'T'}
                             </AvatarFallback>
                           </Avatar>
                         ) : (
@@ -312,7 +312,7 @@ export default function ChatView({ conversationId }: ChatViewProps) {
                           </div>
                         )}
                         <span className="text-xs font-medium text-gray-600">
-                          {msg.senderType === 'human' ? (activeProfile?.name || 'Team Member') : 'AI Assistant'}
+                          {msg.senderType === 'human' ? ((msg as any).humanSenderName || 'Team Member') : 'AI Assistant'}
                         </span>
                       </div>
                       <p className="text-sm">{msg.content}</p>

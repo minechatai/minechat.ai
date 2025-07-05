@@ -559,14 +559,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Conversation not found" });
       }
       
-      // Create message in database
-      const message = await storage.createMessage({
+      // For human messages, get the active user profile to store with the message
+      let messageData: any = {
         conversationId,
         senderId: userId,
         senderType,
         content,
         messageType: 'text'
-      });
+      };
+      
+      if (senderType === 'human') {
+        try {
+          const profiles = await storage.getUserProfiles(userId);
+          const activeProfile = profiles.find(profile => profile.isActive === true);
+          
+          if (activeProfile) {
+            messageData.humanSenderProfileId = activeProfile.id;
+            messageData.humanSenderName = activeProfile.name;
+            messageData.humanSenderProfileImageUrl = activeProfile.profileImageUrl;
+          }
+        } catch (error) {
+          console.error("Error fetching active profile for message attribution:", error);
+          // Continue without profile data if there's an error
+        }
+      }
+      
+      // Create message in database
+      const message = await storage.createMessage(messageData);
       
       // Update conversation's lastMessageAt timestamp
       await storage.updateConversationLastMessage(conversationId);
