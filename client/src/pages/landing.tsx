@@ -96,18 +96,36 @@ export default function Landing() {
             No coding needed. Launch your smart AI assistant in minutes.
           </p>
           
-          <div className="flex flex-row mb-16 login-button-container">
+          <div className="flex flex-row mb-16 login-button-container" style={{ gap: '15.32px' }}>
             <Button 
               onClick={() => window.location.href = '/login'}
-              className="bg-white hover:bg-gray-100 px-8 py-3 rounded-full login-button"
-              size="lg"
+              className="bg-white hover:bg-gray-100 login-button"
+              style={{
+                width: '245px',
+                height: '56px',
+                opacity: 1,
+                borderRadius: '153.23px',
+                paddingTop: '21.45px',
+                paddingRight: '76.61px',
+                paddingBottom: '21.45px',
+                paddingLeft: '76.61px'
+              }}
             >
               Login
             </Button>
             <Button 
               onClick={() => window.location.href = '/login'}
-              className="bg-white hover:bg-gray-100 px-8 py-3 rounded-full login-button"
-              size="lg"
+              className="bg-white hover:bg-gray-100 login-button"
+              style={{
+                width: '245px',
+                height: '56px',
+                opacity: 1,
+                borderRadius: '153.23px',
+                paddingTop: '21.45px',
+                paddingRight: '76.61px',
+                paddingBottom: '21.45px',
+                paddingLeft: '76.61px'
+              }}
             >
               Sign up
             </Button>

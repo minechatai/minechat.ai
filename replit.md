@@ -297,6 +297,12 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Applied 40px font size with 48.5px line height for optimal readability
   - Added -0.5% letter spacing for refined character spacing
   - Maintained center text alignment and full opacity for maximum impact
+- July 5, 2025: Landing Page Button Specifications
+  - Applied exact button dimensions: 245px × 56px for Login and Sign up buttons
+  - Set precise border radius: 153.23px for perfect rounded appearance
+  - Applied specific padding: 21.45px vertical, 76.61px horizontal
+  - Added 15.32px gap between buttons for proper spacing
+  - Maintained opacity: 1 and angle: 0 degrees for optimal presentation
 
 # User Preferences
 
