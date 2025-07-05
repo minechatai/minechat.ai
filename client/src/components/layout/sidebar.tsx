@@ -57,13 +57,13 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       <div className="flex-1 flex flex-col min-h-0 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
         {/* Logo */}
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 h-[73px] flex items-center">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-3">
             <img 
               src="/logo.png" 
               alt="Minechat AI" 
-              className="w-6 h-6 object-contain"
+              className="w-8 h-8 object-contain"
             />
-            <span className="text-lg font-semibold text-gray-900 dark:text-white logo-brand">minechat.ai</span>
+            <span className="text-xl font-semibold text-gray-900 dark:text-white logo-brand">minechat.ai</span>
           </div>
         </div>
 
