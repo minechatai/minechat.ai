@@ -138,6 +138,7 @@ export default function Account() {
 
   // Handle clicking the profile picture
   const handleProfilePictureClick = () => {
+    console.log('Profile picture clicked!');
     fileInputRef.current?.click();
   };
 
@@ -232,30 +233,32 @@ export default function Account() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                   {/* Clickable Profile Picture */}
-                  <div className="relative group">
-                    <Avatar 
-                      className="w-12 h-12 bg-gray-200 dark:bg-gray-700 cursor-pointer hover:opacity-80 transition-all duration-200 hover:ring-2 hover:ring-primary hover:ring-offset-2"
+                  <div className="relative">
+                    <div 
+                      className="w-12 h-12 cursor-pointer hover:ring-2 hover:ring-primary hover:ring-offset-2 rounded-full transition-all duration-200 group"
                       onClick={handleProfilePictureClick}
                       title="Click to change profile picture"
                     >
-                      {isUploadingImage && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full">
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        </div>
-                      )}
-                      {previewImage ? (
-                        <AvatarImage src={previewImage} alt="Preview" />
-                      ) : (user as any)?.profileImageUrl ? (
-                        <AvatarImage src={(user as any).profileImageUrl} alt="Profile" />
-                      ) : null}
-                      <AvatarFallback className="text-lg font-semibold text-gray-600 dark:text-gray-300">
-                        {getUserInitials()}
-                      </AvatarFallback>
-                    </Avatar>
-                    
-                    {/* Hover overlay */}
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded-full transition-all duration-200 flex items-center justify-center">
-                      <Camera className="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                      <Avatar className="w-12 h-12 bg-gray-200 dark:bg-gray-700">
+                        {isUploadingImage && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full z-10">
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          </div>
+                        )}
+                        {previewImage ? (
+                          <AvatarImage src={previewImage} alt="Preview" />
+                        ) : (user as any)?.profileImageUrl ? (
+                          <AvatarImage src={(user as any).profileImageUrl} alt="Profile" />
+                        ) : null}
+                        <AvatarFallback className="text-lg font-semibold text-gray-600 dark:text-gray-300">
+                          {getUserInitials()}
+                        </AvatarFallback>
+                      </Avatar>
+                      
+                      {/* Hover overlay with camera icon */}
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 rounded-full transition-all duration-200 flex items-center justify-center pointer-events-none">
+                        <Camera className="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                      </div>
                     </div>
                     
                     <input
