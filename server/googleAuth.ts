@@ -13,9 +13,8 @@ export function setupGoogleAuth(app: Express) {
   console.log("✅ Google OAuth credentials found, setting up Google authentication");
   console.log(`🔑 Google Client ID: "${process.env.GOOGLE_CLIENT_ID!.trim()}"`);
   
-  const callbackURL = process.env.NODE_ENV === 'development' 
-    ? "http://localhost:5000/auth/callback"
-    : `${process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : ''}/auth/callback`;
+  // Always use the Replit URL for OAuth callback regardless of NODE_ENV
+  const callbackURL = "https://449a5e08-99f4-4100-9571-62eeba47fe54-00-3gozoz68wjgp4.spock.replit.dev/auth/callback";
   
   console.log(`📍 Google OAuth callback URL: ${callbackURL}`);
 
