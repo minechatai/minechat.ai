@@ -190,9 +190,9 @@ export default function Account() {
   const menuItems = [
     {
       icon: User,
-      label: "Create User Profile",
+      label: "Manage User Profiles",
       hasArrow: true,
-      onClick: () => window.location.href = '/create-user-profile'
+      onClick: () => window.location.href = '/manage-user-profiles'
     },
     {
       icon: FileText,

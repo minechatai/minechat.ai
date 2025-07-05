@@ -9,6 +9,7 @@ import {
   analytics,
   channels,
   facebookConnections,
+  userProfiles,
   type User,
   type UpsertUser,
   type Business,
@@ -29,6 +30,8 @@ import {
   type InsertChannel,
   type FacebookConnection,
   type InsertFacebookConnection,
+  type UserProfile,
+  type InsertUserProfile,
   type ConversationWithLastMessage,
 } from "@shared/schema";
 import { db } from "./db";
@@ -86,6 +89,14 @@ export interface IStorage {
   disconnectFacebook(userId: string): Promise<void>;
   getAllFacebookConnections(): Promise<FacebookConnection[]>;
   getConversationByFacebookSender(userId: string, facebookSenderId: string): Promise<Conversation | undefined>;
+
+  // User profile operations
+  getUserProfiles(businessOwnerId: string): Promise<UserProfile[]>;
+  getUserProfile(profileId: string): Promise<UserProfile | undefined>;
+  createUserProfile(businessOwnerId: string, profile: InsertUserProfile): Promise<UserProfile>;
+  updateUserProfile(profileId: string, profile: Partial<InsertUserProfile>): Promise<UserProfile>;
+  deleteUserProfile(profileId: string): Promise<void>;
+  setActiveUserProfile(businessOwnerId: string, profileId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -416,6 +427,70 @@ export class DatabaseStorage implements IStorage {
         )
       );
     return conversation;
+  }
+
+  // User profile operations
+  async getUserProfiles(businessOwnerId: string): Promise<UserProfile[]> {
+    const profiles = await db
+      .select()
+      .from(userProfiles)
+      .where(eq(userProfiles.businessOwnerId, businessOwnerId))
+      .orderBy(userProfiles.createdAt);
+    return profiles;
+  }
+
+  async getUserProfile(profileId: string): Promise<UserProfile | undefined> {
+    const [profile] = await db
+      .select()
+      .from(userProfiles)
+      .where(eq(userProfiles.id, profileId));
+    return profile;
+  }
+
+  async createUserProfile(businessOwnerId: string, profileData: InsertUserProfile): Promise<UserProfile> {
+    const profileId = `profile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
+    const [profile] = await db
+      .insert(userProfiles)
+      .values({
+        ...profileData,
+        id: profileId,
+        businessOwnerId,
+      })
+      .returning();
+    return profile;
+  }
+
+  async updateUserProfile(profileId: string, profileData: Partial<InsertUserProfile>): Promise<UserProfile> {
+    const [profile] = await db
+      .update(userProfiles)
+      .set({
+        ...profileData,
+        updatedAt: new Date(),
+      })
+      .where(eq(userProfiles.id, profileId))
+      .returning();
+    return profile;
+  }
+
+  async deleteUserProfile(profileId: string): Promise<void> {
+    await db
+      .delete(userProfiles)
+      .where(eq(userProfiles.id, profileId));
+  }
+
+  async setActiveUserProfile(businessOwnerId: string, profileId: string): Promise<void> {
+    // First, deactivate all profiles for this business owner
+    await db
+      .update(userProfiles)
+      .set({ isActive: false })
+      .where(eq(userProfiles.businessOwnerId, businessOwnerId));
+
+    // Then activate the selected profile
+    await db
+      .update(userProfiles)
+      .set({ isActive: true })
+      .where(eq(userProfiles.id, profileId));
   }
 }
 

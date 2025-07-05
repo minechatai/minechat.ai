@@ -167,6 +167,19 @@ export const facebookConnections = pgTable("facebook_connections", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// User profiles for team management
+export const userProfiles = pgTable("user_profiles", {
+  id: varchar("id").primaryKey(),
+  businessOwnerId: varchar("business_owner_id").notNull().references(() => users.id),
+  name: varchar("name").notNull(),
+  email: varchar("email").notNull(),
+  position: varchar("position"),
+  profileImageUrl: varchar("profile_image_url"),
+  isActive: boolean("is_active").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   businesses: many(businesses),
@@ -177,6 +190,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   analytics: many(analytics),
   channels: many(channels),
   facebookConnections: many(facebookConnections),
+  userProfiles: many(userProfiles),
 }));
 
 export const businessesRelations = relations(businesses, ({ one }) => ({
@@ -239,6 +253,13 @@ export const channelsRelations = relations(channels, ({ one }) => ({
 export const facebookConnectionsRelations = relations(facebookConnections, ({ one }) => ({
   user: one(users, {
     fields: [facebookConnections.userId],
+    references: [users.id],
+  }),
+}));
+
+export const userProfilesRelations = relations(userProfiles, ({ one }) => ({
+  businessOwner: one(users, {
+    fields: [userProfiles.businessOwnerId],
     references: [users.id],
   }),
 }));
@@ -311,6 +332,16 @@ export type FacebookConnection = typeof facebookConnections.$inferSelect;
 export const insertFacebookConnectionSchema = createInsertSchema(facebookConnections).omit({
   id: true,
   userId: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertUserProfile = typeof userProfiles.$inferInsert;
+export type UserProfile = typeof userProfiles.$inferSelect;
+
+export const insertUserProfileSchema = createInsertSchema(userProfiles).omit({
+  id: true,
+  businessOwnerId: true,
   createdAt: true,
   updatedAt: true,
 });

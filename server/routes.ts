@@ -1958,10 +1958,41 @@ You represent ${business?.companyName || "our business"} and customers expect ac
     }
   }
 
-  // Create user profile endpoint
+  // User profile management endpoints
+  
+  // Get all user profiles for the current business owner
+  app.get('/api/user-profiles', isAuthenticated, async (req: any, res) => {
+    try {
+      const businessOwnerId = req.user.claims.sub;
+      const profiles = await storage.getUserProfiles(businessOwnerId);
+      res.json(profiles);
+    } catch (error) {
+      console.error("Error fetching user profiles:", error);
+      res.status(500).json({ message: "Failed to fetch user profiles" });
+    }
+  });
+
+  // Get a specific user profile
+  app.get('/api/user-profiles/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const profileId = req.params.id;
+      const profile = await storage.getUserProfile(profileId);
+      
+      if (!profile) {
+        return res.status(404).json({ message: "User profile not found" });
+      }
+      
+      res.json(profile);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      res.status(500).json({ message: "Failed to fetch user profile" });
+    }
+  });
+
+  // Create a new user profile
   app.post('/api/users/create', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const businessOwnerId = req.user.claims.sub;
       const { name, email, password, position, profileImage } = req.body;
 
       // Validate required fields
@@ -1969,36 +2000,84 @@ You represent ${business?.companyName || "our business"} and customers expect ac
         return res.status(400).json({ message: "Name, email, and password are required" });
       }
 
-      // For now, we'll store user profile data as a simple response
-      // In a real implementation, you would create a new user account in your system
-      // and handle profile image upload properly
-
-      console.log(`Creating user profile for business owner ${userId}:`, {
+      console.log(`Creating user profile for business owner ${businessOwnerId}:`, {
         name,
         email,
         position,
         hasProfileImage: !!profileImage
       });
 
-      // Simulate successful user creation
-      const newUser = {
-        id: `user-${Date.now()}`,
+      // Create user profile in database
+      const newProfile = await storage.createUserProfile(businessOwnerId, {
         name,
         email,
-        position,
-        createdBy: userId,
-        createdAt: new Date().toISOString(),
-        profileImage: profileImage ? `profile-${Date.now()}.jpg` : null
-      };
+        position: position || null,
+        profileImageUrl: profileImage ? `profile-${Date.now()}.jpg` : null,
+        isActive: false, // New profiles start as inactive
+      });
 
       res.json({
         message: "User profile created successfully",
-        user: newUser
+        user: newProfile
       });
 
     } catch (error) {
       console.error("Error creating user profile:", error);
       res.status(500).json({ message: "Failed to create user profile" });
+    }
+  });
+
+  // Update a user profile
+  app.put('/api/user-profiles/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const profileId = req.params.id;
+      const updates = req.body;
+
+      const updatedProfile = await storage.updateUserProfile(profileId, updates);
+      
+      res.json({
+        message: "User profile updated successfully",
+        user: updatedProfile
+      });
+
+    } catch (error) {
+      console.error("Error updating user profile:", error);
+      res.status(500).json({ message: "Failed to update user profile" });
+    }
+  });
+
+  // Delete a user profile
+  app.delete('/api/user-profiles/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const profileId = req.params.id;
+      
+      await storage.deleteUserProfile(profileId);
+      
+      res.json({
+        message: "User profile deleted successfully"
+      });
+
+    } catch (error) {
+      console.error("Error deleting user profile:", error);
+      res.status(500).json({ message: "Failed to delete user profile" });
+    }
+  });
+
+  // Activate a user profile (switch to this user)
+  app.post('/api/user-profiles/:id/activate', isAuthenticated, async (req: any, res) => {
+    try {
+      const businessOwnerId = req.user.claims.sub;
+      const profileId = req.params.id;
+      
+      await storage.setActiveUserProfile(businessOwnerId, profileId);
+      
+      res.json({
+        message: "User profile activated successfully"
+      });
+
+    } catch (error) {
+      console.error("Error activating user profile:", error);
+      res.status(500).json({ message: "Failed to activate user profile" });
     }
   });
 
