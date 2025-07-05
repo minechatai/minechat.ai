@@ -1965,7 +1965,16 @@ You represent ${business?.companyName || "our business"} and customers expect ac
     try {
       const businessOwnerId = req.user.claims.sub;
       const profiles = await storage.getUserProfiles(businessOwnerId);
-      res.json(profiles);
+      
+      // If there are profiles but none are active, set the first one as active
+      if (profiles.length > 0 && !profiles.some(p => p.isActive)) {
+        await storage.setActiveUserProfile(businessOwnerId, profiles[0].id);
+        // Refetch profiles to get the updated isActive status
+        const updatedProfiles = await storage.getUserProfiles(businessOwnerId);
+        res.json(updatedProfiles);
+      } else {
+        res.json(profiles);
+      }
     } catch (error) {
       console.error("Error fetching user profiles:", error);
       res.status(500).json({ message: "Failed to fetch user profiles" });
@@ -2078,6 +2087,27 @@ You represent ${business?.companyName || "our business"} and customers expect ac
     } catch (error) {
       console.error("Error deleting user profile:", error);
       res.status(500).json({ message: "Failed to delete user profile" });
+    }
+  });
+
+  // Get the active user profile
+  app.get('/api/user-profiles/active', isAuthenticated, async (req: any, res) => {
+    try {
+      const businessOwnerId = req.user.claims.sub;
+      const profiles = await storage.getUserProfiles(businessOwnerId);
+      
+      // Find the active profile
+      const activeProfile = profiles.find(profile => profile.isActive);
+      
+      if (!activeProfile) {
+        return res.status(404).json({ message: "No active user profile found" });
+      }
+      
+      res.json(activeProfile);
+
+    } catch (error) {
+      console.error("Error fetching active user profile:", error);
+      res.status(500).json({ message: "Failed to fetch active user profile" });
     }
   });
 
