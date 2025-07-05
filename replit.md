@@ -235,6 +235,8 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Right panel features official messaging: "Build, customize, and deploy your AI chat assistants today!"
   - Added Login and Sign up buttons with proper styling and Replit Auth integration
   - Included version display: "Version 1.0.25" matching design specifications
+  - Updated Login/Sign up buttons with SF Pro Medium font, weight 510, size 24.52px, color #101110
+  - Replaced all platform icons with official vector images for authentic brand representation
 
 # User Preferences
 
