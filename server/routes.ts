@@ -1990,7 +1990,7 @@ You represent ${business?.companyName || "our business"} and customers expect ac
   });
 
   // Create a new user profile
-  app.post('/api/users/create', isAuthenticated, upload.single('profileImage'), async (req: any, res) => {
+  app.post('/api/users/create', isAuthenticated, imageUpload.single('profileImage'), async (req: any, res) => {
     try {
       const businessOwnerId = req.user.claims.sub;
       const { name, email, password, position } = req.body;
@@ -2010,7 +2010,7 @@ You represent ${business?.companyName || "our business"} and customers expect ac
       // Handle profile image if uploaded
       let profileImageUrl = null;
       if (req.file) {
-        profileImageUrl = `/uploads/${req.file.filename}`;
+        profileImageUrl = `/uploads/images/${req.file.filename}`;
       }
 
       // Create user profile in database
@@ -2034,7 +2034,7 @@ You represent ${business?.companyName || "our business"} and customers expect ac
   });
 
   // Update a user profile
-  app.put('/api/user-profiles/:id', isAuthenticated, upload.single('profileImage'), async (req: any, res) => {
+  app.put('/api/user-profiles/:id', isAuthenticated, imageUpload.single('profileImage'), async (req: any, res) => {
     try {
       const profileId = req.params.id;
       const { name, email, position } = req.body;
@@ -2048,7 +2048,7 @@ You represent ${business?.companyName || "our business"} and customers expect ac
 
       // Handle profile image if uploaded
       if (req.file) {
-        updates.profileImageUrl = `/uploads/${req.file.filename}`;
+        updates.profileImageUrl = `/uploads/images/${req.file.filename}`;
       }
 
       const updatedProfile = await storage.updateUserProfile(profileId, updates);
