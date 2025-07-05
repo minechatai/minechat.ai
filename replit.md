@@ -262,3 +262,10 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
+
+## UI/UX Preferences
+- **NEVER create new components**: Use existing beautifully designed UI components that match Minechat AI brand
+- **Existing Login Flows**: Use Login Flow 1, Login Flow 2, and Login Flow 3 components as designed
+- **Existing Dashboard**: Use existing Dashboard components with proper branding
+- **Authentication Focus**: Only work on authentication logic, not UI components
+- **Component Preservation**: All existing Chat, Setup, and other components should remain unchanged
