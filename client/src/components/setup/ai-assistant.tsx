@@ -162,7 +162,7 @@ export default function AiAssistant() {
                 <FormLabel>AI Assistant Name</FormLabel>
                 <FormControl>
                   <Input 
-                    placeholder="Enter ai assistant name" 
+                    placeholder="What would you like to name your AI assistant?" 
                     {...field} 
                   />
                 </FormControl>

@@ -89,15 +89,15 @@ export default function AiTestingPanel() {
   };
 
   return (
-    <div className="w-full xl:w-96 2xl:w-[500px] bg-white border-l xl:border-l-0 xl:border-t border-gray-200 flex flex-col h-full xl:h-auto xl:min-h-96">
+    <div className="w-full xl:w-96 2xl:w-[500px] bg-white border-l xl:border-l-0 xl:border-t border-gray-200 flex flex-col h-full xl:h-[600px] xl:min-h-[600px]">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-gray-200 flex-shrink-0">
         <h3 className="text-lg font-semibold text-gray-900">AI Testing</h3>
         <p className="text-sm text-gray-500 mt-1">Test your AI responses - conversations are not saved</p>
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 p-4 overflow-y-auto custom-scrollbar">
+      <div className="flex-1 p-4 overflow-y-auto custom-scrollbar min-h-0">
         {messages.length === 0 ? (
           <div className="text-center text-gray-500 mt-8">
             <img 
@@ -177,7 +177,7 @@ export default function AiTestingPanel() {
       </div>
 
       {/* Input Area */}
-      <div className="p-4 border-t border-gray-200">
+      <div className="p-4 border-t border-gray-200 flex-shrink-0">
         <form onSubmit={handleSendMessage} className="flex items-center space-x-2">
           <div className="flex-1 relative">
             <Input

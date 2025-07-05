@@ -158,40 +158,50 @@ export default function BusinessInfo() {
     return entries;
   };
 
+  // Track the last business ID to prevent re-triggering on same data
+  const [lastBusinessId, setLastBusinessId] = useState<number | null>(null);
+
   // Update form when data is loaded
   useEffect(() => {
     if (business && typeof business === 'object' && !businessLoading) {
-      // Update business form
-      const formData = {
-        companyName: (business as any).companyName || "",
-        phoneNumber: (business as any).phoneNumber || "",
-        address: (business as any).address || "",
-        email: (business as any).email || "",
-        companyStory: (business as any).companyStory || "",
-        logoUrl: (business as any).logoUrl || "",
-        paymentDetails: (business as any).paymentDetails || "",
-        discounts: (business as any).discounts || "",
-        policy: (business as any).policy || "",
-        additionalNotes: (business as any).additionalNotes || "",
-        thankYouMessage: (business as any).thankYouMessage || "",
-      };
+      const businessId = (business as any).id;
       
-      businessForm.reset(formData);
-      
-      // Update FAQ form
-      const faqData = {
-        faqs: (business as any).faqs || "",
-      };
-      
-      faqForm.reset(faqData);
-      
-      // Parse individual FAQ entries from saved text
-      if (faqData.faqs) {
-        const parsedEntries = parseFaqEntries(faqData.faqs);
-        setFaqEntries(parsedEntries);
+      // Only update if this is new data
+      if (businessId !== lastBusinessId) {
+        setLastBusinessId(businessId);
+        
+        // Update business form
+        const formData = {
+          companyName: (business as any).companyName || "",
+          phoneNumber: (business as any).phoneNumber || "",
+          address: (business as any).address || "",
+          email: (business as any).email || "",
+          companyStory: (business as any).companyStory || "",
+          logoUrl: (business as any).logoUrl || "",
+          paymentDetails: (business as any).paymentDetails || "",
+          discounts: (business as any).discounts || "",
+          policy: (business as any).policy || "",
+          additionalNotes: (business as any).additionalNotes || "",
+          thankYouMessage: (business as any).thankYouMessage || "",
+        };
+        
+        businessForm.reset(formData);
+        
+        // Update FAQ form
+        const faqData = {
+          faqs: (business as any).faqs || "",
+        };
+        
+        faqForm.reset(faqData);
+        
+        // Parse individual FAQ entries from saved text
+        if (faqData.faqs) {
+          const parsedEntries = parseFaqEntries(faqData.faqs);
+          setFaqEntries(parsedEntries);
+        }
       }
     }
-  }, [business, businessLoading]);
+  }, [business, businessLoading, lastBusinessId]);
 
   useEffect(() => {
     if (documents && Array.isArray(documents)) {
