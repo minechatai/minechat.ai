@@ -98,6 +98,30 @@ export default function Login() {
               <a href="#" className="underline">Terms & Conditions</a> and <a href="#" className="underline">Privacy Policy</a>
             </p>
           </div>
+
+          {/* Temporary Skip Login Button for Testing */}
+          <div className="text-center mt-8">
+            <Button
+              onClick={() => {
+                // Mock login for testing
+                fetch('/api/auth/email', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    email: 'test@minechat.ai',
+                    password: 'testpassword123',
+                  }),
+                }).then(() => {
+                  window.location.href = '/dashboard';
+                });
+              }}
+              className="bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm px-4 py-2 rounded-md"
+            >
+              Skip Login (Test Mode)
+            </Button>
+          </div>
         </div>
       </div>
 

@@ -133,6 +133,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Logout endpoint
+  app.post('/api/auth/logout', (req, res) => {
+    req.logout(() => {
+      req.session.destroy(() => {
+        res.clearCookie('connect.sid');
+        res.json({ message: "Logged out successfully" });
+      });
+    });
+  });
+
+  app.get('/api/auth/logout', (req, res) => {
+    req.logout(() => {
+      req.session.destroy(() => {
+        res.clearCookie('connect.sid');
+        res.redirect('/');
+      });
+    });
+  });
+
   // Business routes
   app.get('/api/business', isAuthenticated, async (req: any, res) => {
     try {
