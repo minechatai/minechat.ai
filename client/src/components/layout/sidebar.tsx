@@ -61,9 +61,9 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             <img 
               src="/logo.png" 
               alt="Minechat AI" 
-              className="w-8 h-8 object-contain"
+              className="w-9 h-9 object-contain"
             />
-            <span className="text-xl font-semibold text-gray-900 dark:text-white logo-brand">minechat.ai</span>
+            <span className="text-2xl font-semibold text-gray-900 dark:text-white logo-brand">minechat.ai</span>
           </div>
         </div>
 
