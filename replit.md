@@ -363,7 +363,7 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Fixed perfect horizontal alignment between sidebar logo area and header borders
   - Set exact 73px height for both sidebar and header sections for continuous visual line
   - Matched padding (px-6 py-4) across both components for consistent spacing
-  - Enhanced minechat.ai logo size: increased icon from w-6 h-6 to w-9 h-9, text from text-lg to text-2xl
+  - Enhanced minechat.ai logo size: increased icon from w-6 h-6 to w-8 h-8, text from text-lg to text-xl
   - Reduced "Manage User Profiles" header from text-2xl to text-xl for better proportions
   - Improved visual prominence and professional grid alignment across all screen sizes
 
