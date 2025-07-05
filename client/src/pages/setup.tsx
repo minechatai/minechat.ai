@@ -93,9 +93,9 @@ export default function Setup() {
 
   return (
     <MainLayout title="Setup">
-      <div className="flex flex-col xl:flex-row h-full min-h-0">
+      <div className="flex flex-col xl:flex-row h-full min-h-screen xl:min-h-0">
         {/* Main Content */}
-        <div className="flex-1 p-4 sm:p-6 overflow-y-auto">
+        <div className="flex-1 p-4 sm:p-6 overflow-y-auto min-h-0">
           <div className="max-w-none sm:max-w-4xl">
             <div className="mb-6">
               <nav className="text-sm text-gray-500 mb-2 flex items-center">
@@ -111,7 +111,7 @@ export default function Setup() {
 
         {/* AI Testing Panel - only show for AI Assistant and Business */}
         {(currentSection === "ai-assistant" || currentSection === "business") && (
-          <div className="h-full flex flex-col xl:max-w-none">
+          <div className="w-full xl:w-auto flex flex-col min-h-0 h-full xl:h-auto">
             <AiTestingPanel />
           </div>
         )}

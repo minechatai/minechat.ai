@@ -89,7 +89,7 @@ export default function AiTestingPanel() {
   };
 
   return (
-    <div className="w-full xl:w-96 2xl:w-[500px] bg-white border-l xl:border-l-0 xl:border-t border-gray-200 flex flex-col h-full xl:h-[600px] xl:min-h-[600px]">
+    <div className="w-full xl:w-96 2xl:w-[32rem] bg-white border-l xl:border-l-0 xl:border-t border-gray-200 flex flex-col h-full max-h-[100dvh] xl:max-h-[calc(100vh-2rem)]">
       {/* Header */}
       <div className="p-4 border-b border-gray-200 flex-shrink-0">
         <h3 className="text-lg font-semibold text-gray-900">AI Testing</h3>
@@ -97,7 +97,7 @@ export default function AiTestingPanel() {
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 p-4 overflow-y-auto custom-scrollbar min-h-0">
+      <div className="flex-1 p-4 overflow-y-auto custom-scrollbar min-h-0 pb-0">
         {messages.length === 0 ? (
           <div className="text-center text-gray-500 mt-8">
             <img 
@@ -176,8 +176,8 @@ export default function AiTestingPanel() {
         )}
       </div>
 
-      {/* Input Area */}
-      <div className="p-4 border-t border-gray-200 flex-shrink-0">
+      {/* Input Area - Fixed to bottom */}
+      <div className="p-4 border-t border-gray-200 flex-shrink-0 bg-white sticky bottom-0">
         <form onSubmit={handleSendMessage} className="flex items-center space-x-2">
           <div className="flex-1 relative">
             <Input
@@ -185,7 +185,7 @@ export default function AiTestingPanel() {
               placeholder="Send a message"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="pr-20 text-sm"
+              className="pr-20 text-sm min-h-[2.5rem]"
               disabled={isLoading}
             />
             <div className="absolute right-3 top-2.5 flex items-center space-x-1">
