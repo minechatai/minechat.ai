@@ -2117,8 +2117,11 @@ You represent ${business?.companyName || "our business"} and customers expect ac
       // Find the active profile
       const activeProfile = profiles.find(profile => profile.isActive === true);
       
+      console.log(`Active profile search result:`, activeProfile);
+      console.log(`Profile isActive values:`, profiles.map(p => ({ name: p.name, isActive: p.isActive, type: typeof p.isActive })));
+      
       if (!activeProfile) {
-        console.log("No active profile found");
+        console.log("No active profile found - this is the bug!");
         return res.status(404).json({ message: "No active user profile found" });
       }
       
