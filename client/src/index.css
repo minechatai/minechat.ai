@@ -225,6 +225,8 @@
   font-weight: 510 !important;
   font-size: 24.52px !important;
   color: #101110 !important;
+  width: 513.3064575195312px !important;
+  height: 93.51612854003906px !important;
 }
 
 /* Main headline styling with SF Pro Semibold specifications */
@@ -236,4 +238,9 @@
   line-height: 48.5px !important;
   letter-spacing: -0.5% !important;
   color: white !important;
+}
+
+/* Login button container with exact gap spacing */
+.login-button-container {
+  gap: 24.52px !important;
 }

@@ -92,7 +92,7 @@ export default function Landing() {
             No coding needed. Launch your smart AI assistant in minutes.
           </p>
           
-          <div className="flex flex-row space-x-4 mb-16">
+          <div className="flex flex-row mb-16 login-button-container">
             <Button 
               onClick={() => window.location.href = '/api/login'}
               className="bg-white hover:bg-gray-100 px-8 py-3 rounded-full login-button"
