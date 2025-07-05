@@ -11,6 +11,7 @@ export function setupGoogleAuth(app: Express) {
   }
 
   console.log("✅ Google OAuth credentials found, setting up Google authentication");
+  console.log(`🔑 Google Client ID: "${process.env.GOOGLE_CLIENT_ID!.trim()}"`);
   
   const callbackURL = process.env.NODE_ENV === 'development' 
     ? "http://localhost:5000/auth/callback"
@@ -22,8 +23,8 @@ export function setupGoogleAuth(app: Express) {
   passport.use(
     new GoogleStrategy(
       {
-        clientID: process.env.GOOGLE_CLIENT_ID!,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+        clientID: process.env.GOOGLE_CLIENT_ID!.trim(),
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET!.trim(),
         callbackURL: callbackURL,
       },
       async (accessToken, refreshToken, profile, done) => {
