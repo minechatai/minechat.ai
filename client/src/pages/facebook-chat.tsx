@@ -16,7 +16,7 @@ import { Search, MessageCircle, Facebook, Clock, ChevronDown, Globe, Mail, Messa
 import chatbotIcon from "@assets/Frame_1751633918219.png";
 import aiModeImage from "@assets/AI_1751717516599.png";
 import humanModeImage from "@assets/Human_1751717521808.png";
-import facebookIcon from "@assets/facebook-messenger-icon.svg";
+import { FacebookIcon } from "@/components/icons/FacebookIcon";
 
 type InboxSource = 'all' | 'facebook' | 'whatsapp' | 'email' | 'website';
 
@@ -28,7 +28,7 @@ interface InboxSourceOption {
 
 const inboxSources: InboxSourceOption[] = [
   { value: 'all', label: 'All Sources', icon: <Globe className="w-4 h-4" /> },
-  { value: 'facebook', label: 'Facebook Messenger', icon: <img src={facebookIcon} className="w-4 h-4" alt="Facebook" /> },
+  { value: 'facebook', label: 'Facebook Messenger', icon: <FacebookIcon className="w-4 h-4" /> },
   { value: 'whatsapp', label: 'WhatsApp', icon: <MessageSquare className="w-4 h-4" /> },
   { value: 'email', label: 'Email', icon: <Mail className="w-4 h-4" /> },
   { value: 'website', label: 'Website Chat', icon: <MessageCircle className="w-4 h-4" /> },
