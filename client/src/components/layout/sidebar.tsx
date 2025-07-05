@@ -56,7 +56,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     `}>
       <div className="flex-1 flex flex-col min-h-0 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
         {/* Logo */}
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 h-[73px] flex items-center">
           <div className="flex items-center space-x-2">
             <img 
               src="/logo.png" 
