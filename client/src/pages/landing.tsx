@@ -7,6 +7,7 @@ import whatsappIcon from "@/assets/whatsapp.png";
 import slackIcon from "@/assets/slack.png";
 import instagramIcon from "@/assets/instagram.png";
 import facebookIcon from "@/assets/facebook.png";
+import minechatLogo from "@/assets/minechat-logo.png";
 
 export default function Landing() {
   return (
@@ -58,26 +59,7 @@ export default function Landing() {
         
         {/* Central Logo */}
         <div className="text-center z-10">
-          <div className="mb-4">
-            <div className="w-20 h-20 mx-auto mb-4">
-              <svg viewBox="0 0 100 100" className="w-full h-full">
-                <defs>
-                  <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#8b1950" />
-                    <stop offset="50%" stopColor="#b33054" />
-                    <stop offset="100%" stopColor="#b73850" />
-                  </linearGradient>
-                </defs>
-                <path 
-                  d="M20 30 L50 15 L80 30 L80 45 L50 60 L20 45 Z M20 55 L50 40 L80 55 L80 70 L50 85 L20 70 Z" 
-                  fill="url(#logoGradient)"
-                />
-              </svg>
-            </div>
-          </div>
-          <h1 className="text-4xl font-bold text-gray-900 logo-brand">
-            minechat.ai
-          </h1>
+          <img src={minechatLogo} alt="minechat.ai" className="mx-auto" />
         </div>
       </div>
 
