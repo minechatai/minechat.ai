@@ -220,13 +220,13 @@ export default function ChatView({ conversationId }: ChatViewProps) {
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <button 
-                onClick={() => handleModeToggle('ai')}
+                onClick={() => handleModeToggle(isAiMode ? 'human' : 'ai')}
                 disabled={updateModeMutation.isPending}
                 className="transition-opacity hover:opacity-80 disabled:opacity-50"
               >
                 <img 
                   src={isAiMode ? "/attached_assets/AI_1751717516599.png" : "/attached_assets/Human_1751717521808.png"}
-                  alt={isAiMode ? "AI Mode Enabled" : "Human Mode"}
+                  alt={isAiMode ? "AI Mode Enabled - Click to switch to Human Mode" : "Human Mode - Click to switch to AI Mode"}
                   className="w-20 h-10 object-contain"
                 />
               </button>
