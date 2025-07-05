@@ -20,12 +20,19 @@ export function useActiveProfile() {
   // Switch to a different user profile
   const switchProfileMutation = useMutation({
     mutationFn: async (profileId: string) => {
-      return await apiRequest(`/api/user-profiles/${profileId}/activate`, '', 'POST');
+      console.log(`Switching to profile: ${profileId}`);
+      const result = await apiRequest(`/api/user-profiles/${profileId}/activate`, '', 'POST');
+      console.log('Switch profile API result:', result);
+      return result;
     },
     onSuccess: () => {
+      console.log('Profile switch successful, invalidating queries');
       // Invalidate queries to refresh the active profile
       queryClient.invalidateQueries({ queryKey: ['/api/user-profiles/active'] });
       queryClient.invalidateQueries({ queryKey: ['/api/user-profiles'] });
+    },
+    onError: (error) => {
+      console.error('Profile switch failed:', error);
     },
   });
 
