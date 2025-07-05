@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Bot, Paperclip, Image, Mic, Send } from "lucide-react";
@@ -16,6 +16,14 @@ export default function AiTestingPanel() {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -162,6 +170,8 @@ export default function AiTestingPanel() {
                 </div>
               </div>
             )}
+            {/* Scroll anchor for auto-scroll */}
+            <div ref={messagesEndRef} />
           </div>
         )}
       </div>
