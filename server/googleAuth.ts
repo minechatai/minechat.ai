@@ -10,13 +10,21 @@ export function setupGoogleAuth(app: Express) {
     return;
   }
 
+  console.log("✅ Google OAuth credentials found, setting up Google authentication");
+  
+  const callbackURL = process.env.NODE_ENV === 'development' 
+    ? "http://localhost:5000/auth/callback"
+    : `${process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : ''}/auth/callback`;
+  
+  console.log(`📍 Google OAuth callback URL: ${callbackURL}`);
+
   // Configure Google OAuth strategy
   passport.use(
     new GoogleStrategy(
       {
         clientID: process.env.GOOGLE_CLIENT_ID!,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-        callbackURL: "/api/auth/google/callback",
+        callbackURL: callbackURL,
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
@@ -64,7 +72,7 @@ export function setupGoogleAuth(app: Express) {
   );
 
   app.get(
-    "/api/auth/google/callback",
+    "/auth/callback",
     passport.authenticate("google", {
       failureRedirect: "/login",
       successRedirect: "/",
