@@ -2141,11 +2141,17 @@ You represent ${business?.companyName || "our business"} and customers expect ac
 
   // Activate a user profile (switch to this user)
   app.post('/api/user-profiles/:id/activate', isAuthenticated, async (req: any, res) => {
+    console.log(`=== ACTIVATE PROFILE ENDPOINT CALLED ===`);
+    console.log(`Profile ID: ${req.params.id}`);
+    console.log(`Business Owner: ${req.user?.claims?.sub}`);
+    
     try {
       const businessOwnerId = req.user.claims.sub;
       const profileId = req.params.id;
       
+      console.log(`Activating profile ${profileId} for business owner ${businessOwnerId}`);
       await storage.setActiveUserProfile(businessOwnerId, profileId);
+      console.log(`Profile activation successful`);
       
       res.json({
         message: "User profile activated successfully"
