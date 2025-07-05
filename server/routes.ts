@@ -1960,6 +1960,41 @@ You represent ${business?.companyName || "our business"} and customers expect ac
 
   // User profile management endpoints
   
+  // Get the active user profile (MUST be before other parameterized routes)
+  app.get('/api/user-profiles/active', isAuthenticated, async (req: any, res) => {
+    console.log("=== ACTIVE PROFILE ENDPOINT CALLED ===");
+    try {
+      const businessOwnerId = req.user.claims.sub;
+      console.log(`Getting profiles for business owner: ${businessOwnerId}`);
+      const profiles = await storage.getUserProfiles(businessOwnerId);
+      console.log(`Retrieved ${profiles.length} profiles`);
+      
+      console.log(`Searching for active profile among:`, profiles.map(p => ({ 
+        id: p.id, 
+        name: p.name, 
+        isActive: p.isActive 
+      })));
+      
+      // Find the active profile
+      const activeProfile = profiles.find(profile => profile.isActive === true);
+      
+      console.log(`Active profile search result:`, activeProfile);
+      console.log(`Profile isActive values:`, profiles.map(p => ({ name: p.name, isActive: p.isActive, type: typeof p.isActive })));
+      
+      if (!activeProfile) {
+        console.log("No active profile found - this is the bug!");
+        return res.status(404).json({ message: "No active user profile found" });
+      }
+      
+      console.log(`Found active profile: ${activeProfile.name} (${activeProfile.id})`);
+      res.json(activeProfile);
+
+    } catch (error) {
+      console.error("Error fetching active user profile:", error);
+      res.status(500).json({ message: "Failed to fetch active user profile" });
+    }
+  });
+
   // Get all user profiles for the current business owner
   app.get('/api/user-profiles', isAuthenticated, async (req: any, res) => {
     try {
@@ -2102,40 +2137,7 @@ You represent ${business?.companyName || "our business"} and customers expect ac
     }
   });
 
-  // Get the active user profile
-  app.get('/api/user-profiles/active', isAuthenticated, async (req: any, res) => {
-    console.log("=== ACTIVE PROFILE ENDPOINT CALLED ===");
-    try {
-      const businessOwnerId = req.user.claims.sub;
-      console.log(`Getting profiles for business owner: ${businessOwnerId}`);
-      const profiles = await storage.getUserProfiles(businessOwnerId);
-      console.log(`Retrieved ${profiles.length} profiles`);
-      
-      console.log(`Searching for active profile among:`, profiles.map(p => ({ 
-        id: p.id, 
-        name: p.name, 
-        isActive: p.isActive 
-      })));
-      
-      // Find the active profile
-      const activeProfile = profiles.find(profile => profile.isActive === true);
-      
-      console.log(`Active profile search result:`, activeProfile);
-      console.log(`Profile isActive values:`, profiles.map(p => ({ name: p.name, isActive: p.isActive, type: typeof p.isActive })));
-      
-      if (!activeProfile) {
-        console.log("No active profile found - this is the bug!");
-        return res.status(404).json({ message: "No active user profile found" });
-      }
-      
-      console.log(`Found active profile: ${activeProfile.name} (${activeProfile.id})`);
-      res.json(activeProfile);
 
-    } catch (error) {
-      console.error("Error fetching active user profile:", error);
-      res.status(500).json({ message: "Failed to fetch active user profile" });
-    }
-  });
 
   // Activate a user profile (switch to this user)
   app.post('/api/user-profiles/:id/activate', isAuthenticated, async (req: any, res) => {
