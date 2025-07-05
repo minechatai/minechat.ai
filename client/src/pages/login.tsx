@@ -63,7 +63,16 @@ export default function Login() {
         
         {/* Central minechat.ai logo */}
         <div className="text-center z-10 relative">
-          <img src={minechatLogo} alt="minechat.ai" className="mx-auto max-w-[280px]" />
+          <img 
+            src={minechatLogo} 
+            alt="minechat.ai" 
+            className="mx-auto"
+            style={{
+              width: '271.4975891113281px',
+              height: '155.1802215576172px',
+              opacity: 1
+            }}
+          />
         </div>
       </div>
 

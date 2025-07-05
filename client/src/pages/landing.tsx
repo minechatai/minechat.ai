@@ -59,7 +59,16 @@ export default function Landing() {
         
         {/* Central Logo */}
         <div className="text-center z-10">
-          <img src={minechatLogo} alt="minechat.ai" className="mx-auto" />
+          <img 
+            src={minechatLogo} 
+            alt="minechat.ai" 
+            className="mx-auto"
+            style={{
+              width: '271.4975891113281px',
+              height: '155.1802215576172px',
+              opacity: 1
+            }}
+          />
         </div>
       </div>
 

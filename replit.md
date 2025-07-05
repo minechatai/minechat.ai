@@ -276,6 +276,11 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Enhanced button styling with proper rounded corners and spacing
   - Improved Terms & Conditions text styling with proper opacity and hover effects
   - Updated development test buttons with glassmorphism styling for better integration
+- July 5, 2025: Logo Dimension Standardization
+  - Applied exact logo dimensions across Landing and Login pages: 271.5px × 155.2px
+  - Standardized logo sizing for consistent brand presentation
+  - Removed max-width constraints to allow precise pixel-perfect sizing
+  - Maintained opacity: 1 for optimal logo visibility
 
 # User Preferences
 
