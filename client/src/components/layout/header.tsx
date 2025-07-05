@@ -4,6 +4,7 @@ import { Bell, Menu } from "lucide-react";
 import { ModeToggle } from "@/components/ui/mode-toggle";
 import UserProfileDropdown from "./user-profile-dropdown";
 import { useQuery } from "@tanstack/react-query";
+import type { Business } from "@shared/schema";
 
 interface HeaderProps {
   title: string;
@@ -14,10 +15,13 @@ export default function Header({ title, onMenuClick }: HeaderProps) {
   const { user } = useAuth();
   
   // Fetch business information to display company logo
-  const { data: business } = useQuery({
+  const { data: business } = useQuery<Business>({
     queryKey: ['/api/business'],
     enabled: !!user
   });
+
+  // Debug log
+  console.log('Business data:', business);
 
   return (
     <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
@@ -40,7 +44,7 @@ export default function Header({ title, onMenuClick }: HeaderProps) {
           {/* Company Logo */}
           {business && (
             <div className="flex items-center space-x-2 px-3 py-1 bg-gray-50 dark:bg-gray-800 rounded-lg">
-              <div className="w-8 h-8 bg-minechat-red-gradient rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 minechat-red-gradient rounded-full flex items-center justify-center">
                 <span className="text-white font-semibold text-sm">
                   {business.companyName?.[0]?.toUpperCase() || 'S'}
                 </span>
