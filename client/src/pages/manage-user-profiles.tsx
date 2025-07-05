@@ -28,7 +28,7 @@ export default function ManageUserProfiles() {
   const queryClient = useQueryClient();
 
   // Fetch user profiles
-  const { data: profiles = [], isLoading } = useQuery({
+  const { data: profiles = [], isLoading } = useQuery<UserProfile[]>({
     queryKey: ['/api/user-profiles'],
   });
 
@@ -67,13 +67,7 @@ export default function ManageUserProfiles() {
   // Create user profile mutation
   const createUserMutation = useMutation({
     mutationFn: async (userData: any) => {
-      return await apiRequest('/api/users/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-      });
+      return await apiRequest('/api/users/create', userData);
     },
     onSuccess: () => {
       toast({
@@ -95,13 +89,7 @@ export default function ManageUserProfiles() {
   // Update user profile mutation
   const updateUserMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      return await apiRequest(`/api/user-profiles/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
+      return await apiRequest(`/api/user-profiles/${id}`, data);
     },
     onSuccess: () => {
       toast({
@@ -123,7 +111,7 @@ export default function ManageUserProfiles() {
   // Delete user profile mutation
   const deleteUserMutation = useMutation({
     mutationFn: async (id: string) => {
-      return await apiRequest(`/api/user-profiles/${id}`, {
+      return await fetch(`/api/user-profiles/${id}`, {
         method: 'DELETE',
       });
     },
@@ -147,7 +135,7 @@ export default function ManageUserProfiles() {
   // Activate user profile mutation
   const activateUserMutation = useMutation({
     mutationFn: async (id: string) => {
-      return await apiRequest(`/api/user-profiles/${id}/activate`, {
+      return await fetch(`/api/user-profiles/${id}/activate`, {
         method: 'POST',
       });
     },
@@ -226,7 +214,7 @@ export default function ManageUserProfiles() {
   };
 
   return (
-    <MainLayout>
+    <MainLayout title="Manage User Profiles">
       <div className="container mx-auto p-6 space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
