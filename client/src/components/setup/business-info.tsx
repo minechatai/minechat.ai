@@ -160,13 +160,7 @@ export default function BusinessInfo() {
 
   // Update form when data is loaded
   useEffect(() => {
-    console.log("Business data from API:", business);
-    console.log("Business loading:", businessLoading);
-    
-    if (business && typeof business === 'object') {
-      console.log("All business fields:", Object.keys(business));
-      console.log("Company name specifically:", (business as any).companyName);
-      
+    if (business && typeof business === 'object' && !businessLoading) {
       // Update business form
       const formData = {
         companyName: (business as any).companyName || "",
@@ -174,6 +168,7 @@ export default function BusinessInfo() {
         address: (business as any).address || "",
         email: (business as any).email || "",
         companyStory: (business as any).companyStory || "",
+        logoUrl: (business as any).logoUrl || "",
         paymentDetails: (business as any).paymentDetails || "",
         discounts: (business as any).discounts || "",
         policy: (business as any).policy || "",
@@ -181,7 +176,6 @@ export default function BusinessInfo() {
         thankYouMessage: (business as any).thankYouMessage || "",
       };
       
-      console.log("Form data to populate:", formData);
       businessForm.reset(formData);
       
       // Update FAQ form
@@ -189,7 +183,6 @@ export default function BusinessInfo() {
         faqs: (business as any).faqs || "",
       };
       
-      console.log("FAQ data to populate:", faqData);
       faqForm.reset(faqData);
       
       // Parse individual FAQ entries from saved text
@@ -197,10 +190,8 @@ export default function BusinessInfo() {
         const parsedEntries = parseFaqEntries(faqData.faqs);
         setFaqEntries(parsedEntries);
       }
-      
-      console.log("Forms updated successfully!");
     }
-  }, [business, businessForm, faqForm, businessLoading]);
+  }, [business, businessLoading]);
 
   useEffect(() => {
     if (documents && Array.isArray(documents)) {
@@ -915,7 +906,7 @@ export default function BusinessInfo() {
         {/* Business Details Form */}
         <Form {...businessForm}>
           <form onSubmit={businessForm.handleSubmit(onBusinessSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <FormField
                 control={businessForm.control}
                 name="companyName"

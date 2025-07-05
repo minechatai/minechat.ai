@@ -80,7 +80,7 @@ export default function Setup() {
               <div className="h-64 bg-gray-200 rounded"></div>
             </div>
           </div>
-          <div className="w-96 bg-white border-l border-gray-200 animate-pulse">
+          <div className="w-full sm:w-96 md:w-[400px] lg:w-[500px] xl:w-[600px] 2xl:w-[700px] bg-white border-l border-gray-200 animate-pulse">
             <div className="p-4 space-y-4">
               <div className="h-6 bg-gray-200 rounded w-24"></div>
               <div className="h-32 bg-gray-200 rounded"></div>
@@ -93,10 +93,10 @@ export default function Setup() {
 
   return (
     <MainLayout title="Setup">
-      <div className="flex h-full min-h-0">
+      <div className="flex flex-col xl:flex-row h-full min-h-0">
         {/* Main Content */}
-        <div className="flex-1 p-6 overflow-y-auto">
-          <div className="max-w-4xl">
+        <div className="flex-1 p-4 sm:p-6 overflow-y-auto">
+          <div className="max-w-none sm:max-w-4xl">
             <div className="mb-6">
               <nav className="text-sm text-gray-500 mb-2 flex items-center">
                 <span>Setup</span>
@@ -111,7 +111,7 @@ export default function Setup() {
 
         {/* AI Testing Panel - only show for AI Assistant and Business */}
         {(currentSection === "ai-assistant" || currentSection === "business") && (
-          <div className="h-full flex flex-col">
+          <div className="h-full flex flex-col xl:max-w-none">
             <AiTestingPanel />
           </div>
         )}

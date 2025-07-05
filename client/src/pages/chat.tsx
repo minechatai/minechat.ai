@@ -48,15 +48,15 @@ export default function Chat() {
   if (isLoading) {
     return (
       <MainLayout title="Chat">
-        <div className="flex h-full">
-          <div className="w-80 bg-white border-r border-gray-200 animate-pulse">
+        <div className="flex flex-col md:flex-row h-full">
+          <div className="w-full md:w-72 lg:w-80 xl:w-96 bg-white border-r border-gray-200 animate-pulse">
             <div className="p-4 space-y-4">
               <div className="h-6 bg-gray-200 rounded w-20"></div>
               <div className="h-10 bg-gray-200 rounded"></div>
             </div>
           </div>
           <div className="flex-1 bg-gray-50 animate-pulse">
-            <div className="p-6 space-y-4">
+            <div className="p-4 sm:p-6 space-y-4">
               <div className="h-8 bg-gray-200 rounded w-48"></div>
               <div className="h-64 bg-gray-200 rounded"></div>
             </div>
@@ -68,7 +68,7 @@ export default function Chat() {
 
   return (
     <MainLayout title="Chat">
-      <div className="flex h-full">
+      <div className="flex flex-col md:flex-row h-full">
         <ConversationList 
           selectedConversation={selectedConversation}
           onSelectConversation={setSelectedConversation}
