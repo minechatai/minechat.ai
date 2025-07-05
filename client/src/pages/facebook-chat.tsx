@@ -12,10 +12,27 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import { Search, MessageCircle, Facebook, Clock } from "lucide-react";
+import { Search, MessageCircle, Facebook, Clock, ChevronDown, Globe, Mail, MessageSquare } from "lucide-react";
 import chatbotIcon from "@assets/Frame_1751633918219.png";
 import aiModeImage from "@assets/AI_1751717516599.png";
 import humanModeImage from "@assets/Human_1751717521808.png";
+import facebookIcon from "@assets/facebook-messenger-icon.svg";
+
+type InboxSource = 'all' | 'facebook' | 'whatsapp' | 'email' | 'website';
+
+interface InboxSourceOption {
+  value: InboxSource;
+  label: string;
+  icon: React.ReactNode;
+}
+
+const inboxSources: InboxSourceOption[] = [
+  { value: 'all', label: 'All Sources', icon: <Globe className="w-4 h-4" /> },
+  { value: 'facebook', label: 'Facebook Messenger', icon: <img src={facebookIcon} className="w-4 h-4" alt="Facebook" /> },
+  { value: 'whatsapp', label: 'WhatsApp', icon: <MessageSquare className="w-4 h-4" /> },
+  { value: 'email', label: 'Email', icon: <Mail className="w-4 h-4" /> },
+  { value: 'website', label: 'Website Chat', icon: <MessageCircle className="w-4 h-4" /> },
+];
 
 interface FacebookConversation {
   id: number;
@@ -42,11 +59,14 @@ interface FacebookMessage {
 export default function FacebookChat() {
   const [selectedConversation, setSelectedConversation] = useState<FacebookConversation | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedSource, setSelectedSource] = useState<InboxSource>('all');
+  const [showSourceDropdown, setShowSourceDropdown] = useState(false);
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
   const { activeProfile } = useActiveProfile();
   const queryClient = useQueryClient();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleViewProfile = (facebookSenderId: string) => {
     if (facebookSenderId) {
@@ -131,13 +151,30 @@ export default function FacebookChat() {
     }
   }, [error, toast]);
 
-  // Filter for Facebook conversations only
-  const facebookConversations = conversations.filter((conv: any) => conv.source === "facebook");
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowSourceDropdown(false);
+      }
+    };
 
-  // Filter conversations based on search query
-  const filteredConversations = facebookConversations.filter((conv: any) =>
-    conv.customerName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Filter conversations based on selected source and search query
+  const filteredConversations = conversations.filter((conv: any) => {
+    // Filter by source - for now, only Facebook conversations exist
+    const matchesSource = selectedSource === 'all' || selectedSource === 'facebook';
+    
+    // Filter by search query
+    const matchesSearch = conv.customerName.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    return matchesSource && matchesSearch && conv.source === "facebook";
+  });
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -203,7 +240,54 @@ export default function FacebookChat() {
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center gap-2 mb-4">
               <Facebook className="w-6 h-6 text-blue-600" />
-              <h2 className="text-xl font-semibold text-gray-900">Facebook Chat</h2>
+              <h2 className="text-xl font-semibold text-gray-900">Chat</h2>
+            </div>
+            
+            {/* Inbox Source Switcher */}
+            <div className="mb-4 relative" ref={dropdownRef}>
+              <button
+                onClick={() => setShowSourceDropdown(!showSourceDropdown)}
+                className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+              >
+                <div className="flex items-center gap-2">
+                  {inboxSources.find(source => source.value === selectedSource)?.icon}
+                  <span className="font-medium text-gray-900">
+                    {inboxSources.find(source => source.value === selectedSource)?.label}
+                  </span>
+                </div>
+                <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${showSourceDropdown ? 'transform rotate-180' : ''}`} />
+              </button>
+              
+              {/* Dropdown Menu */}
+              {showSourceDropdown && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                  {inboxSources.map((source) => (
+                    <button
+                      key={source.value}
+                      onClick={() => {
+                        setSelectedSource(source.value);
+                        setShowSourceDropdown(false);
+                      }}
+                      className={`w-full flex items-center gap-2 p-3 text-left hover:bg-gray-50 transition-colors first:rounded-t-lg last:rounded-b-lg ${
+                        selectedSource === source.value ? 'bg-blue-50 text-blue-700' : 'text-gray-900'
+                      }`}
+                    >
+                      {source.icon}
+                      <span className="font-medium">{source.label}</span>
+                      {source.value === 'facebook' && (
+                        <span className="ml-auto text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                          Connected
+                        </span>
+                      )}
+                      {source.value !== 'facebook' && source.value !== 'all' && (
+                        <span className="ml-auto text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded-full">
+                          Coming Soon
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             
             <div className="relative">
