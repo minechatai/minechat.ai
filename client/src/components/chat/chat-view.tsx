@@ -220,13 +220,13 @@ export default function ChatView({ conversationId }: ChatViewProps) {
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <button 
-                onClick={() => handleModeToggle(isAiMode ? 'human' : 'ai')}
+                onClick={() => handleModeToggle((conversation?.mode === 'ai' || !conversation?.mode) ? 'human' : 'ai')}
                 disabled={updateModeMutation.isPending}
                 className="transition-opacity hover:opacity-80 disabled:opacity-50"
               >
                 <img 
-                  src={isAiMode ? "/attached_assets/AI_1751717516599.png" : "/attached_assets/Human_1751717521808.png"}
-                  alt={isAiMode ? "AI Mode Enabled - Click to switch to Human Mode" : "Human Mode - Click to switch to AI Mode"}
+                  src={(conversation?.mode === 'ai' || !conversation?.mode) ? "/attached_assets/AI_1751717516599.png" : "/attached_assets/Human_1751717521808.png"}
+                  alt={(conversation?.mode === 'ai' || !conversation?.mode) ? "AI Mode Enabled - Click to switch to Human Mode" : "Human Mode - Click to switch to AI Mode"}
                   className="w-20 h-10 object-contain"
                 />
               </button>
@@ -242,7 +242,7 @@ export default function ChatView({ conversationId }: ChatViewProps) {
       <div className="bg-gray-50 border-b border-gray-200 py-2 px-4">
         <div className="text-center">
           <span className="text-sm text-gray-500 bg-white px-3 py-1 rounded-full shadow-sm">
-            {isAiMode ? 'AI Enabled' : 'Human Mode'}
+            {(conversation?.mode === 'ai' || !conversation?.mode) ? 'AI Enabled' : 'Human Mode'}
           </span>
         </div>
       </div>
@@ -329,14 +329,14 @@ export default function ChatView({ conversationId }: ChatViewProps) {
           <div className="flex-1 relative">
             <Input
               type="text"
-              placeholder={isAiMode ? "AI mode is enabled - switch to Human mode to send messages" : "Send a message"}
+              placeholder={(conversation?.mode === 'ai' || !conversation?.mode) ? "AI mode is enabled - switch to Human mode to send messages" : "Send a message"}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               className="pr-20 h-9"
-              disabled={isAiMode}
+              disabled={conversation?.mode === 'ai' || !conversation?.mode}
             />
             <div className="absolute right-2 top-2 flex items-center space-x-1">
-              <Button type="button" variant="ghost" size="sm" className="p-0 w-4 h-4" disabled={isAiMode}>
+              <Button type="button" variant="ghost" size="sm" className="p-0 w-4 h-4" disabled={conversation?.mode === 'ai' || !conversation?.mode}>
                 <Paperclip className="w-3 h-3 text-gray-400" />
               </Button>
             </div>
@@ -345,7 +345,7 @@ export default function ChatView({ conversationId }: ChatViewProps) {
             type="submit" 
             size="sm" 
             className="bg-primary hover:bg-primary-dark h-9"
-            disabled={isAiMode || sendMessageMutation.isPending}
+            disabled={(conversation?.mode === 'ai' || !conversation?.mode) || sendMessageMutation.isPending}
           >
             {sendMessageMutation.isPending ? (
               <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></div>
