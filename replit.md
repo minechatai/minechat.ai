@@ -332,6 +332,13 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - User profile creation from Google account data (name, email, profile picture)
   - Automatic session management and redirect to dashboard after successful login
   - Added loading spinners and disabled states during authentication process
+- July 5, 2025: AI/Human Toggle Button Design Implementation
+  - Replaced text-based toggle buttons with custom image-based toggle buttons
+  - Implemented AI enabled state button (purple gradient with chatbot icon)
+  - Implemented Human mode button (white with human icon)
+  - Applied consistent styling across both main Chat and Facebook Chat interfaces
+  - Added hover effects and proper accessibility attributes
+  - Removed unused lucide-react icons (Bot, User) from imports
 
 # User Preferences
 

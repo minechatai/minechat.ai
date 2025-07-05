@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Bot, User, MoreVertical, Paperclip, Image, Mic, Send } from "lucide-react";
+import { MoreVertical, Paperclip, Image, Mic, Send, MessageCircle } from "lucide-react";
 import { Message, Conversation } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { useActiveProfile } from "@/hooks/useActiveProfile";
@@ -156,7 +156,7 @@ export default function ChatView({ conversationId }: ChatViewProps) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center bg-gray-50">
         <div className="text-center">
-          <Bot className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <MessageCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">Select a conversation</h3>
           <p className="text-gray-500">Choose a conversation from the list to start chatting</p>
         </div>
@@ -219,22 +219,17 @@ export default function ChatView({ conversationId }: ChatViewProps) {
           </div>
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              <Button 
-                className={`${isAiMode ? 'bg-primary text-white' : 'border border-gray-300 text-gray-700'}`}
+              <button 
                 onClick={() => handleModeToggle('ai')}
                 disabled={updateModeMutation.isPending}
+                className="transition-opacity hover:opacity-80 disabled:opacity-50"
               >
-                <Bot className="w-4 h-4 mr-2" />
-                AI Assistant
-              </Button>
-              <Button 
-                className={`${!isAiMode ? 'bg-primary text-white' : 'border border-gray-300 text-gray-700'}`}
-                onClick={() => handleModeToggle('human')}
-                disabled={updateModeMutation.isPending}
-              >
-                <User className="w-4 h-4 mr-2" />
-                Human
-              </Button>
+                <img 
+                  src={isAiMode ? "/attached_assets/AI_1751717516599.png" : "/attached_assets/Human_1751717521808.png"}
+                  alt={isAiMode ? "AI Mode Enabled" : "Human Mode"}
+                  className="w-20 h-10 object-contain"
+                />
+              </button>
             </div>
             <Button variant="ghost" size="sm">
               <MoreVertical className="w-4 h-4" />

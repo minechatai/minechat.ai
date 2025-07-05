@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import { Search, MessageCircle, User, Bot, Facebook, Clock } from "lucide-react";
+import { Search, MessageCircle, Facebook, Clock } from "lucide-react";
 import chatbotIcon from "@assets/Frame_1751633918219.png";
 
 interface FacebookConversation {
@@ -316,22 +316,16 @@ export default function FacebookChat() {
                   </div>
                   <div className="flex items-center space-x-4">
                     <div className="flex items-center space-x-2">
-                      <Button 
-                        size="sm"
-                        className={`${selectedConversation.mode === 'ai' ? 'bg-primary text-white' : 'border border-gray-300 text-gray-700'}`}
-                        onClick={() => handleModeToggle(selectedConversation.id, 'ai')}
+                      <button 
+                        onClick={() => handleModeToggle(selectedConversation.id, selectedConversation.mode === 'ai' ? 'human' : 'ai')}
+                        className="transition-opacity hover:opacity-80"
                       >
-                        <Bot className="w-4 h-4 mr-2" />
-                        AI Assistant
-                      </Button>
-                      <Button 
-                        size="sm"
-                        className={`${selectedConversation.mode === 'human' ? 'bg-primary text-white' : 'border border-gray-300 text-gray-700'}`}
-                        onClick={() => handleModeToggle(selectedConversation.id, 'human')}
-                      >
-                        <User className="w-4 h-4 mr-2" />
-                        Human
-                      </Button>
+                        <img 
+                          src={selectedConversation.mode === 'ai' ? "/attached_assets/AI_1751717516599.png" : "/attached_assets/Human_1751717521808.png"}
+                          alt={selectedConversation.mode === 'ai' ? "AI Mode Enabled" : "Human Mode"}
+                          className="w-20 h-10 object-contain"
+                        />
+                      </button>
                     </div>
                     <Badge variant="outline" className="text-blue-600 border-blue-600">
                       {selectedConversation.status}
