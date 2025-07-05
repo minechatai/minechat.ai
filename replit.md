@@ -208,6 +208,12 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Enhanced chatbot icon visibility in AI Testing panel with larger size and no background
   - Applied brand colors to all buttons, chatbot icons, and primary interface elements
   - Added custom CSS classes for Minechat Red gradient and solid color variations
+- July 5, 2025: AI Testing Panel Database Isolation and Name Recognition Fix
+  - Created separate '/api/chat/test' endpoint that doesn't save conversations or messages to database
+  - AI Testing panel now uses dedicated endpoint ensuring no test data is stored permanently
+  - Fixed AI assistant name recognition issue: AI now properly responds with "JJ" when asked "What's your name?"
+  - Enhanced system prompt to distinguish between name questions and general greetings
+  - Testing environment operates independently from saved chat history for clean testing results
 
 # User Preferences
 

@@ -33,7 +33,7 @@ export default function AiTestingPanel() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/chat', {
+      const response = await fetch('/api/chat/test', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
