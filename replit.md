@@ -341,11 +341,14 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Removed unused lucide-react icons (Bot, User) from imports
   - Fixed toggle functionality to use database conversation mode instead of local state
   - Updated asset imports to use proper Vite asset loading for reliable image display
-- July 5, 2025: Google OAuth Redirect URI Update
+- July 5, 2025: Google OAuth Redirect URI Update and Database Conflict Fix
   - Updated Google OAuth callback URL to match new Replit domain
   - Fixed redirect_uri_mismatch error by setting exact callback URL
   - Configured OAuth to use: https://449a5e08-99f4-4100-9571-62eeba47fe54-00-3gozoz68wjgp4.spock.replit.dev/auth/callback
-  - Verified Google OAuth flow works correctly with new domain
+  - Fixed duplicate email constraint error in upsertUser function
+  - Updated conflict resolution to use email field instead of ID for existing users
+  - Added error handling for Google OAuth users with existing email addresses
+  - Verified Google OAuth flow works correctly with new domain and existing users
 
 # User Preferences
 
