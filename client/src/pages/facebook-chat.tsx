@@ -14,6 +14,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { Search, MessageCircle, Facebook, Clock } from "lucide-react";
 import chatbotIcon from "@assets/Frame_1751633918219.png";
+import aiModeImage from "@assets/AI_1751717516599.png";
+import humanModeImage from "@assets/Human_1751717521808.png";
 
 interface FacebookConversation {
   id: number;
@@ -321,7 +323,7 @@ export default function FacebookChat() {
                         className="transition-opacity hover:opacity-80"
                       >
                         <img 
-                          src={selectedConversation.mode === 'ai' ? "/attached_assets/AI_1751717516599.png" : "/attached_assets/Human_1751717521808.png"}
+                          src={selectedConversation.mode === 'ai' ? aiModeImage : humanModeImage}
                           alt={selectedConversation.mode === 'ai' ? "AI Mode Enabled" : "Human Mode"}
                           className="w-20 h-10 object-contain"
                         />

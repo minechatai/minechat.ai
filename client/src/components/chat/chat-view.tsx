@@ -8,6 +8,8 @@ import { Message, Conversation } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { useActiveProfile } from "@/hooks/useActiveProfile";
 import chatbotIcon from "@assets/Frame_1751633918219.png";
+import aiModeImage from "@assets/AI_1751717516599.png";
+import humanModeImage from "@assets/Human_1751717521808.png";
 
 interface ChatViewProps {
   conversationId: number | null;
@@ -225,7 +227,7 @@ export default function ChatView({ conversationId }: ChatViewProps) {
                 className="transition-opacity hover:opacity-80 disabled:opacity-50"
               >
                 <img 
-                  src={(conversation?.mode === 'ai' || !conversation?.mode) ? "/attached_assets/AI_1751717516599.png" : "/attached_assets/Human_1751717521808.png"}
+                  src={(conversation?.mode === 'ai' || !conversation?.mode) ? aiModeImage : humanModeImage}
                   alt={(conversation?.mode === 'ai' || !conversation?.mode) ? "AI Mode Enabled - Click to switch to Human Mode" : "Human Mode - Click to switch to AI Mode"}
                   className="w-20 h-10 object-contain"
                 />
