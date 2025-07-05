@@ -226,3 +226,14 @@
   font-size: 24.52px !important;
   color: #101110 !important;
 }
+
+/* Main headline styling with SF Pro Semibold specifications */
+.main-headline {
+  font-family: 'SF Pro Display', 'SF Pro Text', system-ui, -apple-system, sans-serif !important;
+  font-weight: 590 !important;
+  font-style: normal !important;
+  font-size: 40px !important;
+  line-height: 48.5px !important;
+  letter-spacing: -0.5% !important;
+  color: white !important;
+}

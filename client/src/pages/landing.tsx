@@ -84,7 +84,7 @@ export default function Landing() {
       {/* Right Side - Minechat Red Background with Content */}
       <div className="flex-1 bg-gradient-to-br from-[#8b1950] via-[#b33054] to-[#b73850] flex flex-col justify-center items-center text-white p-12">
         <div className="max-w-md text-center">
-          <h2 className="text-4xl font-bold mb-6 leading-tight">
+          <h2 className="mb-6 leading-tight main-headline">
             Build, customize, and deploy your AI chat assistants today!
           </h2>
           
@@ -92,7 +92,7 @@ export default function Landing() {
             No coding needed. Launch your smart AI assistant in minutes.
           </p>
           
-          <div className="flex flex-col space-y-4 mb-16">
+          <div className="flex flex-row space-x-4 mb-16">
             <Button 
               onClick={() => window.location.href = '/api/login'}
               className="bg-white hover:bg-gray-100 px-8 py-3 rounded-full login-button"
