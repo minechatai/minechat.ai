@@ -2104,9 +2104,12 @@ You represent ${business?.companyName || "our business"} and customers expect ac
 
   // Get the active user profile
   app.get('/api/user-profiles/active', isAuthenticated, async (req: any, res) => {
+    console.log("=== ACTIVE PROFILE ENDPOINT CALLED ===");
     try {
       const businessOwnerId = req.user.claims.sub;
+      console.log(`Getting profiles for business owner: ${businessOwnerId}`);
       const profiles = await storage.getUserProfiles(businessOwnerId);
+      console.log(`Retrieved ${profiles.length} profiles`);
       
       console.log(`Searching for active profile among:`, profiles.map(p => ({ 
         id: p.id, 
