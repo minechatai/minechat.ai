@@ -212,3 +212,17 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: hsl(20, 14.3%, 4.1%);
 }
+
+/* Logo brand font preservation */
+.logo-brand {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+/* Login button styling with SF Pro Medium specifications */
+.login-button {
+  font-family: 'SF Pro Display', 'SF Pro Text', system-ui, -apple-system, sans-serif !important;
+  font-style: normal !important;
+  font-weight: 510 !important;
+  font-size: 24.52px !important;
+  color: #101110 !important;
+}
