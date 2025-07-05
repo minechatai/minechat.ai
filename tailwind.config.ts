@@ -67,11 +67,13 @@ export default {
         },
         minechat: {
           red: {
+            DEFAULT: "#b73850",
             start: "var(--minechat-red-start)",
             mid: "var(--minechat-red-mid)",
             end: "var(--minechat-red-end)",
           },
         },
+        "minechat-red": "#b73850",
       },
       keyframes: {
         "accordion-down": {

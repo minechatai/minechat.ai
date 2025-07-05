@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import EmailLoginModal from "@/components/email-login-modal";
 import telegramIcon from "@/assets/telegram.png";
 import webIcon from "@/assets/web.png";
 import discordIcon from "@/assets/discord.png";
@@ -10,6 +12,8 @@ import facebookIcon from "@/assets/facebook.png";
 import minechatLogo from "@/assets/minechat-logo.png";
 
 export default function Login() {
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+
   return (
     <div className="flex h-screen">
       {/* Left side - identical to Login Flow 1 */}
@@ -64,7 +68,7 @@ export default function Login() {
 
           {/* Continue with Google */}
           <Button
-            onClick={() => window.location.href = '/api/login'}
+            onClick={() => window.location.href = '/api/auth/google'}
             className="w-full bg-white hover:bg-gray-100 text-black font-medium py-6 px-8 rounded-full flex items-center justify-center space-x-3"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
@@ -78,7 +82,7 @@ export default function Login() {
 
           {/* Continue with Email */}
           <Button
-            onClick={() => window.location.href = '/api/login'}
+            onClick={() => setIsEmailModalOpen(true)}
             className="w-full bg-white hover:bg-gray-100 text-black font-medium py-6 px-8 rounded-full flex items-center justify-center space-x-3"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
@@ -96,6 +100,12 @@ export default function Login() {
           </div>
         </div>
       </div>
+
+      {/* Email Login Modal */}
+      <EmailLoginModal 
+        isOpen={isEmailModalOpen} 
+        onClose={() => setIsEmailModalOpen(false)} 
+      />
     </div>
   );
 }

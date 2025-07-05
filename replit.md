@@ -246,6 +246,18 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Added proper Terms & Conditions and Privacy Policy links
   - Updated landing page buttons to navigate to login page instead of direct API authentication
   - Configured routing to show login page for non-authenticated users
+- July 5, 2025: Google OAuth Integration Setup
+  - Added passport-google-oauth20 for Google authentication
+  - Created googleAuth.ts with Google OAuth strategy configuration
+  - Implemented graceful fallback when Google credentials are not configured
+  - Connected "Continue with Google" button to /api/auth/google endpoint
+- July 5, 2025: Login Flow 3 - Email Authentication Modal
+  - Created EmailLoginModal component matching Login Flow 3 design specifications
+  - Implemented email and password form with proper validation using Zod
+  - Added password visibility toggle and form error handling
+  - Integrated modal into login page with state management
+  - Styled with Minechat red brand colors and SF Pro typography
+  - Added proper back button and Terms & Privacy Policy links
 
 # User Preferences
 
