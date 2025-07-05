@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useActiveProfile } from "@/hooks/useActiveProfile";
 import { apiRequest } from "@/lib/queryClient";
 import MainLayout from "@/components/layout/main-layout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -41,6 +42,7 @@ export default function FacebookChat() {
   const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
+  const { activeProfile } = useActiveProfile();
   const queryClient = useQueryClient();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -373,19 +375,28 @@ export default function FacebookChat() {
                           <div className="max-w-xs lg:max-w-md">
                             <div className="px-4 py-3 rounded-lg bg-[#E1E1EB] text-gray-900">
                               <div className="flex items-center space-x-2 mb-2">
-                                <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center">
-                                  {message.senderType === 'human' ? (
-                                    <User className="w-3 h-3 text-blue-600" />
-                                  ) : (
+                                {message.senderType === 'human' ? (
+                                  // Show active user profile for human messages
+                                  <Avatar className="w-5 h-5">
+                                    <AvatarImage 
+                                      src={activeProfile?.profileImageUrl || undefined} 
+                                      alt={activeProfile?.name || 'Team Member'}
+                                    />
+                                    <AvatarFallback className="bg-minechat-red text-white text-xs">
+                                      {activeProfile?.name?.charAt(0).toUpperCase() || 'T'}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                ) : (
+                                  <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center">
                                     <img 
                                       src={chatbotIcon} 
                                       alt="AI Assistant" 
                                       className="w-3 h-3"
                                     />
-                                  )}
-                                </div>
+                                  </div>
+                                )}
                                 <span className="text-xs font-medium text-gray-600">
-                                  {message.senderType === 'human' ? 'Human Agent' : 'AI Assistant'}
+                                  {message.senderType === 'human' ? (activeProfile?.name || 'Team Member') : 'AI Assistant'}
                                 </span>
                               </div>
                               <p className="text-sm">{message.content}</p>

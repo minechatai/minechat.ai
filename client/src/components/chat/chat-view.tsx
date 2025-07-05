@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Bot, User, MoreVertical, Paperclip, Image, Mic, Send } from "lucide-react";
 import { Message, Conversation } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
+import { useActiveProfile } from "@/hooks/useActiveProfile";
 import chatbotIcon from "@assets/Frame_1751633918219.png";
 
 interface ChatViewProps {
@@ -18,6 +19,7 @@ export default function ChatView({ conversationId }: ChatViewProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { activeProfile } = useActiveProfile();
 
   const { data: conversation, isLoading: conversationLoading } = useQuery<Conversation>({
     queryKey: [`/api/conversations/${conversationId}`],
@@ -289,19 +291,28 @@ export default function ChatView({ conversationId }: ChatViewProps) {
                   <div className="max-w-md lg:max-w-lg">
                     <div className="p-4 rounded-lg shadow-sm bg-[#E1E1EB] text-gray-900">
                       <div className="flex items-center space-x-2 mb-2">
-                        <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                          {msg.senderType === 'human' ? (
-                            <User className="w-3 h-3 text-blue-600" />
-                          ) : (
+                        {msg.senderType === 'human' ? (
+                          // Show active user profile for human messages
+                          <Avatar className="w-6 h-6">
+                            <AvatarImage 
+                              src={activeProfile?.profileImageUrl || undefined} 
+                              alt={activeProfile?.name || 'Team Member'}
+                            />
+                            <AvatarFallback className="bg-minechat-red text-white text-xs">
+                              {activeProfile?.name?.charAt(0).toUpperCase() || 'T'}
+                            </AvatarFallback>
+                          </Avatar>
+                        ) : (
+                          <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
                             <img 
                               src={chatbotIcon} 
                               alt="AI Assistant" 
                               className="w-4 h-4"
                             />
-                          )}
-                        </div>
+                          </div>
+                        )}
                         <span className="text-xs font-medium text-gray-600">
-                          {msg.senderType === 'human' ? 'Human Agent' : 'AI Assistant'}
+                          {msg.senderType === 'human' ? (activeProfile?.name || 'Team Member') : 'AI Assistant'}
                         </span>
                       </div>
                       <p className="text-sm">{msg.content}</p>
