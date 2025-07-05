@@ -28,7 +28,7 @@ interface InboxSourceOption {
 
 const inboxSources: InboxSourceOption[] = [
   { value: 'all', label: 'All Sources', icon: <Globe className="w-4 h-4" /> },
-  { value: 'facebook', label: 'Facebook Messenger', icon: <div className="w-4 h-4 bg-blue-500 rounded-full"></div> },
+  { value: 'facebook', label: 'Facebook Messenger', icon: <div className="w-4 h-4 bg-red-500 rounded-full border-2 border-black"></div> },
   { value: 'whatsapp', label: 'WhatsApp', icon: <MessageSquare className="w-4 h-4" /> },
   { value: 'email', label: 'Email', icon: <Mail className="w-4 h-4" /> },
   { value: 'website', label: 'Website Chat', icon: <MessageCircle className="w-4 h-4" /> },
