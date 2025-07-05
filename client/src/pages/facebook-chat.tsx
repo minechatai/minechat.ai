@@ -247,7 +247,8 @@ export default function FacebookChat() {
             <div className="mb-4 relative" ref={dropdownRef}>
               <button
                 onClick={() => setShowSourceDropdown(!showSourceDropdown)}
-                className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+                className="w-full flex items-center justify-between p-3 bg-yellow-200 hover:bg-yellow-300 rounded-lg transition-colors border-2 border-red-500"
+                style={{ minHeight: '50px' }}
               >
                 <div className="flex items-center gap-2">
                   {inboxSources.find(source => source.value === selectedSource)?.icon}
