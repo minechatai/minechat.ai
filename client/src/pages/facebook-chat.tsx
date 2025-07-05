@@ -243,12 +243,29 @@ export default function FacebookChat() {
               <h2 className="text-xl font-semibold text-gray-900">Chat</h2>
             </div>
             
-            {/* Inbox Source Switcher */}
-            <div className="mb-4 relative" ref={dropdownRef}>
+            {/* Facebook Messenger Connected Status */}
+            <div className="mb-4 flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <svg viewBox="0 0 24 24" className="w-5 h-5">
+                <defs>
+                  <linearGradient id="messenger-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#00c6ff" />
+                    <stop offset="25%" stopColor="#0072ff" />
+                    <stop offset="50%" stopColor="#7928ca" />
+                    <stop offset="75%" stopColor="#ff0080" />
+                    <stop offset="100%" stopColor="#ff6b6b" />
+                  </linearGradient>
+                </defs>
+                <circle cx="12" cy="12" r="12" fill="url(#messenger-gradient)" />
+                <path d="M12 3C7.037 3 3 7.037 3 12c0 4.5 3.3 8.2 7.6 8.9v-6.3H8.5V12h2.1V9.8c0-2.1 1.2-3.2 3.1-3.2.9 0 1.8.2 1.8.2v2h-1c-1 0-1.3.6-1.3 1.2V12h2.2l-.4 2.6h-1.8v6.3C17.7 20.2 21 16.5 21 12c0-4.963-4.037-9-9-9z" fill="white"/>
+              </svg>
+              <span className="font-medium text-blue-800">Facebook Messenger Connected</span>
+            </div>
+
+            {/* Hidden Inbox Source Switcher */}
+            <div className="mb-4 relative hidden" ref={dropdownRef}>
               <button
                 onClick={() => setShowSourceDropdown(!showSourceDropdown)}
-                className="w-full flex items-center justify-between p-3 bg-yellow-200 hover:bg-yellow-300 rounded-lg transition-colors border-2 border-red-500"
-                style={{ minHeight: '50px' }}
+                className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
               >
                 <div className="flex items-center gap-2">
                   {inboxSources.find(source => source.value === selectedSource)?.icon}
