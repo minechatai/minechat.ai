@@ -23,6 +23,8 @@ import {
 export default function Account() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [editedName, setEditedName] = useState("");
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -38,6 +40,7 @@ export default function Account() {
   // Mutation for updating profile picture
   const updateProfilePictureMutation = useMutation({
     mutationFn: async (file: File) => {
+      setIsUploadingImage(true);
       const formData = new FormData();
       formData.append('profileImage', file);
       
@@ -54,12 +57,15 @@ export default function Account() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      setPreviewImage(null);
+      setIsUploadingImage(false);
       toast({
         title: "Success",
         description: "Profile picture updated successfully",
       });
     },
     onError: () => {
+      setIsUploadingImage(false);
       toast({
         title: "Error",
         description: "Failed to update profile picture",
@@ -115,8 +121,24 @@ export default function Account() {
         return;
       }
       
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPreviewImage(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+      
+      // Upload immediately
       updateProfilePictureMutation.mutate(file);
     }
+    
+    // Reset file input
+    event.target.value = '';
+  };
+
+  // Handle clicking the profile picture
+  const handleProfilePictureClick = () => {
+    fileInputRef.current?.click();
   };
 
   // Handle account name editing
@@ -210,21 +232,32 @@ export default function Account() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
                   {/* Clickable Profile Picture */}
-                  <div className="relative">
+                  <div className="relative group">
                     <Avatar 
-                      className="w-12 h-12 bg-gray-200 dark:bg-gray-700 cursor-pointer hover:opacity-80 transition-opacity"
-                      onClick={() => fileInputRef.current?.click()}
+                      className="w-12 h-12 bg-gray-200 dark:bg-gray-700 cursor-pointer hover:opacity-80 transition-all duration-200 hover:ring-2 hover:ring-primary hover:ring-offset-2"
+                      onClick={handleProfilePictureClick}
+                      title="Click to change profile picture"
                     >
-                      {(user as any)?.profileImageUrl ? (
+                      {isUploadingImage && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-full">
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                      )}
+                      {previewImage ? (
+                        <AvatarImage src={previewImage} alt="Preview" />
+                      ) : (user as any)?.profileImageUrl ? (
                         <AvatarImage src={(user as any).profileImageUrl} alt="Profile" />
                       ) : null}
                       <AvatarFallback className="text-lg font-semibold text-gray-600 dark:text-gray-300">
                         {getUserInitials()}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="absolute -bottom-1 -right-1 bg-primary rounded-full p-1 cursor-pointer hover:bg-primary-dark transition-colors">
-                      <Camera className="w-3 h-3 text-white" />
+                    
+                    {/* Hover overlay */}
+                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 rounded-full transition-all duration-200 flex items-center justify-center">
+                      <Camera className="w-4 h-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                     </div>
+                    
                     <input
                       ref={fileInputRef}
                       type="file"

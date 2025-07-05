@@ -157,7 +157,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Profile picture upload endpoint
-  app.post('/api/auth/profile-picture', isAuthenticated, upload.single('profileImage'), async (req: any, res) => {
+  app.post('/api/auth/profile-picture', isAuthenticated, imageUpload.single('profileImage'), async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const file = req.file;
