@@ -2108,13 +2108,21 @@ You represent ${business?.companyName || "our business"} and customers expect ac
       const businessOwnerId = req.user.claims.sub;
       const profiles = await storage.getUserProfiles(businessOwnerId);
       
+      console.log(`Searching for active profile among:`, profiles.map(p => ({ 
+        id: p.id, 
+        name: p.name, 
+        isActive: p.isActive 
+      })));
+      
       // Find the active profile
-      const activeProfile = profiles.find(profile => profile.isActive);
+      const activeProfile = profiles.find(profile => profile.isActive === true);
       
       if (!activeProfile) {
+        console.log("No active profile found");
         return res.status(404).json({ message: "No active user profile found" });
       }
       
+      console.log(`Found active profile: ${activeProfile.name} (${activeProfile.id})`);
       res.json(activeProfile);
 
     } catch (error) {
