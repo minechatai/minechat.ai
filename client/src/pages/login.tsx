@@ -102,6 +102,22 @@ export default function Login() {
           {/* Temporary Skip Login Button for Testing */}
           <div className="text-center mt-8 space-y-2">
             <Button
+              onClick={async () => {
+                // First clear any existing session
+                try {
+                  await fetch('/api/auth/logout', { method: 'POST' });
+                } catch (e) {
+                  // Ignore errors, just proceed
+                }
+                // Then redirect to Replit login to restore original session
+                window.location.href = '/api/login';
+              }}
+              className="bg-minechat-red hover:bg-minechat-red/90 text-white text-sm px-6 py-3 rounded-md font-medium"
+            >
+              Restore Minechat AI Session
+            </Button>
+            <br />
+            <Button
               onClick={() => {
                 // Mock login for testing
                 fetch('/api/auth/email', {
@@ -119,17 +135,7 @@ export default function Login() {
               }}
               className="bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm px-4 py-2 rounded-md"
             >
-              Skip Login (Test Mode)
-            </Button>
-            <br />
-            <Button
-              onClick={() => {
-                // Use Replit login to restore original session
-                window.location.href = '/api/login';
-              }}
-              className="bg-minechat-red hover:bg-minechat-red/90 text-white text-sm px-4 py-2 rounded-md"
-            >
-              Login with Replit (Restore Original Session)
+              Continue as Test User
             </Button>
           </div>
         </div>
