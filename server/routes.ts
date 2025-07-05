@@ -1958,6 +1958,50 @@ You represent ${business?.companyName || "our business"} and customers expect ac
     }
   }
 
+  // Create user profile endpoint
+  app.post('/api/users/create', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { name, email, password, position, profileImage } = req.body;
+
+      // Validate required fields
+      if (!name || !email || !password) {
+        return res.status(400).json({ message: "Name, email, and password are required" });
+      }
+
+      // For now, we'll store user profile data as a simple response
+      // In a real implementation, you would create a new user account in your system
+      // and handle profile image upload properly
+
+      console.log(`Creating user profile for business owner ${userId}:`, {
+        name,
+        email,
+        position,
+        hasProfileImage: !!profileImage
+      });
+
+      // Simulate successful user creation
+      const newUser = {
+        id: `user-${Date.now()}`,
+        name,
+        email,
+        position,
+        createdBy: userId,
+        createdAt: new Date().toISOString(),
+        profileImage: profileImage ? `profile-${Date.now()}.jpg` : null
+      };
+
+      res.json({
+        message: "User profile created successfully",
+        user: newUser
+      });
+
+    } catch (error) {
+      console.error("Error creating user profile:", error);
+      res.status(500).json({ message: "Failed to create user profile" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

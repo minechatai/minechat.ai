@@ -12,6 +12,7 @@ import Dashboard from "@/pages/dashboard";
 import Chat from "@/pages/chat";
 import Setup from "@/pages/setup";
 import Account from "@/pages/account";
+import CreateUserProfile from "@/pages/create-user-profile";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -51,6 +52,7 @@ function Router() {
             </div>
           )} />
           <Route path="/accounts" component={Account} />
+          <Route path="/create-user-profile" component={CreateUserProfile} />
         </>
       )}
       <Route component={NotFound} />

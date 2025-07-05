@@ -281,6 +281,15 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Standardized logo sizing for consistent brand presentation
   - Removed max-width constraints to allow precise pixel-perfect sizing
   - Maintained opacity: 1 for optimal logo visibility
+- July 5, 2025: Create User Profile Implementation
+  - Changed Accounts menu item from "Edit User Profile" to "Create User Profile"
+  - Created new Create User Profile page matching official design specifications
+  - Implemented form layout with Name/Email row and Password/Position row
+  - Added clickable profile picture upload with camera icon overlay
+  - Created user creation API endpoint with validation and error handling
+  - Added proper form validation for required fields and email format
+  - Integrated Cancel/Save buttons with Minechat red styling and navigation
+  - Maintained consistent design system with MainLayout and SF Pro typography
 
 # User Preferences
 

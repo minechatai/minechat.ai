@@ -190,9 +190,9 @@ export default function Account() {
   const menuItems = [
     {
       icon: User,
-      label: "Edit User Profile",
+      label: "Create User Profile",
       hasArrow: true,
-      onClick: () => console.log("Edit User Profile clicked")
+      onClick: () => window.location.href = '/create-user-profile'
     },
     {
       icon: FileText,
