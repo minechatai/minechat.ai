@@ -237,6 +237,15 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Included version display: "Version 1.0.25" matching design specifications
   - Updated Login/Sign up buttons with SF Pro Medium font, weight 510, size 24.52px, color #101110
   - Replaced all platform icons with official vector images for authentic brand representation
+  - Applied exact button dimensions: 513.31px × 93.52px with 24.52px gap between buttons
+  - Integrated official "minechat logo 2" PNG image replacing previous SVG logo
+- July 5, 2025: Login Flow 2 Implementation
+  - Created dedicated login page (/login) with authentication options
+  - Implemented "Continue with Apple", "Continue with Google", and "Continue with Email" buttons
+  - Maintained identical left side from Login Flow 1 for design continuity
+  - Added proper Terms & Conditions and Privacy Policy links
+  - Updated landing page buttons to navigate to login page instead of direct API authentication
+  - Configured routing to show login page for non-authenticated users
 
 # User Preferences
 

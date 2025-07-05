@@ -76,14 +76,14 @@ export default function Landing() {
           
           <div className="flex flex-row mb-16 login-button-container">
             <Button 
-              onClick={() => window.location.href = '/api/login'}
+              onClick={() => window.location.href = '/login'}
               className="bg-white hover:bg-gray-100 px-8 py-3 rounded-full login-button"
               size="lg"
             >
               Login
             </Button>
             <Button 
-              onClick={() => window.location.href = '/api/login'}
+              onClick={() => window.location.href = '/login'}
               className="bg-white hover:bg-gray-100 px-8 py-3 rounded-full login-button"
               size="lg"
             >
