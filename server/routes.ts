@@ -83,8 +83,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // For testing purposes, simulate successful authentication
-      // In production, this would verify against a database
-      const mockUser = {
+      // Try to get existing user first, or create new one
+      let existingUser = await storage.getUserByEmail(email);
+      
+      const mockUser = existingUser || {
         id: "email-" + Date.now(),
         email: email,
         firstName: "Test",
@@ -110,8 +112,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         expires_at: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60),
       };
       
-      // Store user in database
-      await storage.upsertUser(mockUser);
+      // Store user in database only if it doesn't exist
+      if (!existingUser) {
+        await storage.upsertUser(mockUser);
+      }
       
       // Set session
       (req as any).login(mockSession, (err: any) => {

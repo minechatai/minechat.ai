@@ -258,6 +258,11 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Integrated modal into login page with state management
   - Styled with Minechat red brand colors and SF Pro typography
   - Added proper back button and Terms & Privacy Policy links
+- July 5, 2025: Authentication Flow and Landing Page Priority Fix
+  - Fixed routing to show Landing page (Login Flow 1) first for all unauthenticated users
+  - Fixed "Continue as Test User" button authentication by adding getUserByEmail method to storage
+  - Enhanced test authentication to handle existing users properly without database conflicts
+  - Completed authentication flow: Landing → Login → Dashboard with proper test mode support
 
 # User Preferences
 
