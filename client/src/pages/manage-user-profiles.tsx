@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
 import MainLayout from "@/components/layout/main-layout";
@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { UserPlus, Edit3, Trash2, User, Crown } from "lucide-react";
+import { UserPlus, Edit3, Trash2, User, Crown, Camera } from "lucide-react";
 import type { UserProfile } from "@shared/schema";
 
 export default function ManageUserProfiles() {
@@ -24,6 +24,9 @@ export default function ManageUserProfiles() {
     password: "",
     position: ""
   });
+  const [profileImage, setProfileImage] = useState<File | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -41,6 +44,8 @@ export default function ManageUserProfiles() {
         password: "",
         position: ""
       });
+      setProfileImage(null);
+      setPreviewImage(null);
     }
   }, [isCreateDialogOpen, editingProfile]);
 
@@ -64,6 +69,29 @@ export default function ManageUserProfiles() {
     }));
   };
 
+  // Handle profile picture upload
+  const handleProfilePictureUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setProfileImage(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPreviewImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+    
+    // Reset file input
+    event.target.value = '';
+  };
+
+  // Handle clicking the profile picture
+  const handleProfilePictureClick = () => {
+    fileInputRef.current?.click();
+  };
+
   // Create user profile mutation
   const createUserMutation = useMutation({
     mutationFn: async (userData: any) => {
@@ -72,6 +100,11 @@ export default function ManageUserProfiles() {
       formDataToSend.append('email', userData.email);
       formDataToSend.append('password', userData.password);
       formDataToSend.append('position', userData.position || '');
+      
+      // Add profile image if one was selected
+      if (profileImage) {
+        formDataToSend.append('profileImage', profileImage);
+      }
       
       const response = await fetch('/api/users/create', {
         method: 'POST',
@@ -105,7 +138,27 @@ export default function ManageUserProfiles() {
   // Update user profile mutation
   const updateUserMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      return await apiRequest(`/api/user-profiles/${id}`, data);
+      const formDataToSend = new FormData();
+      formDataToSend.append('name', data.name);
+      formDataToSend.append('email', data.email);
+      formDataToSend.append('position', data.position || '');
+      
+      // Add profile image if one was selected
+      if (profileImage) {
+        formDataToSend.append('profileImage', profileImage);
+      }
+      
+      const response = await fetch(`/api/user-profiles/${id}`, {
+        method: 'PUT',
+        body: formDataToSend,
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to update user profile');
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       toast({
@@ -256,6 +309,43 @@ export default function ManageUserProfiles() {
                 <DialogTitle>Create New User Profile</DialogTitle>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Profile Picture Upload */}
+                <div className="flex flex-col items-center space-y-4">
+                  <div className="relative">
+                    <div 
+                      className="w-20 h-20 cursor-pointer hover:ring-2 hover:ring-primary hover:ring-offset-2 rounded-full transition-all duration-200 group"
+                      onClick={handleProfilePictureClick}
+                      title="Click to upload profile picture"
+                    >
+                      <Avatar className="w-20 h-20 bg-gray-200 dark:bg-gray-700">
+                        {previewImage ? (
+                          <AvatarImage src={previewImage} alt="Preview" />
+                        ) : (
+                          <AvatarFallback className="text-2xl font-semibold text-gray-600 dark:text-gray-300">
+                            <Camera className="w-8 h-8" />
+                          </AvatarFallback>
+                        )}
+                      </Avatar>
+                      
+                      {/* Hover overlay with camera icon */}
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 rounded-full transition-all duration-200 flex items-center justify-center pointer-events-none">
+                        <Camera className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                      </div>
+                    </div>
+                    
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleProfilePictureUpload}
+                      className="hidden"
+                    />
+                  </div>
+                  <Label className="text-sm text-gray-600 dark:text-gray-400">
+                    Profile Picture (Optional)
+                  </Label>
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="name">Name *</Label>
@@ -422,6 +512,45 @@ export default function ManageUserProfiles() {
               <DialogTitle>Edit User Profile</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Profile Picture Upload */}
+              <div className="flex flex-col items-center space-y-4">
+                <div className="relative">
+                  <div 
+                    className="w-20 h-20 cursor-pointer hover:ring-2 hover:ring-primary hover:ring-offset-2 rounded-full transition-all duration-200 group"
+                    onClick={handleProfilePictureClick}
+                    title="Click to change profile picture"
+                  >
+                    <Avatar className="w-20 h-20 bg-gray-200 dark:bg-gray-700">
+                      {previewImage ? (
+                        <AvatarImage src={previewImage} alt="Preview" />
+                      ) : editingProfile?.profileImageUrl ? (
+                        <AvatarImage src={editingProfile.profileImageUrl} alt="Current" />
+                      ) : (
+                        <AvatarFallback className="text-2xl font-semibold text-gray-600 dark:text-gray-300">
+                          <Camera className="w-8 h-8" />
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                    
+                    {/* Hover overlay with camera icon */}
+                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 rounded-full transition-all duration-200 flex items-center justify-center pointer-events-none">
+                      <Camera className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                    </div>
+                  </div>
+                  
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleProfilePictureUpload}
+                    className="hidden"
+                  />
+                </div>
+                <Label className="text-sm text-gray-600 dark:text-gray-400">
+                  Profile Picture
+                </Label>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="edit-name">Name *</Label>

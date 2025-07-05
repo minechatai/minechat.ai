@@ -2034,10 +2034,22 @@ You represent ${business?.companyName || "our business"} and customers expect ac
   });
 
   // Update a user profile
-  app.put('/api/user-profiles/:id', isAuthenticated, async (req: any, res) => {
+  app.put('/api/user-profiles/:id', isAuthenticated, upload.single('profileImage'), async (req: any, res) => {
     try {
       const profileId = req.params.id;
-      const updates = req.body;
+      const { name, email, position } = req.body;
+
+      // Prepare updates object
+      const updates: any = {
+        name,
+        email,
+        position: position || null,
+      };
+
+      // Handle profile image if uploaded
+      if (req.file) {
+        updates.profileImageUrl = `/uploads/${req.file.filename}`;
+      }
 
       const updatedProfile = await storage.updateUserProfile(profileId, updates);
       
