@@ -75,7 +75,20 @@ export default function Landing() {
       {/* Right Side - Minechat Red Background with Content */}
       <div className="flex-1 bg-gradient-to-br from-[#8b1950] via-[#b33054] to-[#b73850] flex flex-col justify-center items-center text-white p-12">
         <div className="max-w-md text-center">
-          <h2 className="mb-6 leading-tight main-headline">
+          <h2 
+            className="mb-6 main-headline"
+            style={{
+              width: '541.5833129882812px',
+              height: '77px',
+              opacity: 1,
+              fontFamily: 'SF Pro Display, -apple-system, BlinkMacSystemFont, sans-serif',
+              fontWeight: 590,
+              fontSize: '40px',
+              lineHeight: '48.5px',
+              letterSpacing: '-0.5%',
+              textAlign: 'center'
+            }}
+          >
             Build, customize, and deploy your AI chat assistants today!
           </h2>
           
