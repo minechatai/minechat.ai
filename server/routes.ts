@@ -69,6 +69,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Mock email authentication endpoint for testing
+  app.post('/api/auth/email', async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      // Log the attempt
+      console.log("Email authentication attempt:", { email, password: "***" });
+      
+      // Basic validation
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required" });
+      }
+      
+      // For testing purposes, simulate successful authentication
+      // In production, this would verify against a database
+      const mockUser = {
+        id: "email-" + Date.now(),
+        email: email,
+        firstName: "Test",
+        lastName: "User",
+        profileImageUrl: null,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      
+      // Create a mock session similar to Replit Auth
+      const mockSession = {
+        claims: {
+          sub: mockUser.id,
+          email: email,
+          first_name: "Test",
+          last_name: "User",
+          profile_image_url: null,
+          iat: Math.floor(Date.now() / 1000),
+          exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60), // 7 days
+        },
+        access_token: "mock-access-token",
+        refresh_token: "mock-refresh-token",
+        expires_at: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60),
+      };
+      
+      // Store user in database
+      await storage.upsertUser(mockUser);
+      
+      // Set session
+      (req as any).login(mockSession, (err: any) => {
+        if (err) {
+          console.error("Session creation error:", err);
+          return res.status(500).json({ message: "Failed to create session" });
+        }
+        
+        res.json({ 
+          success: true, 
+          message: "Authentication successful",
+          user: mockUser
+        });
+      });
+      
+    } catch (error) {
+      console.error("Email authentication error:", error);
+      res.status(500).json({ message: "Authentication failed" });
+    }
+  });
+
   // Business routes
   app.get('/api/business', isAuthenticated, async (req: any, res) => {
     try {

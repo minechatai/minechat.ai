@@ -47,14 +47,32 @@ export default function EmailLoginModal({ isOpen, onClose }: EmailLoginModalProp
         timestamp: new Date().toISOString()
       });
       
-      // Simulate a brief loading state for better UX
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Call the authentication endpoint
+      const response = await fetch('/api/auth/email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+        }),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Authentication failed');
+      }
+      
+      const result = await response.json();
+      console.log("Authentication successful:", result);
       
       // Close modal and redirect to dashboard
       handleClose();
-      window.location.href = '/';
+      window.location.href = '/dashboard';
     } catch (error) {
       console.error("Login error:", error);
+      // You could add toast notification here for better UX
     } finally {
       setIsLoading(false);
     }
