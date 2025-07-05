@@ -28,25 +28,7 @@ interface InboxSourceOption {
 
 const inboxSources: InboxSourceOption[] = [
   { value: 'all', label: 'All Sources', icon: <Globe className="w-4 h-4" /> },
-  { 
-    value: 'facebook', 
-    label: 'Facebook Messenger', 
-    icon: (
-      <svg viewBox="0 0 24 24" className="w-4 h-4">
-        <defs>
-          <linearGradient id="fb-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#00c6ff" />
-            <stop offset="25%" stopColor="#0072ff" />
-            <stop offset="50%" stopColor="#7928ca" />
-            <stop offset="75%" stopColor="#ff0080" />
-            <stop offset="100%" stopColor="#ff6b6b" />
-          </linearGradient>
-        </defs>
-        <circle cx="12" cy="12" r="12" fill="url(#fb-gradient)" />
-        <path d="M12 3C7.037 3 3 7.037 3 12c0 4.5 3.3 8.2 7.6 8.9v-6.3H8.5V12h2.1V9.8c0-2.1 1.2-3.2 3.1-3.2.9 0 1.8.2 1.8.2v2h-1c-1 0-1.3.6-1.3 1.2V12h2.2l-.4 2.6h-1.8v6.3C17.7 20.2 21 16.5 21 12c0-4.963-4.037-9-9-9z" fill="white"/>
-      </svg>
-    )
-  },
+  { value: 'facebook', label: 'Facebook Messenger', icon: <div className="w-4 h-4 bg-blue-500 rounded-full"></div> },
   { value: 'whatsapp', label: 'WhatsApp', icon: <MessageSquare className="w-4 h-4" /> },
   { value: 'email', label: 'Email', icon: <Mail className="w-4 h-4" /> },
   { value: 'website', label: 'Website Chat', icon: <MessageCircle className="w-4 h-4" /> },
