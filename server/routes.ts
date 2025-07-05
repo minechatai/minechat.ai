@@ -1990,10 +1990,10 @@ You represent ${business?.companyName || "our business"} and customers expect ac
   });
 
   // Create a new user profile
-  app.post('/api/users/create', isAuthenticated, async (req: any, res) => {
+  app.post('/api/users/create', isAuthenticated, upload.single('profileImage'), async (req: any, res) => {
     try {
       const businessOwnerId = req.user.claims.sub;
-      const { name, email, password, position, profileImage } = req.body;
+      const { name, email, password, position } = req.body;
 
       // Validate required fields
       if (!name || !email || !password) {
@@ -2004,15 +2004,21 @@ You represent ${business?.companyName || "our business"} and customers expect ac
         name,
         email,
         position,
-        hasProfileImage: !!profileImage
+        hasProfileImage: !!req.file
       });
+
+      // Handle profile image if uploaded
+      let profileImageUrl = null;
+      if (req.file) {
+        profileImageUrl = `/uploads/${req.file.filename}`;
+      }
 
       // Create user profile in database
       const newProfile = await storage.createUserProfile(businessOwnerId, {
         name,
         email,
         position: position || null,
-        profileImageUrl: profileImage ? `profile-${Date.now()}.jpg` : null,
+        profileImageUrl,
         isActive: false, // New profiles start as inactive
       });
 

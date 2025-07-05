@@ -67,7 +67,23 @@ export default function ManageUserProfiles() {
   // Create user profile mutation
   const createUserMutation = useMutation({
     mutationFn: async (userData: any) => {
-      return await apiRequest('/api/users/create', userData);
+      const formDataToSend = new FormData();
+      formDataToSend.append('name', userData.name);
+      formDataToSend.append('email', userData.email);
+      formDataToSend.append('password', userData.password);
+      formDataToSend.append('position', userData.position || '');
+      
+      const response = await fetch('/api/users/create', {
+        method: 'POST',
+        body: formDataToSend,
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create user profile');
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       toast({
