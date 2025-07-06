@@ -879,6 +879,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Time Saved Analytics endpoint
+  app.get('/api/analytics/time-saved', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { startDate, endDate, comparisonPeriod } = req.query;
+      
+      console.log("🔍 Time Saved Debug - User ID:", userId);
+      console.log("🔍 Time Saved Debug - Date Range:", { startDate, endDate });
+      console.log("🔍 Time Saved Debug - Comparison Period:", comparisonPeriod);
+      
+      // Get AI messages from legitimate customer conversations only
+      const aiMessages = await storage.getCustomerAiMessages(userId, startDate, endDate);
+      console.log("🔍 Time Saved Debug - AI Messages found:", aiMessages.length);
+      
+      // Calculate time saved (6 minutes per AI response)
+      const minutesPerResponse = 6;
+      const totalMinutes = aiMessages.length * minutesPerResponse;
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      
+      let timeSaved;
+      if (hours === 0) {
+        timeSaved = `${minutes} mins`;
+      } else if (minutes === 0) {
+        timeSaved = `${hours} hours`;
+      } else {
+        timeSaved = `${hours} hours ${minutes} mins`;
+      }
+      
+      // Calculate comparison period if provided
+      let change = "same as last month";
+      if (comparisonPeriod && startDate && endDate) {
+        // Calculate previous period dates
+        const startDateObj = new Date(startDate);
+        const endDateObj = new Date(endDate);
+        const daysDiff = Math.ceil((endDateObj.getTime() - startDateObj.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+        
+        let prevStartDate, prevEndDate;
+        if (comparisonPeriod === 'week') {
+          prevStartDate = new Date(startDateObj.getTime() - (7 * 24 * 60 * 60 * 1000));
+          prevEndDate = new Date(endDateObj.getTime() - (7 * 24 * 60 * 60 * 1000));
+        } else { // month
+          prevStartDate = new Date(startDateObj.getFullYear(), startDateObj.getMonth() - 1, startDateObj.getDate());
+          prevEndDate = new Date(endDateObj.getFullYear(), endDateObj.getMonth() - 1, endDateObj.getDate());
+        }
+        
+        const prevPeriodMessages = await storage.getCustomerAiMessages(
+          userId, 
+          prevStartDate.toISOString().split('T')[0], 
+          prevEndDate.toISOString().split('T')[0]
+        );
+        
+        const prevTotalMinutes = prevPeriodMessages.length * minutesPerResponse;
+        
+        if (prevTotalMinutes > 0) {
+          const percentChange = Math.round(((totalMinutes - prevTotalMinutes) / prevTotalMinutes) * 100);
+          if (percentChange > 0) {
+            change = `+${percentChange}% vs last ${comparisonPeriod}`;
+          } else if (percentChange < 0) {
+            change = `${percentChange}% vs last ${comparisonPeriod}`;
+          } else {
+            change = `same as last ${comparisonPeriod}`;
+          }
+        }
+      }
+      
+      res.json({
+        timeSaved,
+        change,
+        totalMessages: aiMessages.length,
+        totalMinutes
+      });
+      
+    } catch (error) {
+      console.error("Error calculating time saved:", error);
+      res.status(500).json({ message: "Failed to calculate time saved" });
+    }
+  });
+
   // FAQ Analysis endpoint
   app.get('/api/faq-analysis', isAuthenticated, async (req: any, res) => {
     try {

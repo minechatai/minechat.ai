@@ -54,6 +54,27 @@ export default function Dashboard() {
     enabled: isAuthenticated,
   });
 
+  // Time Saved analytics query
+  const { data: timeSavedData, isLoading: timeSavedLoading } = useQuery({
+    queryKey: ["/api/analytics/time-saved", dateRange.startDate, dateRange.endDate, "month"],
+    enabled: isAuthenticated && !!dateRange.startDate && !!dateRange.endDate,
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (dateRange.startDate) params.append('startDate', dateRange.startDate);
+      if (dateRange.endDate) params.append('endDate', dateRange.endDate);
+      params.append('comparisonPeriod', 'month');
+      
+      const url = `/api/analytics/time-saved?${params.toString()}`;
+      console.log("🔍 Time Saved Query - Fetching URL:", url);
+      
+      const res = await fetch(url, { credentials: "include" });
+      if (!res.ok) {
+        throw new Error(`${res.status}: ${res.statusText}`);
+      }
+      return await res.json();
+    },
+  });
+
   // FAQ Analysis query with custom queryFn for date parameters
   const { data: faqData, isLoading: faqLoading } = useQuery({
     queryKey: ["/api/faq-analysis", dateRange.startDate, dateRange.endDate],
@@ -130,7 +151,8 @@ export default function Dashboard() {
 
   const metricsData = {
     unreadMessages: (analytics as any)?.unreadMessages || 0,
-    moneySaved: (analytics as any)?.moneySaved || "0",
+    timeSaved: (timeSavedData as any)?.timeSaved || "0 mins",
+    timeSavedChange: (timeSavedData as any)?.change || "same as last month",
     leads: (analytics as any)?.leads || 0,
     opportunities: (analytics as any)?.opportunities || 0,
     followUps: (analytics as any)?.followUps || 0,

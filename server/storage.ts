@@ -81,6 +81,7 @@ export interface IStorage {
 
   // FAQ Analysis operations
   getMessagesForFaqAnalysis(userId: string, startDate?: string, endDate?: string): Promise<Message[]>;
+  getCustomerAiMessages(userId: string, startDate?: string, endDate?: string): Promise<Message[]>;
 
   // Channel operations
   getChannel(userId: string): Promise<Channel | undefined>;
@@ -551,6 +552,55 @@ export class DatabaseStorage implements IStorage {
       return result.map(row => row.messages);
     } catch (error) {
       console.error("Error fetching messages for FAQ analysis:", error);
+      throw error;
+    }
+  }
+
+  async getCustomerAiMessages(userId: string, startDate?: string, endDate?: string): Promise<Message[]> {
+    try {
+      console.log("Database connection established");
+      
+      let query = db
+        .select()
+        .from(messages)
+        .innerJoin(conversations, eq(messages.conversationId, conversations.id))
+        .where(
+          and(
+            eq(conversations.userId, userId),
+            eq(messages.senderType, "ai"), // Only get AI messages
+            // Exclude test conversations by filtering conversation IDs from legitimate sources
+            sql`${conversations.source} != 'test'`
+          )
+        )
+        .orderBy(desc(messages.createdAt));
+
+      // Add date filtering if provided
+      if (startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999); // Include full end date
+        
+        query = db
+          .select()
+          .from(messages)
+          .innerJoin(conversations, eq(messages.conversationId, conversations.id))
+          .where(
+            and(
+              eq(conversations.userId, userId),
+              eq(messages.senderType, "ai"),
+              sql`${conversations.source} != 'test'`,
+              sql`${conversations.mode} = 'ai'`, // Only count AI mode conversations
+              sql`${messages.createdAt} >= ${start}`,
+              sql`${messages.createdAt} <= ${end}`
+            )
+          )
+          .orderBy(desc(messages.createdAt));
+      }
+
+      const result = await query;
+      return result.map(row => row.messages);
+    } catch (error) {
+      console.error("Error fetching customer AI messages:", error);
       throw error;
     }
   }

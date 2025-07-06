@@ -1,10 +1,11 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Mail, DollarSign, Users, TrendingUp, Phone } from "lucide-react";
+import { Mail, Clock, Users, TrendingUp, Phone } from "lucide-react";
 
 interface MetricsCardsProps {
   data: {
     unreadMessages: number;
-    moneySaved: string;
+    timeSaved: string;
+    timeSavedChange: string;
     leads: number;
     opportunities: number;
     followUps: number;
@@ -23,11 +24,11 @@ export default function MetricsCards({ data }: MetricsCardsProps) {
       iconColor: "text-red-600",
     },
     {
-      name: "Money Saved",
-      value: `$${data.moneySaved}`,
-      change: "+6%",
-      changeType: "increase",
-      icon: DollarSign,
+      name: "Time Saved",
+      value: data.timeSaved,
+      change: data.timeSavedChange,
+      changeType: data.timeSavedChange.startsWith('+') ? "increase" : data.timeSavedChange.startsWith('-') ? "decrease" : "neutral",
+      icon: Clock,
       iconBg: "bg-green-100",
       iconColor: "text-green-600",
     },
