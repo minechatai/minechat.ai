@@ -837,9 +837,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Analyze messages to extract questions using AI
       const businessQuestions = await analyzeMessagesForQuestions(messages, userId);
+      console.log("🔍 FAQ Analysis Debug - Business questions extracted:", businessQuestions);
       
       // Group similar questions and count occurrences
       const questionGroups = groupSimilarQuestions(businessQuestions);
+      console.log("🔍 FAQ Analysis Debug - Question groups:", questionGroups);
       
       // Get top 5 and mark if already in FAQ
       const topQuestions = questionGroups
