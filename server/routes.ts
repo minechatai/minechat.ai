@@ -893,8 +893,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const aiMessages = await storage.getCustomerAiMessages(userId, startDate, endDate);
       console.log("🔍 Time Saved Debug - AI Messages found:", aiMessages.length);
       
-      // Calculate time saved (6 minutes per AI response)
-      const minutesPerResponse = 6;
+      // Calculate time saved (3 minutes per AI response)
+      const minutesPerResponse = 3;
       const totalMinutes = aiMessages.length * minutesPerResponse;
       const hours = Math.floor(totalMinutes / 60);
       const minutes = totalMinutes % 60;
