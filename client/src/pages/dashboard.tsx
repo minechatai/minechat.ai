@@ -116,6 +116,27 @@ export default function Dashboard() {
     },
   });
 
+  // Conversations Per Hour analytics query
+  const { data: conversationsHourlyData, isLoading: hourlyLoading } = useQuery({
+    queryKey: ["/api/analytics/conversations-per-hour", dateRange.startDate, dateRange.endDate, "month"],
+    enabled: isAuthenticated && !!dateRange.startDate && !!dateRange.endDate,
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (dateRange.startDate) params.append('startDate', dateRange.startDate);
+      if (dateRange.endDate) params.append('endDate', dateRange.endDate);
+      params.append('comparisonPeriod', 'month');
+      
+      const url = `/api/analytics/conversations-per-hour?${params.toString()}`;
+      console.log("🔍 Hourly Data Query - Fetching URL:", url);
+      
+      const res = await fetch(url, { credentials: "include" });
+      if (!res.ok) {
+        throw new Error(`${res.status}: ${res.statusText}`);
+      }
+      return await res.json();
+    },
+  });
+
   // Debug the query parameters
   console.log("🔍 FAQ Query - Current dateRange:", dateRange);
   console.log("🔍 FAQ Query - Query key:", ["/api/faq-analysis", dateRange.startDate, dateRange.endDate]);
@@ -188,7 +209,7 @@ export default function Dashboard() {
     ai: (messagesSentData as any)?.aiMessages || 0,
   };
 
-  const hourlyData = (analytics as any)?.hourlyData || generateHourlyData();
+  const chartHourlyData = (conversationsHourlyData as any)?.hourlyData || generateHourlyData();
 
   // Handle date range changes
   const handleShowToday = () => {
@@ -296,7 +317,7 @@ export default function Dashboard() {
         {/* Charts */}
         <Charts 
           messagesData={messagesData}
-          hourlyData={hourlyData}
+          hourlyData={chartHourlyData}
           faqData={(faqData as any) || []}
           faqLoading={faqLoading}
         />

@@ -1048,6 +1048,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Conversations Per Hour Analytics endpoint
+  app.get('/api/analytics/conversations-per-hour', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { startDate, endDate, comparisonPeriod } = req.query;
+      
+      console.log("🔍 Conversations Per Hour Debug - User ID:", userId);
+      console.log("🔍 Conversations Per Hour Debug - Date Range:", { startDate, endDate });
+      console.log("🔍 Conversations Per Hour Debug - Comparison Period:", comparisonPeriod);
+      
+      // Get inbound customer messages only from legitimate conversations
+      const inboundMessages = await storage.getInboundCustomerMessages(userId, startDate, endDate);
+      
+      console.log("🔍 Conversations Per Hour Debug - Inbound Messages found:", inboundMessages.length);
+      
+      // Initialize hourly data array (24 hours)
+      const hourlyData = Array.from({ length: 24 }, (_, hour) => ({
+        hour: hour === 0 ? '12am' : hour === 12 ? '12pm' : hour < 12 ? `${hour}am` : `${hour - 12}pm`,
+        hourValue: hour,
+        messages: 0
+      }));
+      
+      if (inboundMessages.length > 0) {
+        // Calculate date range for averaging
+        const startDateObj = new Date(startDate);
+        const endDateObj = new Date(endDate);
+        const daysDiff = Math.ceil((endDateObj.getTime() - startDateObj.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+        
+        console.log("🔍 Conversations Per Hour Debug - Days in range:", daysDiff);
+        
+        // Count messages by hour
+        const messagesByHour: { [key: number]: number } = {};
+        inboundMessages.forEach((message: any) => {
+          if (message.createdAt) {
+            const messageDate = new Date(message.createdAt);
+            const hour = messageDate.getHours();
+            messagesByHour[hour] = (messagesByHour[hour] || 0) + 1;
+          }
+        });
+        
+        console.log("🔍 Conversations Per Hour Debug - Messages by hour:", messagesByHour);
+        
+        // Calculate averages (for date ranges) or show today's data
+        const isToday = startDate === endDate && startDate === new Date().toISOString().split('T')[0];
+        
+        hourlyData.forEach(item => {
+          const count = messagesByHour[item.hourValue] || 0;
+          if (isToday) {
+            // Show today's actual data
+            item.messages = count;
+          } else {
+            // Show average across the date range
+            item.messages = daysDiff > 0 ? Math.round(count / daysDiff) : 0;
+          }
+        });
+      }
+      
+      console.log("🔍 Conversations Per Hour Debug - Final hourly data:", hourlyData);
+      
+      res.json({
+        hourlyData,
+        totalInboundMessages: inboundMessages.length,
+        isToday: startDate === endDate && startDate === new Date().toISOString().split('T')[0]
+      });
+      
+    } catch (error) {
+      console.error("Error calculating conversations per hour:", error);
+      res.status(500).json({ message: "Failed to calculate conversations per hour" });
+    }
+  });
+
   // FAQ Analysis endpoint
   app.get('/api/faq-analysis', isAuthenticated, async (req: any, res) => {
     try {

@@ -12,7 +12,6 @@ interface ChartsProps {
   hourlyData: Array<{
     hour: string;
     messages: number;
-    aiMessages: number;
   }>;
   faqData: Array<{
     question: string;
@@ -151,7 +150,7 @@ export default function Charts({ messagesData, hourlyData, faqData, faqLoading }
       {/* Messages Per Hour Chart */}
       <Card className="bg-white dark:bg-gray-900 shadow-sm border border-gray-200 dark:border-gray-700">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">Messages Received Per Hour</CardTitle>
+          <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">Conversations Per Hour</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-64">
@@ -167,7 +166,7 @@ export default function Charts({ messagesData, hourlyData, faqData, faqLoading }
                   axisLine={false}
                   tickLine={false}
                   tick={{ fontSize: 12, fill: '#6B7280' }}
-                  domain={[0, 20]}
+                  domain={[0, 'dataMax + 2']}
                 />
                 <Tooltip 
                   contentStyle={{
@@ -176,24 +175,23 @@ export default function Charts({ messagesData, hourlyData, faqData, faqLoading }
                     borderRadius: '8px',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                   }}
+                  formatter={(value: any, name: string) => {
+                    if (name === 'messages') {
+                      return [`${value} customer messages`, 'Received'];
+                    }
+                    return [value, name];
+                  }}
+                  labelFormatter={(label: string) => `${label}`}
                 />
                 <Line 
                   type="monotone" 
                   dataKey="messages" 
-                  stroke="#E5E7EB" 
-                  strokeWidth={2}
-                  fill="#E5E7EB"
-                  fillOpacity={0.1}
-                  dot={false}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="aiMessages" 
                   stroke="#A53860" 
-                  strokeWidth={2}
+                  strokeWidth={3}
                   fill="#A53860"
                   fillOpacity={0.1}
-                  dot={false}
+                  dot={{ fill: '#A53860', strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6, fill: '#A53860' }}
                 />
               </LineChart>
             </ResponsiveContainer>

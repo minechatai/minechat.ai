@@ -83,6 +83,7 @@ export interface IStorage {
   getMessagesForFaqAnalysis(userId: string, startDate?: string, endDate?: string): Promise<Message[]>;
   getCustomerAiMessages(userId: string, startDate?: string, endDate?: string): Promise<Message[]>;
   getOutboundMessages(userId: string, startDate?: string, endDate?: string): Promise<{ai: Message[], human: Message[]}>;
+  getInboundCustomerMessages(userId: string, startDate?: string, endDate?: string): Promise<Message[]>;
 
   // Channel operations
   getChannel(userId: string): Promise<Channel | undefined>;
@@ -666,6 +667,54 @@ export class DatabaseStorage implements IStorage {
       };
     } catch (error) {
       console.error("Error fetching outbound messages:", error);
+      throw error;
+    }
+  }
+
+  async getInboundCustomerMessages(userId: string, startDate?: string, endDate?: string): Promise<Message[]> {
+    try {
+      console.log("Database connection established");
+      
+      let query = db
+        .select()
+        .from(messages)
+        .innerJoin(conversations, eq(messages.conversationId, conversations.id))
+        .where(
+          and(
+            eq(conversations.userId, userId),
+            eq(messages.senderType, "user"), // Only inbound customer messages
+            // Exclude test conversations
+            sql`${conversations.source} != 'test'`
+          )
+        )
+        .orderBy(desc(messages.createdAt));
+
+      // Add date filtering if provided
+      if (startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999); // Include full end date
+        
+        query = db
+          .select()
+          .from(messages)
+          .innerJoin(conversations, eq(messages.conversationId, conversations.id))
+          .where(
+            and(
+              eq(conversations.userId, userId),
+              eq(messages.senderType, "user"), // Only inbound customer messages
+              sql`${conversations.source} != 'test'`,
+              sql`${messages.createdAt} >= ${start}`,
+              sql`${messages.createdAt} <= ${end}`
+            )
+          )
+          .orderBy(desc(messages.createdAt));
+      }
+
+      const result = await query;
+      return result.map(row => row.messages);
+    } catch (error) {
+      console.error("Error fetching inbound customer messages:", error);
       throw error;
     }
   }
