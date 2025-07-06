@@ -11,7 +11,8 @@ import {
   ChevronDown,
   ChevronRight,
   ChevronLeft,
-  ChevronRight as ExpandIcon
+  ChevronsLeft,
+  ChevronsRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -70,23 +71,27 @@ export default function Sidebar({ isOpen = false, isCollapsed = false, onClose, 
                   className="hidden md:flex items-center justify-center w-6 h-6 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
                   title="Expand sidebar"
                 >
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronsRight className="w-4 h-4" />
                 </button>
               )}
+              {/* Logo with fixed dimensions - NEVER change these */}
               <img 
                 src="/logo.png" 
                 alt="Minechat AI" 
                 className="w-8 h-8 object-contain flex-shrink-0"
+                style={{ width: '32px', height: '32px' }}
               />
             </div>
           ) : (
             // Expanded state: logo on left, collapse button on right
             <>
               <div className="flex items-center space-x-3">
+                {/* Logo with fixed dimensions - NEVER change these */}
                 <img 
                   src="/logo.png" 
                   alt="Minechat AI" 
                   className="w-8 h-8 object-contain flex-shrink-0"
+                  style={{ width: '32px', height: '32px' }}
                 />
                 <span className="text-xl font-semibold text-gray-900 dark:text-white logo-brand">minechat.ai</span>
               </div>
@@ -96,7 +101,7 @@ export default function Sidebar({ isOpen = false, isCollapsed = false, onClose, 
                   className="hidden md:flex items-center justify-center w-6 h-6 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
                   title="Collapse sidebar"
                 >
-                  <ChevronLeft className="w-4 h-4" />
+                  <ChevronsLeft className="w-4 h-4" />
                 </button>
               )}
             </>
