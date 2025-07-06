@@ -21,8 +21,8 @@ export default function MetricsCards({ data }: MetricsCardsProps) {
     {
       name: "Unread messages",
       value: data.unreadMessages,
-      change: "+14%",
-      changeType: "increase",
+      change: "same as last month",
+      changeType: "neutral",
       icon: Mail,
       iconBg: "bg-red-100",
       iconColor: "text-red-600",
@@ -49,8 +49,8 @@ export default function MetricsCards({ data }: MetricsCardsProps) {
     {
       name: "Opportunities",
       value: data.opportunities,
-      change: "-8%",
-      changeType: "decrease",
+      change: "same as last month",
+      changeType: "neutral",
       icon: TrendingUp,
       iconBg: "bg-yellow-100",
       iconColor: "text-yellow-600",
@@ -58,7 +58,7 @@ export default function MetricsCards({ data }: MetricsCardsProps) {
     {
       name: "Follow-ups",
       value: data.followUps,
-      change: "same",
+      change: "same as last month",
       changeType: "neutral",
       icon: Phone,
       iconBg: "bg-purple-100",
