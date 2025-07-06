@@ -50,15 +50,15 @@ export default function Chat() {
   if (isLoading) {
     return (
       <MainLayout>
-        <div className="flex flex-col h-full">
+        <div className="p-6">
           {/* Title Bar Loading */}
-          <div className="flex items-center justify-between p-6 bg-white border-b border-gray-200">
+          <div className="flex items-center justify-between mb-6">
             <div className="h-8 bg-gray-200 rounded w-16 animate-pulse"></div>
             <div className="h-10 bg-gray-200 rounded w-32 animate-pulse"></div>
           </div>
 
           {/* Chat Interface Loading */}
-          <div className="flex flex-col md:flex-row flex-1">
+          <div className="flex flex-col md:flex-row h-[calc(100vh-180px)] border border-gray-200 rounded-lg overflow-hidden">
             <div className="w-full md:w-72 lg:w-80 xl:w-96 bg-white border-r border-gray-200 animate-pulse">
               <div className="p-4 space-y-4">
                 <div className="h-6 bg-gray-200 rounded w-20"></div>
@@ -79,9 +79,9 @@ export default function Chat() {
 
   return (
     <MainLayout>
-      <div className="flex flex-col h-full">
+      <div className="p-6">
         {/* Title Bar */}
-        <div className="flex items-center justify-between p-6 bg-white border-b border-gray-200">
+        <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-semibold text-gray-900">Chat</h1>
           <Button className="bg-primary text-white hover:bg-primary-dark">
             <Plus className="w-4 h-4 mr-2" />
@@ -90,7 +90,7 @@ export default function Chat() {
         </div>
 
         {/* Chat Interface */}
-        <div className="flex flex-col md:flex-row flex-1">
+        <div className="flex flex-col md:flex-row h-[calc(100vh-180px)] border border-gray-200 rounded-lg overflow-hidden">
           <ConversationList 
             selectedConversation={selectedConversation}
             onSelectConversation={setSelectedConversation}
