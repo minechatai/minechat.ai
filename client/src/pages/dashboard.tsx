@@ -8,7 +8,11 @@ import MetricsCards from "@/components/dashboard/metrics-cards";
 import Charts from "@/components/dashboard/charts";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "lucide-react";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
+import { DateRange } from "react-day-picker";
 
 export default function Dashboard() {
   const { toast } = useToast();
@@ -18,6 +22,12 @@ export default function Dashboard() {
   const [dateRange, setDateRange] = useState({
     startDate: "2025-01-01",
     endDate: "2025-12-31"
+  });
+
+  // Date picker state
+  const [date, setDate] = useState<DateRange | undefined>({
+    from: new Date(2025, 0, 1),
+    to: new Date(2025, 11, 31)
   });
 
   // Redirect to login if not authenticated
@@ -118,6 +128,21 @@ export default function Dashboard() {
       startDate: today,
       endDate: today
     });
+    setDate({
+      from: new Date(),
+      to: new Date()
+    });
+  };
+
+  // Handle date picker changes
+  const handleDateChange = (newDate: DateRange | undefined) => {
+    setDate(newDate);
+    if (newDate?.from && newDate?.to) {
+      setDateRange({
+        startDate: newDate.from.toISOString().split('T')[0],
+        endDate: newDate.to.toISOString().split('T')[0]
+      });
+    }
   };
 
   const formatDateRange = (start: string, end: string) => {
@@ -156,14 +181,38 @@ export default function Dashboard() {
           >
             Show Today
           </Button>
-          <Card className="border border-gray-300">
-            <CardContent className="flex items-center space-x-2 p-3">
-              <Calendar className="w-4 h-4 text-gray-500" />
-              <span className="text-sm text-gray-700">
-                {formatDateRange(dateRange.startDate, dateRange.endDate)}
-              </span>
-            </CardContent>
-          </Card>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="justify-start text-left font-normal"
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {date?.from ? (
+                  date.to ? (
+                    <>
+                      {format(date.from, "LLL dd, y")} -{" "}
+                      {format(date.to, "LLL dd, y")}
+                    </>
+                  ) : (
+                    format(date.from, "LLL dd, y")
+                  )
+                ) : (
+                  <span>Pick a date range</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                initialFocus
+                mode="range"
+                defaultMonth={date?.from}
+                selected={date}
+                onSelect={handleDateChange}
+                numberOfMonths={2}
+              />
+            </PopoverContent>
+          </Popover>
         </div>
 
         {/* Metrics Cards */}

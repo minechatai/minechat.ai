@@ -521,7 +521,7 @@ export class DatabaseStorage implements IStorage {
         .where(
           and(
             eq(conversations.userId, userId),
-            eq(messages.senderType, "customer") // Only get customer messages
+            eq(messages.senderType, "user") // Only get user/customer messages
           )
         )
         .orderBy(desc(messages.createdAt));
@@ -539,7 +539,7 @@ export class DatabaseStorage implements IStorage {
           .where(
             and(
               eq(conversations.userId, userId),
-              eq(messages.senderType, "customer"),
+              eq(messages.senderType, "user"),
               sql`${messages.createdAt} >= ${start}`,
               sql`${messages.createdAt} <= ${end}`
             )

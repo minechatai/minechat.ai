@@ -373,6 +373,15 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Added max-width container and improved relative positioning for cleaner layout
   - Integrated authentic minechat.ai logo image replacing generated SVG elements
   - Applied precise spacing and alignment for professional, organized visual hierarchy
+- July 6, 2025: FAQ System Debug and Interactive Date Picker Implementation
+  - Fixed critical FAQ system bug: corrected sender_type detection from 'customer' to 'user' in database queries
+  - Enhanced getMessagesForFaqAnalysis method to properly identify customer messages for FAQ analysis
+  - Added comprehensive interactive date picker component with range selection functionality
+  - Implemented dual date controls: "Show Today" button for current date and date range picker for custom ranges
+  - Created proper date synchronization between picker state and API query parameters
+  - Added Popover-based date picker with calendar interface supporting range selection
+  - Integrated date-fns for proper date formatting and React Day Picker for calendar functionality
+  - Enhanced user experience with independent date filtering options (today vs. custom ranges)
 
 # User Preferences
 
