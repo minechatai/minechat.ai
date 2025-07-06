@@ -26,8 +26,8 @@ export default function Charts({ messagesData, hourlyData, faqData, faqLoading }
   const { toast } = useToast();
 
   const pieData = [
-    { name: 'Human', value: messagesData.human, color: '#A53860' },
-    { name: 'AI', value: messagesData.ai, color: '#9CA3AF' }
+    { name: 'Human', value: messagesData.human, color: '#9CA3AF' },
+    { name: 'AI', value: messagesData.ai, color: '#A53860' }
   ];
 
   const totalMessages = messagesData.human + messagesData.ai;
@@ -94,12 +94,12 @@ export default function Charts({ messagesData, hourlyData, faqData, faqLoading }
               </div>
               <div className="space-y-3">
                 <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#A53860' }}></div>
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#9CA3AF' }}></div>
                   <span className="text-sm text-gray-600 dark:text-gray-400">Human</span>
                   <span className="text-sm font-semibold text-gray-900 dark:text-white">{humanPercentage}%</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#A53860' }}></div>
                   <span className="text-sm text-gray-600 dark:text-gray-400">AI</span>
                   <span className="text-sm font-semibold text-gray-900 dark:text-white">{aiPercentage}%</span>
                 </div>
