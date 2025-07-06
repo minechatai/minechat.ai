@@ -288,7 +288,7 @@ export default function ManageUserProfiles() {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
               Manage User Profiles
             </h1>
             <p className="text-gray-600 dark:text-gray-300 mt-2">

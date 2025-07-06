@@ -233,6 +233,10 @@ export default function Account() {
     <MainLayout title="Accounts">
       <div className="p-8">
         <div className="max-w-4xl mx-auto">
+          {/* Page Title */}
+          <div className="mb-6">
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Accounts</h1>
+          </div>
           {/* Profile Section */}
           <Card className="mb-8">
             <CardContent className="p-6">
