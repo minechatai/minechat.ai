@@ -26,17 +26,17 @@ export default function Header({ title, onMenuClick, sidebarCollapsed = false }:
   return (
     <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-4 h-[73px]">
       <div className="flex items-center justify-between h-full">
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center">
           <Button
             variant="ghost"
             size="sm"
-            className="lg:hidden"
+            className="lg:hidden mr-2"
             onClick={onMenuClick}
           >
             <Menu className="w-5 h-5" />
           </Button>
-          {/* Title positioned independently of sidebar alignment */}
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white ml-2">{title}</h1>
+          {/* Title aligned to match Dashboard 1 design */}
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">{title}</h1>
         </div>
         
         <div className="flex items-center space-x-4">
