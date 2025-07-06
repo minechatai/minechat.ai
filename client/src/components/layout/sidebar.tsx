@@ -63,30 +63,30 @@ export default function Sidebar({ isOpen = false, isCollapsed = false, onClose, 
         {/* Logo */}
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 h-[73px] flex items-center justify-between">
           {isCollapsed ? (
-            // Collapsed state: show collapse button on left, logo on right
-            <div className="flex items-center justify-between w-full">
+            // Collapsed state: only logo visible, button appears on hover
+            <div className="flex items-center justify-center w-full group">
+              {/* Logo visible by default */}
+              <img 
+                src="/logo.png" 
+                alt="Minechat AI" 
+                className="w-8 h-8 object-contain flex-shrink-0 group-hover:hidden"
+                style={{ width: '32px', height: '32px' }}
+              />
+              {/* Expand button appears on hover */}
               {onToggleCollapse && (
                 <button
                   onClick={onToggleCollapse}
-                  className="hidden md:flex items-center justify-center w-6 h-6 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
+                  className="hidden md:group-hover:flex items-center justify-center w-6 h-6 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
                   title="Expand sidebar"
                 >
                   <ChevronsRight className="w-4 h-4" />
                 </button>
               )}
-              {/* Logo with fixed dimensions - NEVER change these */}
-              <img 
-                src="/logo.png" 
-                alt="Minechat AI" 
-                className="w-8 h-8 object-contain flex-shrink-0"
-                style={{ width: '32px', height: '32px' }}
-              />
             </div>
           ) : (
             // Expanded state: logo on left, collapse button on right
             <>
               <div className="flex items-center space-x-3">
-                {/* Logo with fixed dimensions - NEVER change these */}
                 <img 
                   src="/logo.png" 
                   alt="Minechat AI" 
