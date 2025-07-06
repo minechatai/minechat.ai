@@ -958,6 +958,96 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Messages Sent Analytics endpoint
+  app.get('/api/analytics/messages-sent', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { startDate, endDate, comparisonPeriod } = req.query;
+      
+      console.log("🔍 Messages Sent Debug - User ID:", userId);
+      console.log("🔍 Messages Sent Debug - Date Range:", { startDate, endDate });
+      console.log("🔍 Messages Sent Debug - Comparison Period:", comparisonPeriod);
+      
+      // Get outbound messages (AI and human) from legitimate customer conversations only
+      const outboundMessages = await storage.getOutboundMessages(userId, startDate, endDate);
+      
+      const aiCount = outboundMessages.ai.length;
+      const humanCount = outboundMessages.human.length;
+      const totalMessages = aiCount + humanCount;
+      
+      console.log("🔍 Messages Sent Debug - AI Messages:", aiCount);
+      console.log("🔍 Messages Sent Debug - Human Messages:", humanCount);
+      console.log("🔍 Messages Sent Debug - Total Messages:", totalMessages);
+      
+      // Calculate percentages
+      let aiPercentage = 0;
+      let humanPercentage = 0;
+      
+      if (totalMessages > 0) {
+        aiPercentage = Math.round((aiCount / totalMessages) * 100);
+        humanPercentage = Math.round((humanCount / totalMessages) * 100);
+        
+        // Ensure percentages add up to 100% (handle rounding)
+        if (aiPercentage + humanPercentage !== 100) {
+          if (aiCount >= humanCount) {
+            aiPercentage = 100 - humanPercentage;
+          } else {
+            humanPercentage = 100 - aiPercentage;
+          }
+        }
+      }
+      
+      // Calculate comparison period if provided
+      let change = "same as last month";
+      if (comparisonPeriod && startDate && endDate) {
+        // Calculate previous period dates
+        const startDateObj = new Date(startDate);
+        const endDateObj = new Date(endDate);
+        
+        let prevStartDate, prevEndDate;
+        if (comparisonPeriod === 'week') {
+          prevStartDate = new Date(startDateObj.getTime() - (7 * 24 * 60 * 60 * 1000));
+          prevEndDate = new Date(endDateObj.getTime() - (7 * 24 * 60 * 60 * 1000));
+        } else { // month
+          prevStartDate = new Date(startDateObj.getFullYear(), startDateObj.getMonth() - 1, startDateObj.getDate());
+          prevEndDate = new Date(endDateObj.getFullYear(), endDateObj.getMonth() - 1, endDateObj.getDate());
+        }
+        
+        const prevPeriodMessages = await storage.getOutboundMessages(
+          userId, 
+          prevStartDate.toISOString().split('T')[0], 
+          prevEndDate.toISOString().split('T')[0]
+        );
+        
+        const prevTotalMessages = prevPeriodMessages.ai.length + prevPeriodMessages.human.length;
+        
+        if (prevTotalMessages > 0) {
+          const percentChange = Math.round(((totalMessages - prevTotalMessages) / prevTotalMessages) * 100);
+          if (percentChange > 0) {
+            change = `+${percentChange}% vs last ${comparisonPeriod}`;
+          } else if (percentChange < 0) {
+            change = `${percentChange}% vs last ${comparisonPeriod}`;
+          } else {
+            change = `same as last ${comparisonPeriod}`;
+          }
+        }
+      }
+      
+      res.json({
+        totalMessages,
+        aiMessages: aiCount,
+        humanMessages: humanCount,
+        aiPercentage,
+        humanPercentage,
+        change
+      });
+      
+    } catch (error) {
+      console.error("Error calculating messages sent:", error);
+      res.status(500).json({ message: "Failed to calculate messages sent" });
+    }
+  });
+
   // FAQ Analysis endpoint
   app.get('/api/faq-analysis', isAuthenticated, async (req: any, res) => {
     try {

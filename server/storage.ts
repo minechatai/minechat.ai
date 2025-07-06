@@ -35,7 +35,7 @@ import {
   type ConversationWithLastMessage,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, sql } from "drizzle-orm";
+import { eq, desc, and, or, sql } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
@@ -82,6 +82,7 @@ export interface IStorage {
   // FAQ Analysis operations
   getMessagesForFaqAnalysis(userId: string, startDate?: string, endDate?: string): Promise<Message[]>;
   getCustomerAiMessages(userId: string, startDate?: string, endDate?: string): Promise<Message[]>;
+  getOutboundMessages(userId: string, startDate?: string, endDate?: string): Promise<{ai: Message[], human: Message[]}>;
 
   // Channel operations
   getChannel(userId: string): Promise<Channel | undefined>;
@@ -601,6 +602,70 @@ export class DatabaseStorage implements IStorage {
       return result.map(row => row.messages);
     } catch (error) {
       console.error("Error fetching customer AI messages:", error);
+      throw error;
+    }
+  }
+
+  async getOutboundMessages(userId: string, startDate?: string, endDate?: string): Promise<{ai: Message[], human: Message[]}> {
+    try {
+      console.log("Database connection established");
+      
+      let baseQuery = db
+        .select()
+        .from(messages)
+        .innerJoin(conversations, eq(messages.conversationId, conversations.id))
+        .where(
+          and(
+            eq(conversations.userId, userId),
+            // Only outbound messages (AI or human responses to customers)
+            or(
+              eq(messages.senderType, "ai"),
+              eq(messages.senderType, "human")
+            ),
+            // Exclude test conversations
+            sql`${conversations.source} != 'test'`
+          )
+        )
+        .orderBy(desc(messages.createdAt));
+
+      // Add date filtering if provided
+      if (startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999); // Include full end date
+        
+        baseQuery = db
+          .select()
+          .from(messages)
+          .innerJoin(conversations, eq(messages.conversationId, conversations.id))
+          .where(
+            and(
+              eq(conversations.userId, userId),
+              or(
+                eq(messages.senderType, "ai"),
+                eq(messages.senderType, "human")
+              ),
+              sql`${conversations.source} != 'test'`,
+              sql`${messages.createdAt} >= ${start}`,
+              sql`${messages.createdAt} <= ${end}`
+            )
+          )
+          .orderBy(desc(messages.createdAt));
+      }
+
+      const result = await baseQuery;
+      const allMessages = result.map(row => row.messages);
+      
+      // Separate AI and human messages
+      const aiMessages = allMessages.filter(msg => msg.senderType === "ai");
+      const humanMessages = allMessages.filter(msg => msg.senderType === "human");
+      
+      return {
+        ai: aiMessages,
+        human: humanMessages
+      };
+    } catch (error) {
+      console.error("Error fetching outbound messages:", error);
       throw error;
     }
   }
