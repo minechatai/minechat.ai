@@ -8,6 +8,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { Search, Plus, MessageSquare } from "lucide-react";
 import { ConversationWithLastMessage } from "@shared/schema";
+import facebookMessengerIcon from "@assets/Facebook_Messenger_logo_2020.svg_1751719200234.webp";
 
 interface ConversationListProps {
   selectedConversation: number | null;
@@ -143,7 +144,7 @@ export default function ConversationList({ selectedConversation, onSelectConvers
             title={facebookConnection?.isConnected ? "Facebook Messenger Connected" : "Connect Facebook Messenger"}
           >
             <img
-              src="/attached_assets/hd-official-new-facebook-messenger-icon-logo-png-701751694787819hlhkutzsan_1751391472642.png"
+              src={facebookMessengerIcon}
               alt="Facebook Messenger"
               className="w-6 h-6 object-contain"
             />
