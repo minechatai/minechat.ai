@@ -18,14 +18,21 @@ export default function Dashboard() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
   
-  // Date range state
+  // Date range state - initialize with today's date to show today by default
+  const today = new Date().toISOString().split('T')[0];
   const [dateRange, setDateRange] = useState<{
     startDate?: string;
     endDate?: string;
-  }>({});
+  }>({
+    startDate: today,
+    endDate: today
+  });
 
-  // Date picker state
-  const [date, setDate] = useState<DateRange | undefined>();
+  // Date picker state - initialize with today's date
+  const [date, setDate] = useState<DateRange | undefined>({
+    from: new Date(),
+    to: new Date()
+  });
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -47,10 +54,24 @@ export default function Dashboard() {
     enabled: isAuthenticated,
   });
 
-  // FAQ Analysis query
+  // FAQ Analysis query with custom queryFn for date parameters
   const { data: faqData, isLoading: faqLoading } = useQuery({
     queryKey: ["/api/faq-analysis", dateRange.startDate, dateRange.endDate],
     enabled: isAuthenticated,
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (dateRange.startDate) params.append('startDate', dateRange.startDate);
+      if (dateRange.endDate) params.append('endDate', dateRange.endDate);
+      
+      const url = `/api/faq-analysis${params.toString() ? `?${params.toString()}` : ''}`;
+      console.log("🔍 FAQ Query - Fetching URL:", url);
+      
+      const res = await fetch(url, { credentials: "include" });
+      if (!res.ok) {
+        throw new Error(`${res.status}: ${res.statusText}`);
+      }
+      return await res.json();
+    },
   });
 
   // Debug the query parameters
