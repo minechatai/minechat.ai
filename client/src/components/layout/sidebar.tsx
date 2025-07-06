@@ -9,7 +9,9 @@ import {
   HelpCircle,
   LogOut,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  ChevronLeft,
+  ChevronRight as ExpandIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -34,10 +36,12 @@ const navigation = [
 
 interface SidebarProps {
   isOpen?: boolean;
+  isCollapsed?: boolean;
   onClose?: () => void;
+  onToggleCollapse?: () => void;
 }
 
-export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
+export default function Sidebar({ isOpen = false, isCollapsed = false, onClose, onToggleCollapse }: SidebarProps) {
   const [location] = useLocation();
   const [setupExpanded, setSetupExpanded] = useState(true);
 
@@ -50,27 +54,79 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       md:translate-x-0 
       fixed inset-y-0 left-0 z-50 
-      w-64 sm:w-56 md:w-64 lg:w-72 xl:w-80 
-      transition-transform duration-300 ease-in-out
+      ${isCollapsed ? 'w-16' : 'w-64 sm:w-56 md:w-64 lg:w-72 xl:w-80'}
+      transition-all duration-300 ease-in-out
       md:relative md:z-auto md:flex md:flex-col
     `}>
       <div className="flex-1 flex flex-col min-h-0 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
         {/* Logo */}
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 h-[73px] flex items-center">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 h-[73px] flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <img 
               src="/logo.png" 
               alt="Minechat AI" 
-              className="w-8 h-8 object-contain"
+              className="w-8 h-8 object-contain flex-shrink-0"
             />
-            <span className="text-xl font-semibold text-gray-900 dark:text-white logo-brand">minechat.ai</span>
+            {!isCollapsed && (
+              <span className="text-xl font-semibold text-gray-900 dark:text-white logo-brand">minechat.ai</span>
+            )}
           </div>
+          {!isCollapsed && onToggleCollapse && (
+            <button
+              onClick={onToggleCollapse}
+              className="hidden md:flex items-center justify-center w-6 h-6 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
+              title="Collapse sidebar"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+          )}
+          {isCollapsed && onToggleCollapse && (
+            <button
+              onClick={onToggleCollapse}
+              className="hidden md:flex items-center justify-center w-6 h-6 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors absolute right-2"
+              title="Expand sidebar"
+            >
+              <ExpandIcon className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 space-y-1">
           {navigation.map((item) => {
             const isActive = location === item.href || (item.submenu && item.submenu.some(sub => location.includes(sub.href)));
+            
+            if (isCollapsed) {
+              // Collapsed state - show only icons
+              return (
+                <div key={item.name} className="relative group">
+                  <Link href={item.href}>
+                    <span
+                      className={cn(
+                        "flex items-center justify-center w-10 h-10 rounded-lg transition-colors cursor-pointer",
+                        isActive
+                          ? "bg-rose-50 text-rose-600"
+                          : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                      )}
+                      title={item.name}
+                    >
+                      <item.icon
+                        className={cn(
+                          "h-5 w-5",
+                          isActive
+                            ? "text-rose-600"
+                            : "text-gray-400 group-hover:text-gray-500"
+                        )}
+                      />
+                    </span>
+                  </Link>
+                  {/* Tooltip */}
+                  <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 whitespace-nowrap">
+                    {item.name}
+                  </div>
+                </div>
+              );
+            }
             
             if (item.submenu) {
               return (
@@ -152,14 +208,30 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
 
         {/* User section */}
         <div className="flex-shrink-0 p-4 border-t border-gray-200 dark:border-gray-700">
-          <Button
-            variant="ghost"
-            onClick={handleLogout}
-            className="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
-          >
-            <LogOut className="mr-3 h-5 w-5" />
-            Sign out
-          </Button>
+          {isCollapsed ? (
+            <div className="relative group">
+              <button
+                onClick={handleLogout}
+                className="flex items-center justify-center w-10 h-10 rounded-lg transition-colors text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
+                title="Sign out"
+              >
+                <LogOut className="h-5 w-5" />
+              </button>
+              {/* Tooltip */}
+              <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 whitespace-nowrap">
+                Sign out
+              </div>
+            </div>
+          ) : (
+            <Button
+              variant="ghost"
+              onClick={handleLogout}
+              className="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
+            >
+              <LogOut className="mr-3 h-5 w-5" />
+              Sign out
+            </Button>
+          )}
         </div>
       </div>
     </div>

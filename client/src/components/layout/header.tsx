@@ -9,9 +9,10 @@ import type { Business } from "@shared/schema";
 interface HeaderProps {
   title: string;
   onMenuClick?: () => void;
+  sidebarCollapsed?: boolean;
 }
 
-export default function Header({ title, onMenuClick }: HeaderProps) {
+export default function Header({ title, onMenuClick, sidebarCollapsed = false }: HeaderProps) {
   const { user } = useAuth();
   
   // Fetch business information to display company logo
@@ -34,7 +35,8 @@ export default function Header({ title, onMenuClick }: HeaderProps) {
           >
             <Menu className="w-5 h-5" />
           </Button>
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">{title}</h1>
+          {/* Title positioned independently of sidebar alignment */}
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white ml-2">{title}</h1>
         </div>
         
         <div className="flex items-center space-x-4">
