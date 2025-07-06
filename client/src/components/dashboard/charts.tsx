@@ -115,7 +115,7 @@ export default function Charts({ messagesData, hourlyData, faqData, faqLoading }
             <ExternalLink className="w-4 h-4 text-gray-400 dark:text-gray-500" />
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
+            <div className="space-y-1">
               {faqLoading ? (
                 <div className="text-center text-gray-500 py-8">
                   <p className="text-sm">Analyzing customer conversations...</p>
@@ -124,7 +124,7 @@ export default function Charts({ messagesData, hourlyData, faqData, faqLoading }
                 faqData.slice(0, 5).map((item, index) => (
                   <div 
                     key={index} 
-                    className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-sm transition-colors"
+                    className="flex items-center py-1 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-sm transition-colors"
                     onClick={() => handleAddToFaq(item.question)}
                   >
                     <div className="flex items-center space-x-3">

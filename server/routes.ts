@@ -817,8 +817,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const { startDate, endDate } = req.query;
       
+      console.log("🔍 FAQ Analysis Debug - User ID:", userId);
+      console.log("🔍 FAQ Analysis Debug - Date Range:", { startDate, endDate });
+      
       // Get all customer messages within date range
       const messages = await storage.getMessagesForFaqAnalysis(userId, startDate, endDate);
+      
+      console.log("🔍 FAQ Analysis Debug - Messages found:", messages.length);
+      console.log("🔍 FAQ Analysis Debug - Sample messages:", messages.slice(0, 3).map(m => ({ content: m.content, createdAt: m.createdAt })));
       
       if (!messages || messages.length === 0) {
         return res.json([]);
