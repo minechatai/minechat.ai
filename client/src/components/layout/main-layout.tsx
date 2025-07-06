@@ -22,7 +22,7 @@ export default function MainLayout({ children, title }: MainLayoutProps) {
       />
       
       {/* Main Content */}
-      <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${sidebarCollapsed ? 'md:ml-16' : 'md:ml-64 sm:ml-56 lg:ml-72 xl:ml-80'}`}>
+      <div className="flex-1 flex flex-col min-w-0">
         <Header 
           title={title} 
           onMenuClick={() => setSidebarOpen(!sidebarOpen)}
