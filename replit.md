@@ -402,6 +402,12 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Document files show with paperclip icon, filename, size, and download link
   - Real-time upload feedback prevents multiple uploads and provides user confirmation
   - Seamless integration with both regular chat and Facebook Messenger conversations
+- July 6, 2025: Facebook Image File Transfer Fix
+  - Fixed critical issue where human agents sending images to Facebook customers resulted in text messages instead of actual images
+  - Updated file upload logic to detect image files (jpg, jpeg, png, gif, webp) and send them as photos to Facebook Messenger
+  - Images now appear as actual photos in Facebook Messenger instead of "File shared: filename.jpg" text messages
+  - Non-image files (PDF, DOC, etc.) continue to send as file attachment notifications with filename and size
+  - Enhanced Facebook integration to provide proper media experience for customers receiving images from human agents
 
 # User Preferences
 

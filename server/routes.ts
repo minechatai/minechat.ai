@@ -907,13 +907,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           const facebookConnection = await storage.getFacebookConnection(userId);
           if (facebookConnection?.accessToken) {
-            // For files, send a message about the file since Facebook needs special handling for attachments
-            await sendFacebookMessage(
-              facebookConnection.accessToken,
-              conversation.facebookSenderId,
-              `📎 File shared: ${req.file.originalname} (${(req.file.size / 1024).toFixed(1)} KB)`
-            );
-            console.log(`Human file message sent to Facebook for conversation ${conversationId}`);
+            const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(req.file.originalname);
+            
+            if (isImage) {
+              // Send as image to Facebook Messenger
+              const fullImageUrl = `${req.protocol}://${req.get('host')}/uploads/general/${req.file.filename}`;
+              await sendFacebookImage(
+                facebookConnection.accessToken,
+                conversation.facebookSenderId,
+                fullImageUrl
+              );
+              console.log(`Human image file sent to Facebook for conversation ${conversationId}: ${req.file.originalname}`);
+            } else {
+              // For non-image files, send a text message about the file
+              await sendFacebookMessage(
+                facebookConnection.accessToken,
+                conversation.facebookSenderId,
+                `📎 File shared: ${req.file.originalname} (${(req.file.size / 1024).toFixed(1)} KB)`
+              );
+              console.log(`Human file message sent to Facebook for conversation ${conversationId}: ${req.file.originalname}`);
+            }
           }
         } catch (facebookError) {
           console.error("Error sending file message to Facebook:", facebookError);
