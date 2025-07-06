@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, TrendingUp, Plus } from "lucide-react";
+import { ExternalLink, TrendingUp, Plus, ArrowRight } from "lucide-react";
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { useToast } from "@/hooks/use-toast";
 
@@ -115,36 +115,28 @@ export default function Charts({ messagesData, hourlyData, faqData, faqLoading }
             <ExternalLink className="w-4 h-4 text-gray-400 dark:text-gray-500" />
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-2">
               {faqLoading ? (
                 <div className="text-center text-gray-500 py-8">
                   <p className="text-sm">Analyzing customer conversations...</p>
                 </div>
               ) : faqData && faqData.length > 0 ? (
                 faqData.slice(0, 5).map((item, index) => (
-                  <div key={index} className="flex items-center justify-between space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                    <div className="flex items-center space-x-3 flex-1">
-                      <TrendingUp className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                      <span className="flex-1 text-sm text-gray-700 dark:text-gray-400">
-                        {item.question} ({item.count})
+                  <div 
+                    key={index} 
+                    className="flex items-center justify-between py-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 rounded-sm transition-colors"
+                    onClick={() => handleAddToFaq(item.question)}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <ArrowRight className="w-3 h-3 text-gray-400 dark:text-gray-500" />
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        {item.question}({item.count})
                       </span>
                     </div>
-                    {!item.isInFaq && (
-                      <Button
-                        onClick={() => handleAddToFaq(item.question)}
-                        size="sm"
-                        variant="outline"
-                        className="text-xs flex items-center space-x-1"
-                      >
-                        <Plus className="w-3 h-3" />
-                        <span>Add to FAQ List</span>
-                      </Button>
-                    )}
                   </div>
                 ))
               ) : (
                 <div className="text-center text-gray-500 py-8">
-                  <TrendingUp className="w-8 h-8 mx-auto mb-3 text-gray-300" />
                   <p className="text-sm font-medium">No business questions found</p>
                   <p className="text-xs text-gray-400 mt-1">
                     Customer questions will appear here once you have conversations
