@@ -835,13 +835,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const existingFaqs = business?.faqs ? JSON.parse(business.faqs) : [];
       const existingQuestions = existingFaqs.map((faq: any) => faq.question.toLowerCase());
       
-      // Analyze messages to extract questions using AI
-      const businessQuestions = await analyzeMessagesForQuestions(messages, userId);
-      console.log("🔍 FAQ Analysis Debug - Business questions extracted:", businessQuestions);
+      // Use actual customer questions instead of AI-generated ones
+      const actualQuestions = messages.map(msg => msg.content).filter(content => {
+        // Filter for actual questions
+        return content.includes('?') || 
+               content.toLowerCase().startsWith('what') ||
+               content.toLowerCase().startsWith('how') ||
+               content.toLowerCase().startsWith('when') ||
+               content.toLowerCase().startsWith('where') ||
+               content.toLowerCase().startsWith('why') ||
+               content.toLowerCase().startsWith('can') ||
+               content.toLowerCase().startsWith('do you') ||
+               content.toLowerCase().startsWith('does');
+      });
       
-      // Group similar questions and count occurrences
-      const questionGroups = groupSimilarQuestions(businessQuestions);
-      console.log("🔍 FAQ Analysis Debug - Question groups:", questionGroups);
+      console.log("🔍 FAQ Analysis Debug - Actual customer questions:", actualQuestions);
+      
+      // Group identical questions and count occurrences
+      const questionCounts: { [key: string]: number } = {};
+      actualQuestions.forEach(question => {
+        const normalized = question.trim();
+        questionCounts[normalized] = (questionCounts[normalized] || 0) + 1;
+      });
+      
+      const questionGroups = Object.entries(questionCounts).map(([question, count]) => ({
+        question,
+        count,
+        variants: [question]
+      }));
+      
+      console.log("🔍 FAQ Analysis Debug - Question groups from actual questions:", questionGroups);
       
       // Get top 5 and mark if already in FAQ
       const topQuestions = questionGroups
