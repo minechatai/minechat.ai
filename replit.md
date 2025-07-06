@@ -408,6 +408,15 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Images now appear as actual photos in Facebook Messenger instead of "File shared: filename.jpg" text messages
   - Non-image files (PDF, DOC, etc.) continue to send as file attachment notifications with filename and size
   - Enhanced Facebook integration to provide proper media experience for customers receiving images from human agents
+- July 6, 2025: Advanced File Upload System with Captions and Multiple Attachments
+  - Redesigned file upload to work like professional messaging platforms (Telegram, Discord)
+  - Users can now attach multiple files before sending instead of instant upload
+  - Added file preview area showing attached files with ability to remove individual attachments
+  - Support for adding captions/descriptions to files and images before sending
+  - Single send button handles both text messages and file attachments together
+  - Enhanced user experience with file type detection (images show image icon, documents show paperclip)
+  - Files display with name, size, and remove button for complete control before sending
+  - Placeholder text changes to "Add a caption for your files..." when files are attached
 
 # User Preferences
 

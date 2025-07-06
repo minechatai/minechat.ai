@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MoreVertical, Paperclip, Image, Mic, Send, MessageCircle } from "lucide-react";
+import { MoreVertical, Paperclip, Image, Mic, Send, MessageCircle, X } from "lucide-react";
 import { Message, Conversation } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { useActiveProfile } from "@/hooks/useActiveProfile";
@@ -18,7 +18,7 @@ interface ChatViewProps {
 export default function ChatView({ conversationId }: ChatViewProps) {
   const [message, setMessage] = useState("");
   const [isAiMode, setIsAiMode] = useState(true);
-  const [isUploadingFile, setIsUploadingFile] = useState(false);
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -114,69 +114,77 @@ export default function ChatView({ conversationId }: ChatViewProps) {
     }
   });
 
-  const sendFileMessageMutation = useMutation({
-    mutationFn: async (data: { conversationId: number; file: File }) => {
-      const formData = new FormData();
-      formData.append('file', data.file);
-      formData.append('conversationId', data.conversationId.toString());
-      formData.append('senderType', isAiMode ? 'assistant' : 'human');
-      
-      const response = await fetch('/api/messages/file', {
-        method: 'POST',
-        body: formData,
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to send file');
+  const sendMessageWithAttachments = async (messageText: string, files: File[]) => {
+    if (!conversationId) return;
+
+    try {
+      // If there are files, send them first
+      if (files.length > 0) {
+        for (const file of files) {
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('conversationId', conversationId.toString());
+          formData.append('senderType', conversation?.mode === 'ai' ? 'assistant' : 'human');
+          
+          const response = await fetch('/api/messages/file', {
+            method: 'POST',
+            body: formData,
+          });
+          
+          if (!response.ok) {
+            throw new Error(`Failed to send file: ${file.name}`);
+          }
+        }
       }
+
+      // Then send text message if there's any text
+      if (messageText.trim()) {
+        await sendMessageMutation.mutateAsync({
+          conversationId,
+          content: messageText,
+          senderType: conversation?.mode === 'ai' ? 'assistant' : 'human'
+        });
+      }
+
+      // Clear attachments and message after successful send
+      setAttachedFiles([]);
+      setMessage("");
       
-      return response.json();
-    },
-    onSuccess: () => {
-      setIsUploadingFile(false);
       // Invalidate and refetch messages
       queryClient.invalidateQueries({ queryKey: [`/api/messages/${conversationId}`] });
       queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
-      // Don't show success toast - files appear instantly like Messenger
-    },
-    onError: (error) => {
-      setIsUploadingFile(false);
+      
+    } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to send file. Please try again.",
+        description: "Failed to send message. Please try again.",
         variant: "destructive",
       });
     }
-  });
+  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && conversationId) {
-      setIsUploadingFile(true);
-      // Upload file instantly when selected (like Messenger)
-      sendFileMessageMutation.mutate({
-        conversationId,
-        file,
-      });
+    const files = Array.from(e.target.files || []);
+    if (files.length > 0) {
+      // Add files to attachment list instead of sending immediately
+      setAttachedFiles(prev => [...prev, ...files]);
     }
-    // Reset the input so the same file can be selected again
+    // Reset the input so the same files can be selected again
     if (e.target) {
       e.target.value = '';
     }
   };
 
+  const removeAttachedFile = (index: number) => {
+    setAttachedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim() || !conversationId) return;
+    if ((!message.trim() && attachedFiles.length === 0) || !conversationId) return;
     
-    // Send message from human agent (when in Human Mode)
-    sendMessageMutation.mutate({
-      conversationId,
-      content: message.trim(),
-      senderType: 'human'
-    });
-    
-    setMessage("");
+    // Send message with attachments using the new combined function
+    sendMessageWithAttachments(message.trim(), attachedFiles);
   };
 
   const handleModeToggle = (mode: 'ai' | 'human') => {
@@ -471,13 +479,54 @@ export default function ChatView({ conversationId }: ChatViewProps) {
         </div>
       </div>
 
+      {/* File Attachments Preview */}
+      {attachedFiles.length > 0 && (
+        <div className="bg-gray-50 border-t border-gray-200 p-3">
+          <div className="mb-2">
+            <span className="text-xs text-gray-600 font-medium">
+              Attached Files ({attachedFiles.length})
+            </span>
+          </div>
+          <div className="space-y-2">
+            {attachedFiles.map((file, index) => (
+              <div key={index} className="flex items-center justify-between bg-white rounded-lg p-2 border">
+                <div className="flex items-center space-x-2">
+                  {file.type.startsWith('image/') ? (
+                    <Image className="w-4 h-4 text-blue-500" />
+                  ) : (
+                    <Paperclip className="w-4 h-4 text-gray-500" />
+                  )}
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 truncate max-w-[200px]">
+                      {file.name}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {(file.size / 1024).toFixed(1)} KB
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="p-1 h-6 w-6 text-red-500 hover:text-red-700"
+                  onClick={() => removeAttachedFile(index)}
+                >
+                  <X className="w-3 h-3" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Message Input - Smaller */}
       <div className="bg-white border-t border-gray-200 p-3 mt-auto">
         <form onSubmit={handleSendMessage} className="flex items-center space-x-2">
           <div className="flex-1 relative">
             <Input
               type="text"
-              placeholder={(conversation?.mode === 'ai' || !conversation?.mode) ? "AI mode is enabled - switch to Human mode to send messages" : "Send a message"}
+              placeholder={(conversation?.mode === 'ai' || !conversation?.mode) ? "AI mode is enabled - switch to Human mode to send messages" : attachedFiles.length > 0 ? "Add a caption for your files..." : "Send a message"}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               className="pr-20 h-9"
@@ -489,7 +538,8 @@ export default function ChatView({ conversationId }: ChatViewProps) {
                 ref={fileInputRef}
                 onChange={handleFileSelect}
                 className="hidden"
-                accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif"
+                accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif,.webp"
+                multiple
                 disabled={conversation?.mode === 'ai' || !conversation?.mode}
               />
               <Button 
@@ -497,14 +547,10 @@ export default function ChatView({ conversationId }: ChatViewProps) {
                 variant="ghost" 
                 size="sm" 
                 className="p-0 w-4 h-4" 
-                disabled={(conversation?.mode === 'ai' || !conversation?.mode) || isUploadingFile}
+                disabled={conversation?.mode === 'ai' || !conversation?.mode}
                 onClick={() => fileInputRef.current?.click()}
               >
-                {isUploadingFile ? (
-                  <div className="w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin"></div>
-                ) : (
-                  <Paperclip className="w-3 h-3 text-gray-400" />
-                )}
+                <Paperclip className="w-3 h-3 text-gray-400" />
               </Button>
             </div>
           </div>
