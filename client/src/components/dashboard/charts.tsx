@@ -87,14 +87,14 @@ export default function Charts({ messagesData, hourlyData, faqData, faqLoading }
                 </div>
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-gray-900 dark:text-white">100%</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">Data</div>
+                    <div className="text-2xl font-bold text-gray-900 dark:text-white">{totalMessages}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">Total</div>
                   </div>
                 </div>
               </div>
               <div className="space-y-3">
                 <div className="flex items-center space-x-3">
-                  <div className="w-3 h-3 bg-primary rounded-full"></div>
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#A53860' }}></div>
                   <span className="text-sm text-gray-600 dark:text-gray-400">Human</span>
                   <span className="text-sm font-semibold text-gray-900 dark:text-white">{humanPercentage}%</span>
                 </div>

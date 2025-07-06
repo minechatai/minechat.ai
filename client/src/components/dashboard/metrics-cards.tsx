@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Mail, Clock, Users, TrendingUp, Phone, MessageSquare } from "lucide-react";
+import { Mail, Clock, Users, TrendingUp, Phone } from "lucide-react";
 
 interface MetricsCardsProps {
   data: {
@@ -37,14 +37,13 @@ export default function MetricsCards({ data }: MetricsCardsProps) {
       iconColor: "text-green-600",
     },
     {
-      name: "Messages Sent",
-      value: data.messagesSent,
-      change: data.messagesSentChange,
-      changeType: data.messagesSentChange.startsWith('+') ? "increase" : data.messagesSentChange.startsWith('-') ? "decrease" : "neutral",
-      icon: MessageSquare,
+      name: "Leads",
+      value: data.leads,
+      change: "same as last month",
+      changeType: "neutral",
+      icon: Users,
       iconBg: "bg-blue-100",
       iconColor: "text-blue-600",
-      breakdown: `AI ${data.aiPercentage}%, Human ${data.humanPercentage}%`,
     },
     {
       name: "Opportunities",

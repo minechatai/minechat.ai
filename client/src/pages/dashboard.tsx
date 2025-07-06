@@ -184,8 +184,8 @@ export default function Dashboard() {
   };
 
   const messagesData = {
-    human: (analytics as any)?.messagesHuman || 0,
-    ai: (analytics as any)?.messagesAi || 0,
+    human: (messagesSentData as any)?.humanMessages || 0,
+    ai: (messagesSentData as any)?.aiMessages || 0,
   };
 
   const hourlyData = (analytics as any)?.hourlyData || generateHourlyData();
