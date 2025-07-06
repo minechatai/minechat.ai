@@ -166,7 +166,8 @@ export default function Charts({ messagesData, hourlyData, faqData, faqLoading }
                   axisLine={false}
                   tickLine={false}
                   tick={{ fontSize: 11, fill: '#6B7280' }}
-                  domain={[0, 'dataMax + 2']}
+                  domain={[0, (dataMax: number) => Math.ceil(dataMax / 5) * 5]}
+                  ticks={Array.from({ length: Math.ceil(Math.max(...hourlyData.map(d => d.messages)) / 5) + 1 }, (_, i) => i * 5)}
                 />
                 <Tooltip 
                   contentStyle={{

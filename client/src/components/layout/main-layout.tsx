@@ -28,7 +28,7 @@ export default function MainLayout({ children, title }: MainLayoutProps) {
           onMenuClick={() => setSidebarOpen(!sidebarOpen)}
           sidebarCollapsed={sidebarCollapsed}
         />
-        <main className="flex-1 overflow-hidden h-full">
+        <main className="flex-1 overflow-auto">
           {children}
         </main>
       </div>

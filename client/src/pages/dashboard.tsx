@@ -261,7 +261,7 @@ export default function Dashboard() {
 
   return (
     <MainLayout title="Dashboard">
-      <div className="p-4">
+      <div className="p-4 min-h-full">
         {/* Date Range Selector - Reduced margin */}
         <div className="flex justify-end items-center space-x-3 mb-4">
           <Button 
