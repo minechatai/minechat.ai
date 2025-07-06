@@ -97,16 +97,9 @@ export default function Setup() {
         {/* Main Content */}
         <div className="flex-1 p-4 sm:p-6 overflow-y-auto min-h-0">
           <div className="max-w-none sm:max-w-4xl">
-            {/* Page Title with Navigation */}
-            <div className="flex justify-between items-center mb-6">
+            {/* Page Title */}
+            <div className="mb-6">
               <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Setup</h1>
-              
-              {/* Section Navigation */}
-              <nav className="text-sm text-gray-500 flex items-center">
-                <span>Setup</span>
-                <ChevronRight className="w-4 h-4 mx-2" />
-                <span className="text-gray-900">{getSectionTitle(currentSection)}</span>
-              </nav>
             </div>
 
             {renderSection()}
