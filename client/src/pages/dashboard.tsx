@@ -19,16 +19,13 @@ export default function Dashboard() {
   const { isAuthenticated, isLoading } = useAuth();
   
   // Date range state
-  const [dateRange, setDateRange] = useState({
-    startDate: "2025-01-01",
-    endDate: "2025-12-31"
-  });
+  const [dateRange, setDateRange] = useState<{
+    startDate?: string;
+    endDate?: string;
+  }>({});
 
   // Date picker state
-  const [date, setDate] = useState<DateRange | undefined>({
-    from: new Date(2025, 0, 1),
-    to: new Date(2025, 11, 31)
-  });
+  const [date, setDate] = useState<DateRange | undefined>();
 
   // Redirect to login if not authenticated
   useEffect(() => {
