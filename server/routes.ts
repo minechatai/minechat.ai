@@ -267,6 +267,22 @@ const imageUpload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Configure multer for general file uploads (for chat attachments)
+  const generalUpload = multer({
+    dest: 'uploads/general/',
+    limits: {
+      fileSize: 15 * 1024 * 1024, // 15MB limit for general files
+    },
+    fileFilter: (req, file, cb) => {
+      const allowedTypes = ['.pdf', '.doc', '.docx', '.txt', '.jpg', '.jpeg', '.png', '.gif', '.webp', '.zip', '.rar'];
+      const ext = path.extname(file.originalname).toLowerCase();
+      if (allowedTypes.includes(ext)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Invalid file type. Only PDF, DOC, DOCX, TXT, images, and archive files are allowed.'));
+      }
+    }
+  });
   // Serve uploaded files statically
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
   
@@ -833,6 +849,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error sending message:", error);
       res.status(500).json({ message: "Failed to send message" });
+    }
+  });
+
+  // File upload endpoint for messages
+  app.post('/api/messages/file', isAuthenticated, generalUpload.single('file'), async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { conversationId, senderType } = req.body;
+      
+      if (!req.file) {
+        return res.status(400).json({ message: "No file provided" });
+      }
+      
+      // Verify conversation belongs to user
+      const conversation = await storage.getConversation(parseInt(conversationId));
+      if (!conversation || conversation.userId !== userId) {
+        return res.status(404).json({ message: "Conversation not found" });
+      }
+      
+      // Create file message with proper metadata
+      let messageData: any = {
+        conversationId: parseInt(conversationId),
+        senderId: userId,
+        senderType: senderType || 'assistant',
+        content: `📎 ${req.file.originalname}`,
+        messageType: 'file',
+        fileUrl: `/uploads/general/${req.file.filename}`,
+        fileName: req.file.originalname,
+        fileSize: req.file.size
+      };
+      
+      // For human messages, get the active user profile
+      if (senderType === 'human') {
+        try {
+          const profiles = await storage.getUserProfiles(userId);
+          const activeProfile = profiles.find(profile => profile.isActive === true);
+          
+          if (activeProfile) {
+            messageData.humanSenderProfileId = activeProfile.id;
+            messageData.humanSenderName = activeProfile.name;
+            messageData.humanSenderProfileImageUrl = activeProfile.profileImageUrl;
+          }
+        } catch (error) {
+          console.error("Error fetching active profile for file message:", error);
+        }
+      }
+      
+      // Create message in database
+      const message = await storage.createMessage(messageData);
+      
+      // Update conversation's lastMessageAt timestamp
+      await storage.updateConversationLastMessage(parseInt(conversationId));
+      
+      // If this is a human file message and the conversation is from Facebook, send to Facebook
+      if (senderType === 'human' && conversation.source === 'facebook' && conversation.facebookSenderId) {
+        try {
+          const facebookConnection = await storage.getFacebookConnection(userId);
+          if (facebookConnection?.accessToken) {
+            // For files, send a message about the file since Facebook needs special handling for attachments
+            await sendFacebookMessage(
+              facebookConnection.accessToken,
+              conversation.facebookSenderId,
+              `📎 File shared: ${req.file.originalname} (${(req.file.size / 1024).toFixed(1)} KB)`
+            );
+            console.log(`Human file message sent to Facebook for conversation ${conversationId}`);
+          }
+        } catch (facebookError) {
+          console.error("Error sending file message to Facebook:", facebookError);
+        }
+      }
+      
+      res.json(message);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      res.status(500).json({ message: "Failed to upload file" });
     }
   });
 

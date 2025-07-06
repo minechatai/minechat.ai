@@ -382,6 +382,16 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Added Popover-based date picker with calendar interface supporting range selection
   - Integrated date-fns for proper date formatting and React Day Picker for calendar functionality
   - Enhanced user experience with independent date filtering options (today vs. custom ranges)
+- July 6, 2025: File Upload Functionality and Mode Indicator Enhancement
+  - Implemented complete file upload system for human agents to send files to customers in chat conversations
+  - Added file upload API endpoint (/api/messages/file) with proper authentication and file validation
+  - Created comprehensive file upload UI with file preview, size display, and send/cancel options
+  - Support for multiple file types: PDF, DOC, DOCX, TXT, images, and archive files (15MB limit)
+  - File uploads include proper metadata: filename, size, and file URL for download access
+  - Enhanced Facebook integration to handle file sharing with proper fallback messaging
+  - Updated AI/Human mode indicators to use official Minechat red color scheme (gradient from red-600 to red-700)
+  - Applied consistent red branding to mode indicators in both main Chat and Facebook Chat interfaces
+  - Replaced gray/white mode indicators with white text on red gradient background for better visibility
 
 # User Preferences
 

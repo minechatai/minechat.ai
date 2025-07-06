@@ -471,7 +471,7 @@ export default function FacebookChat() {
               {/* Sticky Mode Indicator */}
               <div className="bg-gray-50 border-b border-gray-200 py-2 px-4">
                 <div className="text-center">
-                  <span className="text-sm text-gray-500 bg-white px-3 py-1 rounded-full shadow-sm">
+                  <span className="text-sm text-white bg-gradient-to-r from-red-600 to-red-700 px-3 py-1 rounded-full shadow-sm">
                     {selectedConversation.mode === 'ai' ? 'AI Enabled' : 'Human Mode'}
                   </span>
                 </div>
