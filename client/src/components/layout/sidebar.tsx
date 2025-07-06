@@ -61,16 +61,25 @@ export default function Sidebar({ isOpen = false, isCollapsed = false, onClose, 
     `}>
       <div className="flex-1 flex flex-col min-h-0 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
         {/* Logo */}
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 h-[73px] flex items-center justify-between">
+        <div className={`py-4 border-b border-gray-200 dark:border-gray-700 h-[73px] flex items-center justify-between ${
+          isCollapsed ? 'px-2' : 'px-6'
+        }`}>
           {isCollapsed ? (
             // Collapsed state: only logo visible, button appears on hover
             <div className="flex items-center justify-center w-full group">
-              {/* Logo visible by default */}
+              {/* Logo with absolutely fixed dimensions */}
               <img 
                 src="/logo.png" 
                 alt="Minechat AI" 
-                className="w-8 h-8 object-contain flex-shrink-0 group-hover:hidden"
-                style={{ width: '32px', height: '32px' }}
+                className="object-contain flex-shrink-0 group-hover:hidden"
+                style={{ 
+                  width: '32px !important', 
+                  height: '32px !important',
+                  minWidth: '32px',
+                  minHeight: '32px',
+                  maxWidth: '32px',
+                  maxHeight: '32px'
+                }}
               />
               {/* Expand button appears on hover */}
               {onToggleCollapse && (
@@ -87,11 +96,19 @@ export default function Sidebar({ isOpen = false, isCollapsed = false, onClose, 
             // Expanded state: logo on left, collapse button on right
             <>
               <div className="flex items-center space-x-3">
+                {/* Logo with absolutely fixed dimensions */}
                 <img 
                   src="/logo.png" 
                   alt="Minechat AI" 
-                  className="w-8 h-8 object-contain flex-shrink-0"
-                  style={{ width: '32px', height: '32px' }}
+                  className="object-contain flex-shrink-0"
+                  style={{ 
+                    width: '32px !important', 
+                    height: '32px !important',
+                    minWidth: '32px',
+                    minHeight: '32px',
+                    maxWidth: '32px',
+                    maxHeight: '32px'
+                  }}
                 />
                 <span className="text-xl font-semibold text-gray-900 dark:text-white logo-brand">minechat.ai</span>
               </div>
