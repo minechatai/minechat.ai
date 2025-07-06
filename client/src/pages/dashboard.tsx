@@ -262,11 +262,12 @@ export default function Dashboard() {
   return (
     <MainLayout title="Dashboard">
       <div className="p-4 flex flex-col min-h-full">
-        {/* Page Title */}
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">Dashboard</h1>
-        
-        {/* Date Range Selector - Reduced margin */}
-        <div className="flex justify-end items-center space-x-3 mb-4">
+        {/* Page Title with Date Controls */}
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Dashboard</h1>
+          
+          {/* Date Range Selector aligned with title */}
+          <div className="flex items-center space-x-3">
           <Button 
             onClick={() => {
               console.log("🔍 Button clicked!");
@@ -310,6 +311,7 @@ export default function Dashboard() {
               />
             </PopoverContent>
           </Popover>
+          </div>
         </div>
 
         {/* Metrics Cards - Reduced margin */}
