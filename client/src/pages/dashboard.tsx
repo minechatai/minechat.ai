@@ -176,7 +176,10 @@ export default function Dashboard() {
         {/* Date Range Selector */}
         <div className="flex justify-end items-center space-x-3 mb-6">
           <Button 
-            onClick={handleShowToday}
+            onClick={() => {
+              console.log("🔍 Button clicked!");
+              handleShowToday();
+            }}
             variant="outline"
             size="sm"
             className="text-sm"
