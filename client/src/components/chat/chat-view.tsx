@@ -18,7 +18,8 @@ interface ChatViewProps {
 export default function ChatView({ conversationId }: ChatViewProps) {
   const [message, setMessage] = useState("");
   const [isAiMode, setIsAiMode] = useState(true);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploadingFile, setIsUploadingFile] = useState(false);
+
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -132,16 +133,14 @@ export default function ChatView({ conversationId }: ChatViewProps) {
       return response.json();
     },
     onSuccess: () => {
+      setIsUploadingFile(false);
       // Invalidate and refetch messages
       queryClient.invalidateQueries({ queryKey: [`/api/messages/${conversationId}`] });
       queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
-      setSelectedFile(null);
-      toast({
-        title: "Success",
-        description: "File sent successfully!",
-      });
+      // Don't show success toast - files appear instantly like Messenger
     },
     onError: (error) => {
+      setIsUploadingFile(false);
       toast({
         title: "Error",
         description: "Failed to send file. Please try again.",
@@ -152,18 +151,18 @@ export default function ChatView({ conversationId }: ChatViewProps) {
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
+    if (file && conversationId) {
+      setIsUploadingFile(true);
+      // Upload file instantly when selected (like Messenger)
+      sendFileMessageMutation.mutate({
+        conversationId,
+        file,
+      });
     }
-  };
-
-  const handleSendFile = () => {
-    if (!selectedFile || !conversationId) return;
-    
-    sendFileMessageMutation.mutate({
-      conversationId,
-      file: selectedFile,
-    });
+    // Reset the input so the same file can be selected again
+    if (e.target) {
+      e.target.value = '';
+    }
   };
 
   const handleSendMessage = (e: React.FormEvent) => {
@@ -335,24 +334,47 @@ export default function ChatView({ conversationId }: ChatViewProps) {
                     <div>
                       <div className="bg-white p-3 rounded-lg shadow-sm">
                         {msg.messageType === 'file' ? (
-                          <div className="flex items-center space-x-2">
-                            <Paperclip className="w-4 h-4 text-gray-500" />
-                            <div>
-                              <p className="text-sm text-gray-900 font-medium">{(msg as any).fileName || msg.content}</p>
-                              {(msg as any).fileSize && (
-                                <p className="text-xs text-gray-500">
-                                  {((msg as any).fileSize / 1024).toFixed(1)} KB
-                                </p>
-                              )}
-                            </div>
-                            {(msg as any).fileUrl && (
-                              <a
-                                href={(msg as any).fileUrl}
-                                download={(msg as any).fileName}
-                                className="text-primary hover:text-primary-dark text-xs underline"
-                              >
-                                Download
-                              </a>
+                          <div>
+                            {/* Check if it's an image */}
+                            {(msg as any).fileName && /\.(jpg|jpeg|png|gif|webp)$/i.test((msg as any).fileName) ? (
+                              <div className="space-y-2">
+                                <img 
+                                  src={(msg as any).fileUrl} 
+                                  alt={(msg as any).fileName}
+                                  className="max-w-xs rounded-lg shadow-sm cursor-pointer"
+                                  onClick={() => window.open((msg as any).fileUrl, '_blank')}
+                                />
+                                <div className="flex items-center space-x-2">
+                                  <Image className="w-3 h-3 text-gray-500" />
+                                  <p className="text-xs text-gray-600">{(msg as any).fileName}</p>
+                                  {(msg as any).fileSize && (
+                                    <p className="text-xs text-gray-500">
+                                      {((msg as any).fileSize / 1024).toFixed(1)} KB
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="flex items-center space-x-2">
+                                <Paperclip className="w-4 h-4 text-gray-500" />
+                                <div>
+                                  <p className="text-sm text-gray-900 font-medium">{(msg as any).fileName || msg.content}</p>
+                                  {(msg as any).fileSize && (
+                                    <p className="text-xs text-gray-500">
+                                      {((msg as any).fileSize / 1024).toFixed(1)} KB
+                                    </p>
+                                  )}
+                                </div>
+                                {(msg as any).fileUrl && (
+                                  <a
+                                    href={(msg as any).fileUrl}
+                                    download={(msg as any).fileName}
+                                    className="text-primary hover:text-primary-dark text-xs underline"
+                                  >
+                                    Download
+                                  </a>
+                                )}
+                              </div>
                             )}
                           </div>
                         ) : (
@@ -391,24 +413,47 @@ export default function ChatView({ conversationId }: ChatViewProps) {
                         </span>
                       </div>
                       {msg.messageType === 'file' ? (
-                        <div className="flex items-center space-x-2">
-                          <Paperclip className="w-4 h-4 text-gray-500" />
-                          <div>
-                            <p className="text-sm font-medium">{(msg as any).fileName || msg.content}</p>
-                            {(msg as any).fileSize && (
-                              <p className="text-xs text-gray-500">
-                                {((msg as any).fileSize / 1024).toFixed(1)} KB
-                              </p>
-                            )}
-                          </div>
-                          {(msg as any).fileUrl && (
-                            <a
-                              href={(msg as any).fileUrl}
-                              download={(msg as any).fileName}
-                              className="text-primary hover:text-primary-dark text-xs underline"
-                            >
-                              Download
-                            </a>
+                        <div>
+                          {/* Check if it's an image */}
+                          {(msg as any).fileName && /\.(jpg|jpeg|png|gif|webp)$/i.test((msg as any).fileName) ? (
+                            <div className="space-y-2">
+                              <img 
+                                src={(msg as any).fileUrl} 
+                                alt={(msg as any).fileName}
+                                className="max-w-xs rounded-lg shadow-sm cursor-pointer"
+                                onClick={() => window.open((msg as any).fileUrl, '_blank')}
+                              />
+                              <div className="flex items-center space-x-2">
+                                <Image className="w-3 h-3 text-gray-500" />
+                                <p className="text-xs text-gray-600">{(msg as any).fileName}</p>
+                                {(msg as any).fileSize && (
+                                  <p className="text-xs text-gray-500">
+                                    {((msg as any).fileSize / 1024).toFixed(1)} KB
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-center space-x-2">
+                              <Paperclip className="w-4 h-4 text-gray-500" />
+                              <div>
+                                <p className="text-sm font-medium">{(msg as any).fileName || msg.content}</p>
+                                {(msg as any).fileSize && (
+                                  <p className="text-xs text-gray-500">
+                                    {((msg as any).fileSize / 1024).toFixed(1)} KB
+                                  </p>
+                                )}
+                              </div>
+                              {(msg as any).fileUrl && (
+                                <a
+                                  href={(msg as any).fileUrl}
+                                  download={(msg as any).fileName}
+                                  className="text-primary hover:text-primary-dark text-xs underline"
+                                >
+                                  Download
+                                </a>
+                              )}
+                            </div>
                           )}
                         </div>
                       ) : (
@@ -428,43 +473,6 @@ export default function ChatView({ conversationId }: ChatViewProps) {
 
       {/* Message Input - Smaller */}
       <div className="bg-white border-t border-gray-200 p-3 mt-auto">
-        {/* File Upload Area */}
-        {selectedFile && (
-          <div className="mb-3 p-2 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Paperclip className="w-4 h-4 text-gray-500" />
-                <span className="text-sm text-gray-700">{selectedFile.name}</span>
-                <span className="text-xs text-gray-500">({(selectedFile.size / 1024).toFixed(1)} KB)</span>
-              </div>
-              <div className="flex space-x-2">
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={handleSendFile}
-                  disabled={sendFileMessageMutation.isPending}
-                  className="bg-primary hover:bg-primary-dark h-7 px-3"
-                >
-                  {sendFileMessageMutation.isPending ? (
-                    <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></div>
-                  ) : (
-                    "Send File"
-                  )}
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedFile(null)}
-                  className="h-7 px-2"
-                >
-                  ×
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-        
         <form onSubmit={handleSendMessage} className="flex items-center space-x-2">
           <div className="flex-1 relative">
             <Input
@@ -489,10 +497,14 @@ export default function ChatView({ conversationId }: ChatViewProps) {
                 variant="ghost" 
                 size="sm" 
                 className="p-0 w-4 h-4" 
-                disabled={conversation?.mode === 'ai' || !conversation?.mode}
+                disabled={(conversation?.mode === 'ai' || !conversation?.mode) || isUploadingFile}
                 onClick={() => fileInputRef.current?.click()}
               >
-                <Paperclip className="w-3 h-3 text-gray-400" />
+                {isUploadingFile ? (
+                  <div className="w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <Paperclip className="w-3 h-3 text-gray-400" />
+                )}
               </Button>
             </div>
           </div>
