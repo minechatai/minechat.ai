@@ -35,8 +35,8 @@ export default function Header({ title, onMenuClick, sidebarCollapsed = false }:
           >
             <Menu className="w-5 h-5" />
           </Button>
-          {/* Title aligned to match Dashboard 1 design with proper spacing */}
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-white ml-8">{title}</h1>
+          {/* Hide title from header - will be shown in page content instead */}
+          {/* <h1 className="text-xl font-semibold text-gray-900 dark:text-white ml-8">{title}</h1> */}
         </div>
         
         <div className="flex items-center space-x-4">
