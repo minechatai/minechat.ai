@@ -124,6 +124,10 @@ export const messages = pgTable("messages", {
   content: text("content").notNull(),
   messageType: varchar("message_type").default("text"), // 'text', 'image', 'file'
   metadata: jsonb("metadata"),
+  // File-specific fields for file messages
+  fileUrl: varchar("file_url"),
+  fileName: varchar("file_name"),
+  fileSize: integer("file_size"),
   // Human sender profile information (for message attribution)
   humanSenderProfileId: varchar("human_sender_profile_id"),
   humanSenderName: varchar("human_sender_name"),

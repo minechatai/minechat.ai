@@ -118,7 +118,7 @@ export default function ChatView({ conversationId }: ChatViewProps) {
       const formData = new FormData();
       formData.append('file', data.file);
       formData.append('conversationId', data.conversationId.toString());
-      formData.append('senderType', 'assistant');
+      formData.append('senderType', isAiMode ? 'assistant' : 'human');
       
       const response = await fetch('/api/messages/file', {
         method: 'POST',
@@ -334,7 +334,30 @@ export default function ChatView({ conversationId }: ChatViewProps) {
                     </Avatar>
                     <div>
                       <div className="bg-white p-3 rounded-lg shadow-sm">
-                        <p className="text-sm text-gray-900">{msg.content}</p>
+                        {msg.messageType === 'file' ? (
+                          <div className="flex items-center space-x-2">
+                            <Paperclip className="w-4 h-4 text-gray-500" />
+                            <div>
+                              <p className="text-sm text-gray-900 font-medium">{(msg as any).fileName || msg.content}</p>
+                              {(msg as any).fileSize && (
+                                <p className="text-xs text-gray-500">
+                                  {((msg as any).fileSize / 1024).toFixed(1)} KB
+                                </p>
+                              )}
+                            </div>
+                            {(msg as any).fileUrl && (
+                              <a
+                                href={(msg as any).fileUrl}
+                                download={(msg as any).fileName}
+                                className="text-primary hover:text-primary-dark text-xs underline"
+                              >
+                                Download
+                              </a>
+                            )}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-900">{msg.content}</p>
+                        )}
                       </div>
                       <p className="text-xs text-gray-500 mt-1">{formatTime(msg.createdAt)}</p>
                     </div>
@@ -367,7 +390,30 @@ export default function ChatView({ conversationId }: ChatViewProps) {
                           {msg.senderType === 'human' ? ((msg as any).humanSenderName || 'Team Member') : 'AI Assistant'}
                         </span>
                       </div>
-                      <p className="text-sm">{msg.content}</p>
+                      {msg.messageType === 'file' ? (
+                        <div className="flex items-center space-x-2">
+                          <Paperclip className="w-4 h-4 text-gray-500" />
+                          <div>
+                            <p className="text-sm font-medium">{(msg as any).fileName || msg.content}</p>
+                            {(msg as any).fileSize && (
+                              <p className="text-xs text-gray-500">
+                                {((msg as any).fileSize / 1024).toFixed(1)} KB
+                              </p>
+                            )}
+                          </div>
+                          {(msg as any).fileUrl && (
+                            <a
+                              href={(msg as any).fileUrl}
+                              download={(msg as any).fileName}
+                              className="text-primary hover:text-primary-dark text-xs underline"
+                            >
+                              Download
+                            </a>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-sm">{msg.content}</p>
+                      )}
                     </div>
                     <p className="text-xs text-gray-500 mt-1 text-right">{formatTime(msg.createdAt)}</p>
                   </div>
