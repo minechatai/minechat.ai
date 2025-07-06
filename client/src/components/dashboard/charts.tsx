@@ -54,26 +54,26 @@ export default function Charts({ messagesData, hourlyData, faqData, faqLoading }
 
   return (
     <>
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      {/* Charts Row - Reduced spacing */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
         {/* Messages Sent Chart */}
         <Card className="bg-white dark:bg-gray-900 shadow-sm border border-gray-200 dark:border-gray-700">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">Messages Sent</CardTitle>
             <ExternalLink className="w-4 h-4 text-gray-400" />
           </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-center space-x-8">
+          <CardContent className="pb-4">
+            <div className="flex items-center justify-center space-x-6">
               <div className="relative">
-                <div className="w-32 h-32">
+                <div className="w-24 h-24">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
                         data={pieData}
                         cx="50%"
                         cy="50%"
-                        innerRadius={40}
-                        outerRadius={64}
+                        innerRadius={30}
+                        outerRadius={48}
                         paddingAngle={0}
                         dataKey="value"
                       >
@@ -86,18 +86,18 @@ export default function Charts({ messagesData, hourlyData, faqData, faqLoading }
                 </div>
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-gray-900 dark:text-white">{totalMessages}</div>
+                    <div className="text-xl font-bold text-gray-900 dark:text-white">{totalMessages}</div>
                     <div className="text-xs text-gray-500 dark:text-gray-400">Total</div>
                   </div>
                 </div>
               </div>
-              <div className="space-y-3">
-                <div className="flex items-center space-x-3">
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
                   <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#9CA3AF' }}></div>
                   <span className="text-sm text-gray-600 dark:text-gray-400">Human</span>
                   <span className="text-sm font-semibold text-gray-900 dark:text-white">{humanPercentage}%</span>
                 </div>
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2">
                   <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#A53860' }}></div>
                   <span className="text-sm text-gray-600 dark:text-gray-400">AI</span>
                   <span className="text-sm font-semibold text-gray-900 dark:text-white">{aiPercentage}%</span>
@@ -113,10 +113,10 @@ export default function Charts({ messagesData, hourlyData, faqData, faqLoading }
             <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">Frequently Asked Questions</CardTitle>
             <ExternalLink className="w-4 h-4 text-gray-400 dark:text-gray-500" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="pb-4">
             <div className="space-y-1">
               {faqLoading ? (
-                <div className="text-center text-gray-500 py-8">
+                <div className="text-center text-gray-500 py-4">
                   <p className="text-sm">Analyzing customer conversations...</p>
                 </div>
               ) : faqData && faqData.length > 0 ? (
@@ -135,7 +135,7 @@ export default function Charts({ messagesData, hourlyData, faqData, faqLoading }
                   </div>
                 ))
               ) : (
-                <div className="text-center text-gray-500 py-8">
+                <div className="text-center text-gray-500 py-4">
                   <p className="text-sm font-medium">No business questions found</p>
                   <p className="text-xs text-gray-400 mt-1">
                     Customer questions will appear here once you have conversations
@@ -147,25 +147,25 @@ export default function Charts({ messagesData, hourlyData, faqData, faqLoading }
         </Card>
       </div>
 
-      {/* Messages Per Hour Chart */}
+      {/* Messages Per Hour Chart - Reduced height */}
       <Card className="bg-white dark:bg-gray-900 shadow-sm border border-gray-200 dark:border-gray-700">
-        <CardHeader>
+        <CardHeader className="pb-2">
           <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">Conversations Per Hour</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="h-64">
+        <CardContent className="pb-4">
+          <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={hourlyData}>
                 <XAxis 
                   dataKey="hour" 
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fontSize: 12, fill: '#6B7280' }}
+                  tick={{ fontSize: 11, fill: '#6B7280' }}
                 />
                 <YAxis 
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fontSize: 12, fill: '#6B7280' }}
+                  tick={{ fontSize: 11, fill: '#6B7280' }}
                   domain={[0, 'dataMax + 2']}
                 />
                 <Tooltip 
@@ -187,11 +187,11 @@ export default function Charts({ messagesData, hourlyData, faqData, faqLoading }
                   type="monotone" 
                   dataKey="messages" 
                   stroke="#A53860" 
-                  strokeWidth={3}
+                  strokeWidth={2}
                   fill="#A53860"
                   fillOpacity={0.1}
-                  dot={{ fill: '#A53860', strokeWidth: 2, r: 4 }}
-                  activeDot={{ r: 6, fill: '#A53860' }}
+                  dot={{ fill: '#A53860', strokeWidth: 2, r: 3 }}
+                  activeDot={{ r: 5, fill: '#A53860' }}
                 />
               </LineChart>
             </ResponsiveContainer>

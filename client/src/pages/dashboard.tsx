@@ -261,9 +261,9 @@ export default function Dashboard() {
 
   return (
     <MainLayout title="Dashboard">
-      <div className="p-6">
-        {/* Date Range Selector */}
-        <div className="flex justify-end items-center space-x-3 mb-6">
+      <div className="p-4">
+        {/* Date Range Selector - Reduced margin */}
+        <div className="flex justify-end items-center space-x-3 mb-4">
           <Button 
             onClick={() => {
               console.log("🔍 Button clicked!");
@@ -309,12 +309,12 @@ export default function Dashboard() {
           </Popover>
         </div>
 
-        {/* Metrics Cards */}
-        <div className="mb-8">
+        {/* Metrics Cards - Reduced margin */}
+        <div className="mb-4">
           <MetricsCards data={metricsData} />
         </div>
 
-        {/* Charts */}
+        {/* Charts - No bottom margin needed */}
         <Charts 
           messagesData={messagesData}
           hourlyData={chartHourlyData}
