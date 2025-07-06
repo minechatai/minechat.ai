@@ -53,6 +53,10 @@ export default function Dashboard() {
     enabled: isAuthenticated,
   });
 
+  // Debug the query parameters
+  console.log("🔍 FAQ Query - Current dateRange:", dateRange);
+  console.log("🔍 FAQ Query - Query key:", ["/api/faq-analysis", dateRange.startDate, dateRange.endDate]);
+
   // Handle unauthorized errors
   useEffect(() => {
     if (error && isUnauthorizedError(error as Error)) {
@@ -121,6 +125,7 @@ export default function Dashboard() {
   // Handle date range changes
   const handleShowToday = () => {
     const today = new Date().toISOString().split('T')[0];
+    console.log("🔍 Show Today clicked - Setting date range to:", today);
     setDateRange({
       startDate: today,
       endDate: today
