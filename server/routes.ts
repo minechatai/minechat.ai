@@ -1090,18 +1090,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         console.log("🔍 Conversations Per Hour Debug - Messages by hour:", messagesByHour);
         
-        // Calculate averages (for date ranges) or show today's data
+        // Show total messages for date ranges, actual data for today
         const isToday = startDate === endDate && startDate === new Date().toISOString().split('T')[0];
         
         hourlyData.forEach(item => {
           const count = messagesByHour[item.hourValue] || 0;
-          if (isToday) {
-            // Show today's actual data
-            item.messages = count;
-          } else {
-            // Show average across the date range
-            item.messages = daysDiff > 0 ? Math.round(count / daysDiff) : 0;
-          }
+          // Always show actual total count, not average
+          item.messages = count;
         });
       }
       

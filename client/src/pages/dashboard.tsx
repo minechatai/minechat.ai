@@ -261,7 +261,7 @@ export default function Dashboard() {
 
   return (
     <MainLayout title="Dashboard">
-      <div className="p-4 min-h-full">
+      <div className="p-4 flex flex-col min-h-full">
         {/* Date Range Selector - Reduced margin */}
         <div className="flex justify-end items-center space-x-3 mb-4">
           <Button 
@@ -314,13 +314,15 @@ export default function Dashboard() {
           <MetricsCards data={metricsData} />
         </div>
 
-        {/* Charts - No bottom margin needed */}
-        <Charts 
-          messagesData={messagesData}
-          hourlyData={chartHourlyData}
-          faqData={(faqData as any) || []}
-          faqLoading={faqLoading}
-        />
+        {/* Charts - Flex to fill remaining space */}
+        <div className="flex-1 min-h-0">
+          <Charts 
+            messagesData={messagesData}
+            hourlyData={chartHourlyData}
+            faqData={(faqData as any) || []}
+            faqLoading={faqLoading}
+          />
+        </div>
       </div>
     </MainLayout>
   );
