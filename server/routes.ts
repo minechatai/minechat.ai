@@ -13,6 +13,157 @@ import multer from "multer";
 import path from "path";
 import express from "express";
 
+// Helper function to analyze messages for business questions using AI
+async function analyzeMessagesForQuestions(messages: any[], userId: string) {
+  const businessQuestions: string[] = [];
+  
+  // Create a prompt to extract business-related questions
+  const questionDetectionPrompt = `
+    Analyze the following customer messages and extract only business-related questions. 
+    Focus on questions about: products/services, pricing, office hours, location/address, contact info, policies, features, availability, ordering, support, etc.
+    
+    EXCLUDE: personal chit-chat, off-topic questions, and non-business inquiries.
+    
+    Return only the business questions, one per line. Rephrase them in a clear, professional way if needed.
+    If a statement implies a question (like "Tell me about your services"), convert it to a question format.
+    
+    Messages to analyze:
+    ${messages.map(m => `- ${m.content}`).join('\n')}
+  `;
+
+  try {
+    // Try OpenAI API for question detection
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-3.5-turbo',
+        messages: [{ role: 'user', content: questionDetectionPrompt }],
+        max_tokens: 500,
+        temperature: 0.3,
+      }),
+    });
+
+    if (response.ok) {
+      const aiResponse = await response.json();
+      const extractedQuestions = aiResponse.choices[0]?.message?.content || "";
+      
+      // Parse the response and filter out empty lines
+      const questions = extractedQuestions
+        .split('\n')
+        .map((q: string) => q.replace(/^[-*]\s*/, '').trim())
+        .filter((q: string) => q.length > 10); // Filter out very short responses
+        
+      businessQuestions.push(...questions);
+    } else {
+      // Fallback: use basic keyword detection
+      const businessKeywords = [
+        'price', 'cost', 'how much', 'pricing', 'price list',
+        'hours', 'open', 'closed', 'available', 'schedule',
+        'where', 'location', 'address', 'directions',
+        'contact', 'phone', 'email', 'reach',
+        'services', 'products', 'offer', 'provide', 'sell',
+        'policy', 'return', 'refund', 'warranty', 'guarantee',
+        'support', 'help', 'assistance', 'problem',
+        'order', 'buy', 'purchase', 'payment', 'delivery'
+      ];
+      
+      messages.forEach(message => {
+        const content = message.content.toLowerCase();
+        const hasBusinessKeyword = businessKeywords.some(keyword => content.includes(keyword));
+        const isQuestion = content.includes('?') || 
+                          content.startsWith('what') || 
+                          content.startsWith('how') || 
+                          content.startsWith('when') || 
+                          content.startsWith('where') || 
+                          content.startsWith('why') || 
+                          content.startsWith('can') || 
+                          content.startsWith('do you') || 
+                          content.startsWith('does') ||
+                          content.startsWith('tell me');
+        
+        if (hasBusinessKeyword && (isQuestion || content.length < 100)) {
+          businessQuestions.push(message.content);
+        }
+      });
+    }
+  } catch (error) {
+    console.error("Error in AI question analysis:", error);
+    
+    // Fallback to keyword-based detection
+    const businessKeywords = [
+      'price', 'cost', 'how much', 'pricing',
+      'hours', 'open', 'closed', 'available',
+      'where', 'location', 'address',
+      'contact', 'phone', 'email',
+      'services', 'products', 'offer',
+      'policy', 'return', 'refund',
+      'support', 'help', 'order'
+    ];
+    
+    messages.forEach(message => {
+      const content = message.content.toLowerCase();
+      const hasBusinessKeyword = businessKeywords.some(keyword => content.includes(keyword));
+      const isQuestion = content.includes('?') || content.startsWith('what') || content.startsWith('how');
+      
+      if (hasBusinessKeyword && isQuestion) {
+        businessQuestions.push(message.content);
+      }
+    });
+  }
+  
+  return businessQuestions;
+}
+
+// Helper function to group similar questions
+function groupSimilarQuestions(questions: string[]) {
+  const groups: { question: string; count: number; variants: string[] }[] = [];
+  
+  questions.forEach(question => {
+    const cleanQuestion = question.toLowerCase().replace(/[?!.]/g, '');
+    
+    // Find if this question is similar to an existing group
+    let matchedGroup = groups.find(group => {
+      const cleanGroupQuestion = group.question.toLowerCase().replace(/[?!.]/g, '');
+      
+      // Check for keyword similarity
+      const questionWords = cleanQuestion.split(' ').filter(w => w.length > 3);
+      const groupWords = cleanGroupQuestion.split(' ').filter(w => w.length > 3);
+      
+      const commonWords = questionWords.filter(word => 
+        groupWords.some(groupWord => 
+          groupWord.includes(word) || word.includes(groupWord)
+        )
+      );
+      
+      // Consider similar if they share significant keywords
+      return commonWords.length >= Math.min(2, Math.floor(questionWords.length / 2));
+    });
+    
+    if (matchedGroup) {
+      matchedGroup.count++;
+      matchedGroup.variants.push(question);
+      
+      // Use the most common phrasing (shortest, most professional)
+      if (question.length < matchedGroup.question.length && 
+          (question.includes('?') || !matchedGroup.question.includes('?'))) {
+        matchedGroup.question = question;
+      }
+    } else {
+      groups.push({
+        question: question,
+        count: 1,
+        variants: [question]
+      });
+    }
+  });
+  
+  return groups;
+}
+
 // Configure multer for file uploads
 const upload = multer({
   dest: 'uploads/',
@@ -657,6 +808,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching analytics:", error);
       res.status(500).json({ message: "Failed to fetch analytics" });
+    }
+  });
+
+  // FAQ Analysis endpoint
+  app.get('/api/faq-analysis', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { startDate, endDate } = req.query;
+      
+      // Get all customer messages within date range
+      const messages = await storage.getMessagesForFaqAnalysis(userId, startDate, endDate);
+      
+      if (!messages || messages.length === 0) {
+        return res.json([]);
+      }
+      
+      // Get existing FAQs to check against
+      const business = await storage.getBusiness(userId);
+      const existingFaqs = business?.faqs ? JSON.parse(business.faqs) : [];
+      const existingQuestions = existingFaqs.map((faq: any) => faq.question.toLowerCase());
+      
+      // Analyze messages to extract questions using AI
+      const businessQuestions = await analyzeMessagesForQuestions(messages, userId);
+      
+      // Group similar questions and count occurrences
+      const questionGroups = groupSimilarQuestions(businessQuestions);
+      
+      // Get top 5 and mark if already in FAQ
+      const topQuestions = questionGroups
+        .sort((a: any, b: any) => b.count - a.count)
+        .slice(0, 5)
+        .map((group: any) => ({
+          ...group,
+          isInFaq: existingQuestions.some((existing: any) => 
+            group.question.toLowerCase().includes(existing) || 
+            existing.includes(group.question.toLowerCase())
+          )
+        }));
+      
+      res.json(topQuestions);
+    } catch (error) {
+      console.error("Error analyzing FAQs:", error);
+      res.status(500).json({ message: "Failed to analyze FAQs" });
     }
   });
 

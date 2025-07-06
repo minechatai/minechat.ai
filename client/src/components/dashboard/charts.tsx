@@ -1,6 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ExternalLink, TrendingUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ExternalLink, TrendingUp, Plus } from "lucide-react";
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from "recharts";
+import { useToast } from "@/hooks/use-toast";
 
 interface ChartsProps {
   messagesData: {
@@ -15,10 +17,14 @@ interface ChartsProps {
   faqData: Array<{
     question: string;
     count: number;
+    isInFaq?: boolean;
   }>;
+  faqLoading?: boolean;
 }
 
-export default function Charts({ messagesData, hourlyData, faqData }: ChartsProps) {
+export default function Charts({ messagesData, hourlyData, faqData, faqLoading }: ChartsProps) {
+  const { toast } = useToast();
+
   const pieData = [
     { name: 'Human', value: messagesData.human, color: '#A53860' },
     { name: 'AI', value: messagesData.ai, color: '#9CA3AF' }
@@ -27,6 +33,25 @@ export default function Charts({ messagesData, hourlyData, faqData }: ChartsProp
   const totalMessages = messagesData.human + messagesData.ai;
   const humanPercentage = totalMessages > 0 ? Math.round((messagesData.human / totalMessages) * 100) : 0;
   const aiPercentage = totalMessages > 0 ? Math.round((messagesData.ai / totalMessages) * 100) : 0;
+
+  const handleAddToFaq = async (question: string) => {
+    try {
+      // Navigate to Setup page and pre-populate the FAQ form
+      const searchParams = new URLSearchParams({
+        tab: 'business',
+        action: 'add-faq',
+        question: question
+      });
+      
+      window.location.href = `/setup?${searchParams.toString()}`;
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add question to FAQ list",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <>
@@ -83,26 +108,47 @@ export default function Charts({ messagesData, hourlyData, faqData }: ChartsProp
           </CardContent>
         </Card>
 
-        {/* Most Asked Questions */}
+        {/* Frequently Asked Questions */}
         <Card className="bg-white dark:bg-gray-900 shadow-sm border border-gray-200 dark:border-gray-700">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">Most Asked Questions</CardTitle>
+            <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">Frequently Asked Questions</CardTitle>
             <ExternalLink className="w-4 h-4 text-gray-400 dark:text-gray-500" />
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {faqData.length > 0 ? (
-                faqData.map((item, index) => (
-                  <div key={index} className="flex items-center space-x-3">
-                    <TrendingUp className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                    <span className="flex-1 text-sm text-gray-700 dark:text-gray-400">
-                      {item.question}({item.count})
-                    </span>
+              {faqLoading ? (
+                <div className="text-center text-gray-500 py-8">
+                  <p className="text-sm">Analyzing customer conversations...</p>
+                </div>
+              ) : faqData && faqData.length > 0 ? (
+                faqData.slice(0, 5).map((item, index) => (
+                  <div key={index} className="flex items-center justify-between space-x-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <div className="flex items-center space-x-3 flex-1">
+                      <TrendingUp className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                      <span className="flex-1 text-sm text-gray-700 dark:text-gray-400">
+                        {item.question} ({item.count})
+                      </span>
+                    </div>
+                    {!item.isInFaq && (
+                      <Button
+                        onClick={() => handleAddToFaq(item.question)}
+                        size="sm"
+                        variant="outline"
+                        className="text-xs flex items-center space-x-1"
+                      >
+                        <Plus className="w-3 h-3" />
+                        <span>Add to FAQ List</span>
+                      </Button>
+                    )}
                   </div>
                 ))
               ) : (
                 <div className="text-center text-gray-500 py-8">
-                  <p className="text-sm">No questions data available</p>
+                  <TrendingUp className="w-8 h-8 mx-auto mb-3 text-gray-300" />
+                  <p className="text-sm font-medium">No business questions found</p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    Customer questions will appear here once you have conversations
+                  </p>
                 </div>
               )}
             </div>

@@ -79,6 +79,9 @@ export interface IStorage {
   getAnalytics(userId: string): Promise<Analytics | undefined>;
   upsertAnalytics(userId: string, analytics: InsertAnalytics): Promise<Analytics>;
 
+  // FAQ Analysis operations
+  getMessagesForFaqAnalysis(userId: string, startDate?: string, endDate?: string): Promise<Message[]>;
+
   // Channel operations
   getChannel(userId: string): Promise<Channel | undefined>;
   upsertChannel(userId: string, channel: InsertChannel): Promise<Channel>;
@@ -504,6 +507,52 @@ export class DatabaseStorage implements IStorage {
       .update(userProfiles)
       .set({ isActive: true })
       .where(eq(userProfiles.id, profileId));
+  }
+
+  // FAQ Analysis operations
+  async getMessagesForFaqAnalysis(userId: string, startDate?: string, endDate?: string): Promise<Message[]> {
+    try {
+      console.log("Database connection established");
+      
+      let query = db
+        .select()
+        .from(messages)
+        .innerJoin(conversations, eq(messages.conversationId, conversations.id))
+        .where(
+          and(
+            eq(conversations.userId, userId),
+            eq(messages.senderType, "customer") // Only get customer messages
+          )
+        )
+        .orderBy(desc(messages.createdAt));
+
+      // Add date filtering if provided
+      if (startDate && endDate) {
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999); // Include full end date
+        
+        query = db
+          .select()
+          .from(messages)
+          .innerJoin(conversations, eq(messages.conversationId, conversations.id))
+          .where(
+            and(
+              eq(conversations.userId, userId),
+              eq(messages.senderType, "customer"),
+              sql`${messages.createdAt} >= ${start}`,
+              sql`${messages.createdAt} <= ${end}`
+            )
+          )
+          .orderBy(desc(messages.createdAt));
+      }
+
+      const result = await query;
+      return result.map(row => row.messages);
+    } catch (error) {
+      console.error("Error fetching messages for FAQ analysis:", error);
+      throw error;
+    }
   }
 }
 

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -7,11 +7,18 @@ import MainLayout from "@/components/layout/main-layout";
 import MetricsCards from "@/components/dashboard/metrics-cards";
 import Charts from "@/components/dashboard/charts";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Calendar } from "lucide-react";
 
 export default function Dashboard() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
+  
+  // Date range state
+  const [dateRange, setDateRange] = useState({
+    startDate: "2025-01-01",
+    endDate: "2025-12-31"
+  });
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -30,6 +37,12 @@ export default function Dashboard() {
 
   const { data: analytics, isLoading: analyticsLoading, error } = useQuery({
     queryKey: ["/api/analytics"],
+    enabled: isAuthenticated,
+  });
+
+  // FAQ Analysis query
+  const { data: faqData, isLoading: faqLoading } = useQuery({
+    queryKey: ["/api/faq-analysis", dateRange.startDate, dateRange.endDate],
     enabled: isAuthenticated,
   });
 
@@ -84,37 +97,71 @@ export default function Dashboard() {
   };
 
   const metricsData = {
-    unreadMessages: analytics?.unreadMessages || 0,
-    moneySaved: analytics?.moneySaved || "0",
-    leads: analytics?.leads || 0,
-    opportunities: analytics?.opportunities || 0,
-    followUps: analytics?.followUps || 0,
+    unreadMessages: (analytics as any)?.unreadMessages || 0,
+    moneySaved: (analytics as any)?.moneySaved || "0",
+    leads: (analytics as any)?.leads || 0,
+    opportunities: (analytics as any)?.opportunities || 0,
+    followUps: (analytics as any)?.followUps || 0,
   };
 
   const messagesData = {
-    human: analytics?.messagesHuman || 0,
-    ai: analytics?.messagesAi || 0,
+    human: (analytics as any)?.messagesHuman || 0,
+    ai: (analytics as any)?.messagesAi || 0,
   };
 
-  const hourlyData = analytics?.hourlyData || generateHourlyData();
+  const hourlyData = (analytics as any)?.hourlyData || generateHourlyData();
 
-  const faqData = [
-    { question: "Do you provide demos?", count: 26 },
-    { question: "Will this work on mobile or just in desktop?", count: 22 },
-    { question: "What are your pricing plans?", count: 18 },
-    { question: "Do you offer customer support?", count: 15 },
-    { question: "Can I integrate with my existing tools?", count: 12 },
-  ];
+  // Handle date range changes
+  const handleShowToday = () => {
+    const today = new Date().toISOString().split('T')[0];
+    setDateRange({
+      startDate: today,
+      endDate: today
+    });
+  };
+
+  const formatDateRange = (start: string, end: string) => {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    
+    if (start === end) {
+      return startDate.toLocaleDateString('en-US', { 
+        day: 'numeric', 
+        month: 'short', 
+        year: 'numeric' 
+      });
+    }
+    
+    return `${startDate.toLocaleDateString('en-US', { 
+      day: 'numeric', 
+      month: 'short', 
+      year: 'numeric' 
+    })} - ${endDate.toLocaleDateString('en-US', { 
+      day: 'numeric', 
+      month: 'short', 
+      year: 'numeric' 
+    })}`;
+  };
 
   return (
     <MainLayout title="Dashboard">
       <div className="p-6">
         {/* Date Range Selector */}
-        <div className="flex justify-end mb-6">
+        <div className="flex justify-end items-center space-x-3 mb-6">
+          <Button 
+            onClick={handleShowToday}
+            variant="outline"
+            size="sm"
+            className="text-sm"
+          >
+            Show Today
+          </Button>
           <Card className="border border-gray-300">
             <CardContent className="flex items-center space-x-2 p-3">
               <Calendar className="w-4 h-4 text-gray-500" />
-              <span className="text-sm text-gray-700">1 Jan 2025 - 31 Dec 2025</span>
+              <span className="text-sm text-gray-700">
+                {formatDateRange(dateRange.startDate, dateRange.endDate)}
+              </span>
             </CardContent>
           </Card>
         </div>
@@ -128,7 +175,8 @@ export default function Dashboard() {
         <Charts 
           messagesData={messagesData}
           hourlyData={hourlyData}
-          faqData={faqData}
+          faqData={(faqData as any) || []}
+          faqLoading={faqLoading}
         />
       </div>
     </MainLayout>
