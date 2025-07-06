@@ -120,13 +120,6 @@ export default function ConversationList({ selectedConversation, onSelectConvers
     <div className="w-full md:w-72 lg:w-80 xl:w-96 bg-white border-r border-gray-200 flex flex-col">
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold text-gray-900">Chat</h2>
-          <Button className="bg-primary text-white hover:bg-primary-dark">
-            <Plus className="w-4 h-4 mr-2" />
-            Create New
-          </Button>
-        </div>
         
         <div className="flex items-center gap-3">
           <div className="relative flex-1">

@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { Business } from "@shared/schema";
 
 interface HeaderProps {
-  title: string;
+  title?: string;
   onMenuClick?: () => void;
   sidebarCollapsed?: boolean;
 }

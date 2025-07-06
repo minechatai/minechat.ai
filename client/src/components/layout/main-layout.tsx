@@ -4,7 +4,7 @@ import Header from "./header";
 
 interface MainLayoutProps {
   children: React.ReactNode;
-  title: string;
+  title?: string;
 }
 
 export default function MainLayout({ children, title }: MainLayoutProps) {
