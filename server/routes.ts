@@ -14,6 +14,74 @@ import path from "path";
 import express from "express";
 
 // Helper function to analyze messages for business questions using AI
+async function groupQuestionsByIntent(questions: string[]): Promise<any[]> {
+  if (questions.length === 0) return [];
+  
+  // Simple semantic grouping for common patterns
+  const groups: { [key: string]: { question: string; count: number; variants: string[] } } = {};
+  
+  questions.forEach(question => {
+    const normalized = question.trim();
+    let groupKey = findSemanticGroup(normalized);
+    
+    if (!groups[groupKey]) {
+      groups[groupKey] = {
+        question: groupKey,
+        count: 0,
+        variants: []
+      };
+    }
+    
+    groups[groupKey].count++;
+    groups[groupKey].variants.push(normalized);
+  });
+  
+  return Object.values(groups);
+}
+
+function findSemanticGroup(question: string): string {
+  const lower = question.toLowerCase();
+  
+  // Products and services grouping
+  if ((lower.includes('product') || lower.includes('service')) && 
+      (lower.includes('what') || lower.includes('tell me') || lower.includes('about'))) {
+    return "What are your products and services?";
+  }
+  
+  // Specific product functionality
+  if (lower.includes('product') && (lower.includes('do') || lower.includes('does'))) {
+    return "What does your product do?";
+  }
+  
+  // Discount grouping
+  if (lower.includes('discount') || lower.includes('sale') || lower.includes('offer')) {
+    return "Do you have any discounts or special offers?";
+  }
+  
+  // Hours/availability grouping
+  if (lower.includes('hour') || lower.includes('open') || lower.includes('close') || lower.includes('time')) {
+    return "What are your business hours?";
+  }
+  
+  // Pricing grouping
+  if (lower.includes('price') || lower.includes('cost') || lower.includes('much')) {
+    return "What are your prices?";
+  }
+  
+  // Contact grouping
+  if (lower.includes('contact') || lower.includes('reach') || lower.includes('phone') || lower.includes('email')) {
+    return "How can I contact you?";
+  }
+  
+  // Location grouping
+  if (lower.includes('location') || lower.includes('address') || lower.includes('where')) {
+    return "Where are you located?";
+  }
+  
+  // Default: return the original question
+  return question;
+}
+
 async function analyzeMessagesForQuestions(messages: any[], userId: string) {
   const businessQuestions: string[] = [];
   
@@ -846,25 +914,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
                content.toLowerCase().startsWith('why') ||
                content.toLowerCase().startsWith('can') ||
                content.toLowerCase().startsWith('do you') ||
-               content.toLowerCase().startsWith('does');
+               content.toLowerCase().startsWith('does') ||
+               content.toLowerCase().startsWith('tell me');
       });
       
       console.log("🔍 FAQ Analysis Debug - Actual customer questions:", actualQuestions);
       
-      // Group identical questions and count occurrences
-      const questionCounts: { [key: string]: number } = {};
-      actualQuestions.forEach(question => {
-        const normalized = question.trim();
-        questionCounts[normalized] = (questionCounts[normalized] || 0) + 1;
-      });
+      // Group questions by semantic intent using AI analysis
+      const questionGroups = await groupQuestionsByIntent(actualQuestions);
       
-      const questionGroups = Object.entries(questionCounts).map(([question, count]) => ({
-        question,
-        count,
-        variants: [question]
-      }));
-      
-      console.log("🔍 FAQ Analysis Debug - Question groups from actual questions:", questionGroups);
+      console.log("🔍 FAQ Analysis Debug - Question groups by semantic intent:", questionGroups);
       
       // Get top 5 and mark if already in FAQ
       const topQuestions = questionGroups
