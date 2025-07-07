@@ -30,13 +30,13 @@ export default function ChatView({ conversationId }: ChatViewProps) {
   const { data: conversation, isLoading: conversationLoading } = useQuery<Conversation>({
     queryKey: [`/api/conversations/${conversationId}`],
     enabled: !!conversationId,
-    refetchInterval: 3000, // Refresh every 3 seconds
+    refetchInterval: 10000, // Refresh every 10 seconds
   });
 
   const { data: messages = [], isLoading: messagesLoading } = useQuery<Message[]>({
     queryKey: [`/api/conversations/${conversationId}/messages`],
     enabled: !!conversationId,
-    refetchInterval: 3000, // Refresh every 3 seconds
+    refetchInterval: 10000, // Refresh every 10 seconds
   });
 
   // Mark conversation as read when viewing it
@@ -295,7 +295,7 @@ export default function ChatView({ conversationId }: ChatViewProps) {
               </AvatarFallback>
             </Avatar>
             <div>
-              <h3 className="font-semibold text-gray-900">{conversation?.customerName || 'Customer'}</h3>
+              <h3 className="font-semibold text-gray-900">{conversation?.customerName || 'Unknown Customer'}</h3>
               <p 
                 className="text-sm text-blue-600 cursor-pointer hover:underline"
                 onClick={handleViewProfile}
@@ -356,8 +356,12 @@ export default function ChatView({ conversationId }: ChatViewProps) {
                   <div className="flex space-x-3 max-w-md lg:max-w-lg">
                     <Avatar className="w-8 h-8 flex-shrink-0">
                       <AvatarImage 
-                        src={conversation?.customerProfilePicture || undefined} 
+                        src={conversation?.customerProfilePicture} 
                         alt={conversation?.customerName || 'Customer'}
+                        onError={(e) => {
+                          console.log('Avatar image failed to load:', conversation?.customerProfilePicture);
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
                       />
                       <AvatarFallback className="bg-primary text-white text-xs">
                         {conversation?.customerName?.charAt(0).toUpperCase() || 'C'}

@@ -441,6 +441,10 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Facebook AI auto-responses working correctly with knowledge base integration
   - Notification system accurately tracking 82+ messages across conversations with real-time updates
   - Verified legitimate customer interactions: "Hey", "Who is Shazaib?", "How much is it?", "Do you have discounts?"
+  - Reduced excessive API polling from 3-second to 10-15 second intervals for better performance
+  - Fixed conversation auto-selection to display most recent chat automatically
+  - Customer profile pictures and names now displaying correctly (Chan Sou, Justine Joyce)
+  - System handling 82+ messages across conversations with proper sender type recognition
 
 # User Preferences
 
