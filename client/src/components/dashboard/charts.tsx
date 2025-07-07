@@ -26,7 +26,7 @@ export default function Charts({ messagesData, hourlyData, faqData, faqLoading }
 
   const pieData = [
     { name: 'Human', value: messagesData.human, color: '#9CA3AF' },
-    { name: 'AI', value: messagesData.ai, color: '#A53860' }
+    { name: 'AI', value: messagesData.ai, color: '#b33054' }
   ];
 
   const totalMessages = messagesData.human + messagesData.ai;
@@ -81,14 +81,14 @@ export default function Charts({ messagesData, hourlyData, faqData, faqLoading }
                 </div>
                 <div>
                   <div className="flex items-center space-x-3 mb-2">
-                    <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: '#A53860' }}></div>
+                    <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: '#b33054' }}></div>
                     <span className="text-sm text-gray-600 dark:text-gray-400">AI</span>
                     <span className="text-2xl font-bold text-gray-900 dark:text-white ml-12">{aiPercentage}%</span>
                   </div>
                   <div 
                     className="h-1 rounded-full" 
                     style={{ 
-                      backgroundColor: '#A53860',
+                      backgroundColor: '#b33054',
                       width: `${Math.max(aiPercentage * 4, 40)}px`
                     }}
                   ></div>

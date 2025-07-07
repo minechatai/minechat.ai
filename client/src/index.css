@@ -62,7 +62,7 @@ html {
   --card-foreground: hsl(20, 14.3%, 4.1%);
   --border: hsl(20, 5.9%, 90%);
   --input: hsl(20, 5.9%, 90%);
-  --primary: hsl(345, 46%, 51%);
+  --primary: #b33054;
   --primary-foreground: hsl(0, 0%, 100%);
   --secondary: hsl(60, 4.8%, 95.9%);
   --secondary-foreground: hsl(24, 9.8%, 10%);
@@ -74,7 +74,7 @@ html {
   --radius: 0.5rem;
   --sidebar-background: hsl(0, 0%, 100%);
   --sidebar-foreground: hsl(20, 14.3%, 4.1%);
-  --sidebar-primary: hsl(345, 46%, 51%);
+  --sidebar-primary: #b33054;
   --sidebar-primary-foreground: hsl(0, 0%, 100%);
   --sidebar-accent: hsl(60, 4.8%, 95.9%);
 }
@@ -125,7 +125,7 @@ html {
   --card-foreground: hsl(0, 0%, 98%);
   --border: hsl(215, 13.8%, 23.9%);
   --input: hsl(215, 13.8%, 23.9%);
-  --primary: hsl(345, 46%, 55%);
+  --primary: #b33054;
   --primary-foreground: hsl(0, 0%, 100%);
   --secondary: hsl(240, 3.7%, 15.9%);
   --secondary-foreground: hsl(0, 0%, 98%);
@@ -137,13 +137,13 @@ html {
   --radius: 0.5rem;
   --sidebar-background: hsl(240, 10%, 3.9%);
   --sidebar-foreground: hsl(0, 0%, 98%);
-  --sidebar-primary: hsl(345, 46%, 55%);
+  --sidebar-primary: #b33054;
   --sidebar-primary-foreground: hsl(0, 0%, 100%);
   --sidebar-accent: hsl(240, 3.7%, 15.9%);
   --sidebar-accent-foreground: hsl(0, 0%, 98%);
   --sidebar-border: hsl(240, 3.7%, 15.9%);
   --sidebar-ring: hsl(240, 4.9%, 83.9%);
-  --chart-1: hsl(345, 46%, 55%);
+  --chart-1: #b33054;
   --chart-2: hsl(25, 5.3%, 44.7%);
   --chart-3: hsl(240, 3.7%, 15.9%);
   --chart-4: hsl(0, 62.8%, 30.6%);
@@ -167,29 +167,29 @@ html {
 
 /* Custom styles for minechat.ai */
 .primary-burgundy {
-  background-color: hsl(345, 46%, 51%);
+  background-color: #b33054;
 }
 
 .text-primary-burgundy {
-  color: hsl(345, 46%, 51%);
+  color: #b33054;
 }
 
 .border-primary-burgundy {
-  border-color: hsl(345, 46%, 51%);
+  border-color: #b33054;
 }
 
 .hover\:bg-primary-burgundy:hover {
-  background-color: hsl(345, 46%, 46%);
+  background-color: #a12d4a;
 }
 
 /* Ensure consistent button styling */
 .btn-primary {
-  background-color: hsl(345, 46%, 51%);
+  background-color: #b33054;
   color: hsl(0, 0%, 100%);
 }
 
 .btn-primary:hover {
-  background-color: hsl(345, 46%, 46%);
+  background-color: #a12d4a;
 }
 
 /* Minechat Red Brand Gradient */
