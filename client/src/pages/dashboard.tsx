@@ -20,13 +20,18 @@ export default function Dashboard() {
   const queryClient = useQueryClient();
   
   // Date range state - initialize with today's date to show today by default
-  const getCurrentDate = () => new Date().toISOString().split('T')[0];
+  const getCurrentDate = () => {
+    // Get current date in Philippines timezone (UTC+8)
+    const now = new Date();
+    const philippinesTime = new Date(now.getTime() + (8 * 60 * 60 * 1000));
+    return philippinesTime.toISOString().split('T')[0];
+  };
   const [dateRange, setDateRange] = useState<{
     startDate?: string;
     endDate?: string;
   }>(() => {
     const today = getCurrentDate();
-    console.log("🔍 Dashboard initialization - Current date:", today);
+    console.log("🔍 Dashboard initialization - Current date (Philippines time):", today);
     return {
       startDate: today,
       endDate: today
