@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { setupGoogleAuth } from "./googleAuth";
 import { setupAuthRoutes } from "./modules/auth/routes/authRoutes";
+import { setupBusinessRoutes } from "./modules/business/routes/businessRoutes";
 import { 
   insertBusinessSchema, 
   insertAiAssistantSchema, 
@@ -295,6 +296,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Setup modular auth routes
   setupAuthRoutes(app);
+
+  // Setup modular business routes
+  setupBusinessRoutes(app);
 
   // Business routes
   app.get('/api/business', isAuthenticated, async (req: any, res) => {

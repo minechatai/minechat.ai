@@ -34,7 +34,7 @@ export default function ChatView({ conversationId }: ChatViewProps) {
   });
 
   const { data: messages = [], isLoading: messagesLoading } = useQuery<Message[]>({
-    queryKey: [`/api/messages/${conversationId}`],
+    queryKey: [`/api/conversations/${conversationId}/messages`],
     enabled: !!conversationId,
     refetchInterval: 3000, // Refresh every 3 seconds
   });
@@ -347,6 +347,7 @@ export default function ChatView({ conversationId }: ChatViewProps) {
               />
               <p className="text-gray-500">No messages yet</p>
               <p className="text-sm text-gray-400">Send a message to start the conversation</p>
+
             </div>
           ) : (
             messages.map((msg: Message) => (

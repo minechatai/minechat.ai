@@ -433,6 +433,14 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Automatic marking of conversations as read when viewed in chat interface
   - Graceful error handling for database schema transitions
   - Replaces hardcoded "2" notification with dynamic system tracking customer messages from all channels
+- July 7, 2025: Critical Chat System Fixes and Facebook Integration Restoration
+  - Fixed major chat message display issue: corrected API route mismatch from `/api/messages/` to `/api/conversations/:id/messages`
+  - Standardized sender types in database: updated 56 'user' messages to 'customer' for consistent display
+  - Restored Facebook Messenger integration with fresh Page Access Token via environment variables
+  - Chat conversations now displaying properly with real customer messages (Chan Sou, Justine Joyce)
+  - Facebook AI auto-responses working correctly with knowledge base integration
+  - Notification system accurately tracking 82+ messages across conversations with real-time updates
+  - Verified legitimate customer interactions: "Hey", "Who is Shazaib?", "How much is it?", "Do you have discounts?"
 
 # User Preferences
 
