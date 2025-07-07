@@ -37,7 +37,7 @@ export default function Header({ title, onMenuClick, sidebarCollapsed = false }:
           </Button>
           
           {/* Company Logo and Name - aligned with sidebar Dashboard text */}
-          <div className="flex items-center space-x-2 ml-6 lg:ml-6">
+          <div className="flex items-center space-x-2">
             {business?.logoUrl ? (
               <img
                 src={business.logoUrl}
