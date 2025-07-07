@@ -109,7 +109,7 @@ export default function AiTestingPanel() {
         ) : (
           <div className="space-y-4">
             {messages.map((msg) => (
-              <div key={msg.id} className={`flex ${msg.isUser ? 'justify-start' : 'justify-end'}`}>
+              <div key={msg.id} className={`flex ${msg.isUser ? 'justify-end' : 'justify-start'}`}>
                 {msg.isUser ? (
                   <div className="flex space-x-3 max-w-md lg:max-w-lg">
                     <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
