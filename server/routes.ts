@@ -521,6 +521,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Messages Received Per Hour Analytics endpoint
+  app.get('/api/analytics/conversations-per-hour', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { startDate, endDate, comparisonPeriod } = req.query;
+      
+      console.log("🔍 Messages Received Per Hour Debug - User ID:", userId);
+      console.log("🔍 Messages Received Per Hour Debug - Date Range:", { startDate, endDate });
+      console.log("🔍 Messages Received Per Hour Debug - Comparison Period:", comparisonPeriod);
+      
+      // Get inbound customer messages only from legitimate conversations
+      const inboundMessages = await storage.getInboundCustomerMessages(userId, startDate, endDate);
+      
+      console.log("🔍 Messages Received Per Hour Debug - Customer Messages found:", inboundMessages.length);
+      
+      // Initialize hourly data array (24 hours)
+      const hourlyData = Array.from({ length: 24 }, (_, hour) => ({
+        hour: hour === 0 ? '12am' : hour === 12 ? '12pm' : hour < 12 ? `${hour}am` : `${hour - 12}pm`,
+        hourValue: hour,
+        messages: 0
+      }));
+      
+      if (inboundMessages.length > 0) {
+        // Count customer messages received by hour
+        const messagesByHour: { [key: number]: number } = {};
+        inboundMessages.forEach((message: any) => {
+          if (message.createdAt) {
+            const messageDate = new Date(message.createdAt);
+            const hour = messageDate.getHours();
+            messagesByHour[hour] = (messagesByHour[hour] || 0) + 1;
+          }
+        });
+        
+        console.log("🔍 Messages Received Per Hour Debug - Messages by hour:", messagesByHour);
+        
+        // Populate hourly data with actual message counts
+        hourlyData.forEach(item => {
+          const count = messagesByHour[item.hourValue] || 0;
+          item.messages = count;
+        });
+        
+        console.log("🔍 Messages Received Per Hour Debug - Sample hourly data:", hourlyData.slice(10, 14));
+      }
+      
+      console.log("🔍 Messages Received Per Hour Debug - Final hourly data total messages:", hourlyData.reduce((sum, h) => sum + h.messages, 0));
+      
+      res.json({
+        hourlyData,
+        totalInboundMessages: inboundMessages.length,
+        isToday: startDate === endDate && startDate === new Date().toISOString().split('T')[0]
+      });
+      
+    } catch (error) {
+      console.error("Error calculating messages received per hour:", error);
+      res.status(500).json({ message: "Failed to calculate messages received per hour" });
+    }
+  });
+
   // Channel routes
   app.get('/api/channels', isAuthenticated, async (req: any, res) => {
     try {
