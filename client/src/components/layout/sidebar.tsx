@@ -241,15 +241,15 @@ export default function Sidebar({ isOpen = false, isCollapsed = false, onClose, 
         </nav>
 
         {/* User section */}
-        <div className="flex-shrink-0 p-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex-shrink-0 px-3 py-2 border-t border-gray-200 dark:border-gray-700">
           {isCollapsed ? (
             <div className="relative group">
               <button
                 onClick={handleLogout}
-                className="flex items-center justify-center w-10 h-10 rounded-lg transition-colors text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
+                className="flex items-center justify-center w-8 h-8 rounded-lg transition-colors text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
                 title="Sign out"
               >
-                <LogOut className="h-5 w-5" />
+                <LogOut className="h-4 w-4" />
               </button>
               {/* Tooltip */}
               <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 whitespace-nowrap">
@@ -260,9 +260,9 @@ export default function Sidebar({ isOpen = false, isCollapsed = false, onClose, 
             <Button
               variant="ghost"
               onClick={handleLogout}
-              className="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
+              className="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white h-8 px-2 text-sm"
             >
-              <LogOut className="mr-3 h-5 w-5" />
+              <LogOut className="mr-2 h-4 w-4" />
               Sign out
             </Button>
           )}
