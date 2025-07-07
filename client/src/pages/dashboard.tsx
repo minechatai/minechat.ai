@@ -285,48 +285,75 @@ export default function Dashboard() {
   // Handle date picker changes with smart range reset
   const handleDateChange = (newDate: DateRange | undefined) => {
     console.log("🔍 Date picker change - newDate:", newDate, "isSelectingNewRange:", isSelectingNewRange);
+    console.log("🔍 Date picker change - current date:", date);
     
-    // If user clicks on a date and we already have a complete range, start fresh
-    if (date?.from && date?.to && newDate?.from && !newDate?.to) {
-      console.log("🔍 Date picker - Starting new range selection");
-      setIsSelectingNewRange(true);
-      setDate({ from: newDate.from, to: undefined });
+    // If we have a complete range and user selects a new date that would extend/modify the range,
+    // instead start fresh with just the new date
+    if (date?.from && date?.to && newDate?.from && newDate?.to && !isSelectingNewRange) {
+      // Check if this is actually a new selection (different from current range)
+      const isSameStartDate = newDate.from.getTime() === date.from.getTime();
+      const isSameEndDate = newDate.to.getTime() === date.to.getTime();
+      
+      if (!isSameStartDate || !isSameEndDate) {
+        // This is a new selection, check if we should reset
+        const isStartDateDifferent = newDate.from.getTime() !== date.from.getTime();
+        const isEndDateExtension = newDate.to.getTime() !== date.to.getTime();
+        
+        if (isStartDateDifferent && isEndDateExtension) {
+          // User clicked a different date and calendar auto-extended, reset instead
+          console.log("🔍 Date picker - Auto-extension detected, resetting to start fresh");
+          setIsSelectingNewRange(true);
+          setDate({ from: newDate.from, to: undefined });
+          return;
+        }
+      }
+    }
+    
+    // If we're in selecting new range mode, handle it normally
+    if (isSelectingNewRange) {
+      setDate(newDate);
+      if (newDate?.from && newDate?.to) {
+        console.log("🔍 Date picker - Completing new range selection");
+        setIsSelectingNewRange(false);
+        updateAnalyticsWithRange(newDate);
+      }
       return;
     }
     
-    // If we're in the middle of selecting a new range and user picks the end date
-    if (isSelectingNewRange && newDate?.from && newDate?.to) {
-      console.log("🔍 Date picker - Completing new range selection");
-      setIsSelectingNewRange(false);
-    }
-    
+    // Normal flow for when no reset is needed
     setDate(newDate);
     
     // Only update the analytics when we have a complete range
     if (newDate?.from && newDate?.to) {
-      // Use local date string to avoid timezone conversion issues
-      const startDate = newDate.from.getFullYear() + '-' + 
-        String(newDate.from.getMonth() + 1).padStart(2, '0') + '-' + 
-        String(newDate.from.getDate()).padStart(2, '0');
-      const endDate = newDate.to.getFullYear() + '-' + 
-        String(newDate.to.getMonth() + 1).padStart(2, '0') + '-' + 
-        String(newDate.to.getDate()).padStart(2, '0');
-      
-      console.log("🔍 Date picker change - Setting range:", { startDate, endDate });
-      
-      // Invalidate all analytics queries to force fresh data
-      queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/analytics/time-saved"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/analytics/messages-sent"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/analytics/conversations-per-hour"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/faq-analysis"] });
-      
-      setDateRange({
-        startDate,
-        endDate
-      });
-      setIsSelectingNewRange(false);
+      updateAnalyticsWithRange(newDate);
     }
+  };
+
+  // Helper function to update analytics with new date range
+  const updateAnalyticsWithRange = (dateRange: DateRange) => {
+    if (!dateRange.from || !dateRange.to) return;
+    
+    // Use local date string to avoid timezone conversion issues
+    const startDate = dateRange.from.getFullYear() + '-' + 
+      String(dateRange.from.getMonth() + 1).padStart(2, '0') + '-' + 
+      String(dateRange.from.getDate()).padStart(2, '0');
+    const endDate = dateRange.to.getFullYear() + '-' + 
+      String(dateRange.to.getMonth() + 1).padStart(2, '0') + '-' + 
+      String(dateRange.to.getDate()).padStart(2, '0');
+    
+    console.log("🔍 Date picker change - Setting range:", { startDate, endDate });
+    
+    // Invalidate all analytics queries to force fresh data
+    queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/analytics/time-saved"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/analytics/messages-sent"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/analytics/conversations-per-hour"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/faq-analysis"] });
+    
+    setDateRange({
+      startDate,
+      endDate
+    });
   };
 
   const formatDateRange = (start: string, end: string) => {
@@ -407,6 +434,11 @@ export default function Dashboard() {
                     console.log("🔍 Calendar Day Click - Resetting range, starting fresh with:", day);
                     setIsSelectingNewRange(true);
                     setDate({ from: day, to: undefined });
+                    
+                    // Prevent the default onSelect from firing
+                    setTimeout(() => {
+                      setDate({ from: day, to: undefined });
+                    }, 0);
                   }
                 }}
               />
