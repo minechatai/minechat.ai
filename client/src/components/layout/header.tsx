@@ -16,18 +16,12 @@ export default function Header({ title, onMenuClick, sidebarCollapsed = false }:
   const { user } = useAuth();
   
   // Fetch business information to display company logo
-  const { data: business, refetch: refetchBusiness } = useQuery<Business>({
-    queryKey: ['/api/business', Date.now()], // Add timestamp to force fresh request
+  const { data: business } = useQuery<Business>({
+    queryKey: ['/api/business'],
     enabled: !!user,
-    staleTime: 0, // Always fetch fresh data
-    cacheTime: 0, // Don't cache the result
-    refetchOnMount: true,
-    refetchOnWindowFocus: true
+    staleTime: 0,
+    cacheTime: 0
   });
-
-  // Debug logging
-  console.log('Header business data:', business);
-  console.log('Header logoUrl specifically:', business?.logoUrl);
 
 
 
@@ -66,7 +60,7 @@ export default function Header({ title, onMenuClick, sidebarCollapsed = false }:
             )}
             <div className="text-lg">
               <div className="font-semibold text-gray-900 dark:text-white">
-                {business?.companyName || 'Your Company'}
+                {business?.companyName || 'Loading...'}
               </div>
             </div>
           </div>
