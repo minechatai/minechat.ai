@@ -23,10 +23,10 @@ export default function UserProfileDropdown({ user }: UserProfileDropdownProps) 
     return name.split(' ').map(n => n[0]).join('').toUpperCase() || 'U';
   };
 
-  // Use active profile if available, fallback to main user
+  // Use active profile if available, fallback to main user's business logo
   const currentUser = activeProfile || {
     name: user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.email || 'User',
-    profileImageUrl: user?.profileImageUrl,
+    profileImageUrl: user?.profileImageUrl, // Keep showing user's actual profile picture
   };
 
   const handleUserSwitch = (profile: UserProfile) => {

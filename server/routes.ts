@@ -1127,9 +1127,10 @@ You represent ${business?.companyName || "this business"} and customers expect a
       await storage.createMessage({
         conversationId: conversation.id,
         senderId: senderId,
-        senderType: "user",
+        senderType: "customer",
         content: messageText,
-        messageType: "text"
+        messageType: "text",
+        readByAdmin: false
       });
 
       // Generate AI response using the same logic as the chat endpoint
