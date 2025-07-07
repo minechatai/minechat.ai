@@ -55,35 +55,14 @@ export default function Account() {
       
       console.log('🔍 Making request to /api/auth/profile-picture with current user:', user);
       
-      // Test session first
-      const testResponse = await fetch('/api/auth/user', {
-        method: 'GET',
-        credentials: 'include',
-      });
-      console.log('🔍 Test session response:', testResponse.status);
-      
-      // Use same credentials as other API calls
-      const response = await fetch('/api/auth/profile-picture', {
+      // Use apiRequest like all other successful API calls in the app
+      const response = await apiRequest('/api/auth/profile-picture', {
         method: 'POST',
         body: formData,
-        credentials: 'include', // Match the credentials used by other API calls
-        headers: {
-          // Don't set Content-Type for FormData - let browser set it with boundary
-        },
       });
       
-      console.log('🔍 Response status:', response.status);
-      console.log('🔍 Response headers:', [...response.headers.entries()]);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('🔍 Upload failed:', response.status, errorText);
-        throw new Error(`Failed to upload profile picture: ${response.status} - ${errorText}`);
-      }
-      
-      const result = await response.json();
-      console.log('🔍 Upload successful:', result);
-      return result;
+      console.log('🔍 Upload successful:', response);
+      return response;
     },
     onSuccess: async (data, file) => {
       queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
