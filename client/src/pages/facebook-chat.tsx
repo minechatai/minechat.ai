@@ -237,8 +237,8 @@ export default function FacebookChat() {
         {/* Conversations List */}
         <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
           {/* Header */}
-          <div className="p-4 border-b border-gray-200">
-            <div className="flex items-center gap-2 mb-4">
+          <div className="p-4 border-b border-gray-200 h-[89px] flex flex-col justify-center">
+            <div className="flex items-center gap-2">
               <svg viewBox="0 0 24 24" className="w-6 h-6">
                 <defs>
                   <linearGradient id="messenger-header-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -408,8 +408,8 @@ export default function FacebookChat() {
           {selectedConversation ? (
             <>
               {/* Chat Header */}
-              <div className="bg-white border-b border-gray-200 p-4">
-                <div className="flex items-center justify-between">
+              <div className="bg-white border-b border-gray-200 p-4 h-[89px] flex items-center">
+                <div className="flex items-center justify-between w-full">
                   <div className="flex items-center space-x-3">
                     <div className="relative">
                       <Avatar className="w-10 h-10">

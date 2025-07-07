@@ -259,8 +259,8 @@ export default function ChatView({ conversationId }: ChatViewProps) {
   return (
     <div className="flex-1 flex flex-col h-full">
       {/* Chat Header */}
-      <div className="bg-white border-b border-gray-200 p-4">
-        <div className="flex items-center justify-between">
+      <div className="bg-white border-b border-gray-200 p-4 h-[89px] flex items-center">
+        <div className="flex items-center justify-between w-full">
           <div className="flex items-center space-x-3">
             <Avatar className="w-10 h-10">
               <AvatarImage 

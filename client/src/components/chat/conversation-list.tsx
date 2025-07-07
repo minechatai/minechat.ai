@@ -120,9 +120,8 @@ export default function ConversationList({ selectedConversation, onSelectConvers
   return (
     <div className="w-full md:w-72 lg:w-80 xl:w-96 bg-white border-r border-gray-200 flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
-        
-        <div className="flex items-center gap-3">
+      <div className="p-4 border-b border-gray-200 h-[89px] flex items-center">
+        <div className="flex items-center gap-3 w-full">
           <div className="relative flex-1">
             <Input
               type="text"
