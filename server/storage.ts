@@ -100,6 +100,7 @@ export interface IStorage {
   // User profile operations
   getUserProfiles(businessOwnerId: string): Promise<UserProfile[]>;
   getUserProfile(profileId: string): Promise<UserProfile | undefined>;
+  getActiveUserProfile(businessOwnerId: string): Promise<UserProfile | undefined>;
   createUserProfile(businessOwnerId: string, profile: InsertUserProfile): Promise<UserProfile>;
   updateUserProfile(profileId: string, profile: Partial<InsertUserProfile>): Promise<UserProfile>;
   deleteUserProfile(profileId: string): Promise<void>;
@@ -476,6 +477,20 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(userProfiles)
       .where(eq(userProfiles.id, profileId));
+    return profile;
+  }
+
+  async getActiveUserProfile(businessOwnerId: string): Promise<UserProfile | undefined> {
+    const [profile] = await db
+      .select()
+      .from(userProfiles)
+      .where(
+        and(
+          eq(userProfiles.businessOwnerId, businessOwnerId),
+          eq(userProfiles.isActive, true)
+        )
+      )
+      .limit(1);
     return profile;
   }
 

@@ -2035,6 +2035,123 @@ You represent ${business?.companyName || "this business"} and customers expect a
     }
   }
 
+  // User Profile Management Routes
+  
+  // Get active user profile
+  app.get('/api/user-profiles/active', isAuthenticated, async (req: any, res) => {
+    try {
+      const businessOwnerId = req.user.claims.sub;
+      const activeProfile = await storage.getActiveUserProfile(businessOwnerId);
+      
+      if (!activeProfile) {
+        return res.status(404).json({ message: "No active user profile found" });
+      }
+      
+      res.json(activeProfile);
+    } catch (error) {
+      console.error("Error fetching active user profile:", error);
+      res.status(500).json({ message: "Failed to fetch active user profile" });
+    }
+  });
+
+  // Get all user profiles for the current business owner
+  app.get('/api/user-profiles', isAuthenticated, async (req: any, res) => {
+    try {
+      const businessOwnerId = req.user.claims.sub;
+      const profiles = await storage.getUserProfiles(businessOwnerId);
+      
+      // If there are profiles but none are active, set the first one as active
+      if (profiles.length > 0 && !profiles.some(p => p.isActive)) {
+        await storage.setActiveUserProfile(businessOwnerId, profiles[0].id);
+        // Refetch profiles to get the updated isActive status
+        const updatedProfiles = await storage.getUserProfiles(businessOwnerId);
+        res.json(updatedProfiles);
+      } else {
+        res.json(profiles);
+      }
+    } catch (error) {
+      console.error("Error fetching user profiles:", error);
+      res.status(500).json({ message: "Failed to fetch user profiles" });
+    }
+  });
+
+  // Create a new user profile
+  app.post('/api/user-profiles', isAuthenticated, async (req: any, res) => {
+    try {
+      const businessOwnerId = req.user.claims.sub;
+      const profileData = {
+        ...req.body,
+        isActive: false // New profiles are not active by default
+      };
+      
+      const newProfile = await storage.createUserProfile(businessOwnerId, profileData);
+      res.status(201).json(newProfile);
+    } catch (error) {
+      console.error("Error creating user profile:", error);
+      res.status(500).json({ message: "Failed to create user profile" });
+    }
+  });
+
+  // Update a user profile
+  app.put('/api/user-profiles/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const profileId = req.params.id;
+      const businessOwnerId = req.user.claims.sub;
+      
+      // Verify the profile belongs to the current business owner
+      const existingProfile = await storage.getUserProfile(profileId);
+      if (!existingProfile || existingProfile.businessOwnerId !== businessOwnerId) {
+        return res.status(404).json({ message: "Profile not found" });
+      }
+      
+      const updatedProfile = await storage.updateUserProfile(profileId, req.body);
+      res.json(updatedProfile);
+    } catch (error) {
+      console.error("Error updating user profile:", error);
+      res.status(500).json({ message: "Failed to update user profile" });
+    }
+  });
+
+  // Delete a user profile
+  app.delete('/api/user-profiles/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const profileId = req.params.id;
+      const businessOwnerId = req.user.claims.sub;
+      
+      // Verify the profile belongs to the current business owner
+      const existingProfile = await storage.getUserProfile(profileId);
+      if (!existingProfile || existingProfile.businessOwnerId !== businessOwnerId) {
+        return res.status(404).json({ message: "Profile not found" });
+      }
+      
+      await storage.deleteUserProfile(profileId);
+      res.json({ message: "User profile deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting user profile:", error);
+      res.status(500).json({ message: "Failed to delete user profile" });
+    }
+  });
+
+  // Activate a user profile (switch to this user)
+  app.post('/api/user-profiles/:id/activate', isAuthenticated, async (req: any, res) => {
+    try {
+      const businessOwnerId = req.user.claims.sub;
+      const profileId = req.params.id;
+      
+      // Verify the profile belongs to the current business owner
+      const existingProfile = await storage.getUserProfile(profileId);
+      if (!existingProfile || existingProfile.businessOwnerId !== businessOwnerId) {
+        return res.status(404).json({ message: "Profile not found" });
+      }
+      
+      await storage.setActiveUserProfile(businessOwnerId, profileId);
+      res.json({ message: "User profile activated successfully" });
+    } catch (error) {
+      console.error("Error activating user profile:", error);
+      res.status(500).json({ message: "Failed to activate user profile" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
