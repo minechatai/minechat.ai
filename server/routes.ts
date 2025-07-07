@@ -544,17 +544,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }));
       
       if (inboundMessages.length > 0) {
-        // Count customer messages received by hour
+        // Count customer messages received by hour (convert to Philippines timezone)
         const messagesByHour: { [key: number]: number } = {};
         inboundMessages.forEach((message: any) => {
           if (message.createdAt) {
-            const messageDate = new Date(message.createdAt);
-            const hour = messageDate.getHours();
+            // Convert UTC timestamp to Philippines time (UTC+8)
+            const utcDate = new Date(message.createdAt);
+            const philippinesOffset = 8 * 60; // 8 hours in minutes
+            const philippinesDate = new Date(utcDate.getTime() + (philippinesOffset * 60 * 1000));
+            const hour = philippinesDate.getHours();
+            
+            console.log(`🔍 Message ${message.id}: UTC ${utcDate.toISOString()} -> PH ${philippinesDate.toISOString()} (Hour: ${hour})`);
+            
             messagesByHour[hour] = (messagesByHour[hour] || 0) + 1;
           }
         });
         
-        console.log("🔍 Messages Received Per Hour Debug - Messages by hour:", messagesByHour);
+        console.log("🔍 Messages Received Per Hour Debug - Messages by hour (Philippines time):", messagesByHour);
         
         // Populate hourly data with actual message counts
         hourlyData.forEach(item => {
@@ -562,7 +568,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           item.messages = count;
         });
         
-        console.log("🔍 Messages Received Per Hour Debug - Sample hourly data:", hourlyData.slice(10, 14));
+        console.log("🔍 Messages Received Per Hour Debug - Sample hourly data:", hourlyData.slice(18, 22));
       }
       
       console.log("🔍 Messages Received Per Hour Debug - Final hourly data total messages:", hourlyData.reduce((sum, h) => sum + h.messages, 0));

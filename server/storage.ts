@@ -694,11 +694,19 @@ export class DatabaseStorage implements IStorage {
         )
         .orderBy(desc(messages.createdAt));
 
-      // Add date filtering if provided
+      // Add date filtering if provided (convert to Philippines timezone for accurate filtering)
       if (startDate && endDate) {
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        end.setHours(23, 59, 59, 999); // Include full end date
+        // Convert Philippines date to UTC for database filtering
+        const philippinesOffset = 8 * 60 * 60 * 1000; // 8 hours in milliseconds
+        
+        const startPH = new Date(startDate + 'T00:00:00.000');
+        const endPH = new Date(endDate + 'T23:59:59.999');
+        
+        // Convert to UTC by subtracting 8 hours
+        const startUTC = new Date(startPH.getTime() - philippinesOffset);
+        const endUTC = new Date(endPH.getTime() - philippinesOffset);
+        
+        console.log(`🔍 Date filtering: PH ${startDate} to ${endDate} -> UTC ${startUTC.toISOString()} to ${endUTC.toISOString()}`);
         
         query = db
           .select()
@@ -709,8 +717,8 @@ export class DatabaseStorage implements IStorage {
               eq(conversations.userId, userId),
               eq(messages.senderType, "customer"), // Only inbound customer messages
               sql`${conversations.source} != 'test'`,
-              sql`${messages.createdAt} >= ${start}`,
-              sql`${messages.createdAt} <= ${end}`
+              sql`${messages.createdAt} >= ${startUTC}`,
+              sql`${messages.createdAt} <= ${endUTC}`
             )
           )
           .orderBy(desc(messages.createdAt));
