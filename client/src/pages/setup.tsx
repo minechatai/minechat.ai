@@ -57,16 +57,16 @@ export default function Setup() {
     }
   };
 
-  const getBreadcrumbText = (section: string) => {
+  const getBreadcrumbContent = (section: string) => {
     switch (section) {
       case "ai-assistant":
-        return "Setup > AI Assistant";
+        return { setupText: "Setup", sectionText: "AI Assistant" };
       case "business":
-        return "Setup > AI Knowledge";
+        return { setupText: "Setup", sectionText: "AI Knowledge" };
       case "channels":
-        return "Setup > Channels";
+        return { setupText: "Setup", sectionText: "Channels" };
       default:
-        return "Setup > AI Assistant";
+        return { setupText: "Setup", sectionText: "AI Assistant" };
     }
   };
 
@@ -113,8 +113,16 @@ export default function Setup() {
             {/* Page Title with Breadcrumb */}
             <div className="mb-6">
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-                  {getBreadcrumbText(currentSection)}
+                <h1 className="flex items-center gap-2 text-gray-900 dark:text-white">
+                  <span className="text-2xl font-semibold">
+                    {getBreadcrumbContent(currentSection).setupText}
+                  </span>
+                  <span className="text-2xl font-semibold">
+                    &gt;
+                  </span>
+                  <span className="text-xl font-semibold">
+                    {getBreadcrumbContent(currentSection).sectionText}
+                  </span>
                 </h1>
                 {currentSection === "channels" && (
                   <span className="text-sm text-blue-600 cursor-pointer hover:underline">
