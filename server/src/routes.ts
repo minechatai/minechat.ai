@@ -11,6 +11,7 @@ import { setupDocumentRoutes } from "./modules/documents/routes/documentRoutes";
 import { setupConversationRoutes } from "./modules/conversations/routes/conversationRoutes";
 import { setupAnalyticsRoutes } from "./modules/analytics/routes/analyticsRoutes";
 import { setupChannelRoutes } from "./modules/channels/routes/channelRoutes";
+import { setupUserProfileRoutes } from "./modules/userProfiles/routes/userProfileRoutes";
 import { 
   insertBusinessSchema, 
   insertAiAssistantSchema, 
@@ -323,6 +324,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Setup modular channel routes
   setupChannelRoutes(app);
+
+  // Setup modular user profile routes
+  setupUserProfileRoutes(app);
 
   // Business logo upload
   app.post('/api/business/upload-logo', isAuthenticated, imageUpload.single('image'), async (req: any, res) => {

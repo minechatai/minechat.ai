@@ -487,6 +487,12 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Removed "View Profile" button from Account page as requested
   - Added clear indicators: "Click the name to edit • Click the photo to change" for better user guidance
   - Enhanced account profile section with intuitive editing instructions and proper tooltips
+- July 7, 2025: FAQ Widget Business Intelligence Enhancement
+  - Enhanced FAQ analysis to filter out conversational small talk and focus on legitimate business inquiries
+  - Added comprehensive filtering for non-business questions (greetings, name questions, bot identification)
+  - Implemented business keyword detection for pricing, services, hours, location, contact, support topics
+  - FAQ widget now only shows questions that help businesses identify genuine customer information needs
+  - Improved business intelligence by focusing on actionable FAQ suggestions that add real value
 
 # User Preferences
 

@@ -950,19 +950,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json([]);
       }
       
-      // Extract questions from customer messages
+      // Extract questions from customer messages - focus on business-relevant inquiries
       const customerQuestions = messages
         .filter(msg => msg.senderType === 'customer')
         .map(msg => msg.content)
         .filter(content => content && content.trim().length > 0)
         .filter(content => {
-          // Filter out simple greetings and single words
           const trimmed = content.trim().toLowerCase();
-          const simpleGreetings = ['hi', 'hello', 'hey', 'yo', 'sup', 'good morning', 'good afternoon', 'good evening'];
-          return !simpleGreetings.includes(trimmed) && content.length > 3;
+          
+          // Filter out greetings and conversational small talk
+          const conversationalPhrases = [
+            'hi', 'hello', 'hey', 'yo', 'sup', 'good morning', 'good afternoon', 'good evening',
+            'what\'s your name', 'who are you', 'are you real', 'are you human', 'are you a bot',
+            'how are you', 'nice to meet you', 'thanks', 'thank you', 'bye', 'goodbye',
+            'what are you', 'are you really', 'tell me about yourself', 'i\'m looking for you'
+          ];
+          
+          // Check if it's conversational small talk
+          const isConversational = conversationalPhrases.some(phrase => 
+            trimmed === phrase || trimmed.startsWith(phrase + ' ') || trimmed.startsWith(phrase + '?')
+          );
+          
+          if (isConversational) return false;
+          
+          // Must contain business-relevant keywords or be a genuine question
+          const businessKeywords = [
+            'price', 'cost', 'how much', 'pricing', 'discount', 'fee', 'payment', 'money',
+            'hours', 'open', 'closed', 'available', 'schedule', 'appointment', 'booking',
+            'where', 'location', 'address', 'directions', 'find you', 'visit',
+            'contact', 'phone', 'email', 'reach', 'call', 'message',
+            'service', 'product', 'offer', 'provide', 'sell', 'buy', 'order', 'purchase',
+            'policy', 'return', 'refund', 'warranty', 'guarantee', 'terms',
+            'support', 'help', 'assistance', 'problem', 'issue', 'broken',
+            'delivery', 'shipping', 'pickup', 'installation', 'setup',
+            'feature', 'specification', 'detail', 'information', 'about',
+            'quality', 'material', 'size', 'color', 'model', 'type'
+          ];
+          
+          const hasBusinessKeyword = businessKeywords.some(keyword => trimmed.includes(keyword));
+          const isQuestion = trimmed.includes('?') || 
+                            trimmed.startsWith('what') || 
+                            trimmed.startsWith('how') || 
+                            trimmed.startsWith('when') || 
+                            trimmed.startsWith('where') || 
+                            trimmed.startsWith('why') || 
+                            trimmed.startsWith('can') || 
+                            trimmed.startsWith('do you') || 
+                            trimmed.startsWith('does') ||
+                            trimmed.startsWith('tell me about') ||
+                            trimmed.startsWith('i need') ||
+                            trimmed.startsWith('i want');
+          
+          // Only include if it's business-related AND is phrased as a question/inquiry
+          return hasBusinessKeyword && (isQuestion || content.length > 15);
         });
       
       console.log("🔍 FAQ Analysis Debug - Customer questions extracted:", customerQuestions.length);
+      console.log("🔍 FAQ Analysis Debug - Business questions found:", customerQuestions.slice(0, 5));
       
       if (customerQuestions.length === 0) {
         console.log("🔍 FAQ Analysis Debug - No valid questions found, returning empty result");
