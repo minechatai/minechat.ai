@@ -75,7 +75,7 @@ export default function Charts({ messagesData, hourlyData, faqData, faqLoading }
                     className="h-1 rounded-full" 
                     style={{ 
                       backgroundColor: '#9CA3AF',
-                      width: `${Math.max(humanPercentage * 1.2, 12)}px`
+                      width: `${Math.max(humanPercentage * 2, 20)}px`
                     }}
                   ></div>
                 </div>
@@ -89,7 +89,7 @@ export default function Charts({ messagesData, hourlyData, faqData, faqLoading }
                     className="h-1 rounded-full" 
                     style={{ 
                       backgroundColor: '#A53860',
-                      width: `${Math.max(aiPercentage * 1.2, 12)}px`
+                      width: `${Math.max(aiPercentage * 2, 20)}px`
                     }}
                   ></div>
                 </div>
