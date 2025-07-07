@@ -16,17 +16,12 @@ export default function Header({ title, onMenuClick, sidebarCollapsed = false }:
   const { user } = useAuth();
   
   // Fetch business information to display company logo
-  const { data: business, isLoading: businessLoading, error: businessError } = useQuery<Business>({
+  const { data: business } = useQuery<Business>({
     queryKey: ['/api/business'],
     enabled: !!user,
     staleTime: 0,
     cacheTime: 0
   });
-
-  console.log('Header - user:', user);
-  console.log('Header - business:', business);
-  console.log('Header - businessLoading:', businessLoading);
-  console.log('Header - businessError:', businessError);
 
 
 
@@ -47,12 +42,9 @@ export default function Header({ title, onMenuClick, sidebarCollapsed = false }:
           <div className="flex items-center space-x-2 -ml-3">
             {business?.logoUrl ? (
               <img
-                src={`${business.logoUrl}?v=${Date.now()}`}
+                src={business.logoUrl}
                 alt={`${business.companyName} logo`}
                 className="w-8 h-8 rounded-full object-cover"
-                key={business.logoUrl}
-                onError={(e) => console.error('Logo failed to load:', business.logoUrl)}
-                onLoad={() => console.log('Logo loaded successfully:', business.logoUrl)}
               />
             ) : (
               <div 
@@ -68,7 +60,7 @@ export default function Header({ title, onMenuClick, sidebarCollapsed = false }:
             )}
             <div className="text-lg">
               <div className="font-semibold text-gray-900 dark:text-white">
-                {business?.companyName || 'Loading...'}
+                {business?.companyName || 'Your Company'}
               </div>
             </div>
           </div>

@@ -47,6 +47,9 @@ const imageUpload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Auth middleware
+  await setupAuth(app);
+
   // Serve uploaded files statically
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
   
@@ -62,6 +65,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Profile picture upload endpoint
+  app.post('/api/auth/profile-picture', isAuthenticated, imageUpload.single('profileImage'), async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const file = req.file;
+      
+      if (!file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      // Generate the public URL for the uploaded image
+      const imageUrl = `/uploads/images/${file.filename}`;
+      
+      // Update user profile with new image URL
+      await storage.upsertUser({
+        id: userId,
+        profileImageUrl: imageUrl,
+      });
+      
+      res.json({ 
+        message: "Profile picture updated successfully",
+        profileImageUrl: imageUrl
+      });
+    } catch (error) {
+      console.error("Error updating profile picture:", error);
+      res.status(500).json({ message: "Failed to update profile picture" });
     }
   });
 
@@ -104,6 +136,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting business:", error);
       res.status(500).json({ message: "Failed to delete business" });
+    }
+  });
+
+  // Business logo upload endpoint
+  app.post('/api/business/upload-logo', isAuthenticated, imageUpload.single('image'), async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const file = req.file;
+      
+      if (!file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      // Generate the public URL for the uploaded image
+      const logoUrl = `/uploads/images/${file.filename}`;
+      
+      // Update business with new logo URL
+      const existingBusiness = await storage.getBusiness(userId);
+      if (existingBusiness) {
+        await storage.upsertBusiness(userId, { 
+          ...existingBusiness,
+          logoUrl: logoUrl
+        });
+      }
+      
+      res.json({ 
+        message: "Business logo updated successfully",
+        logoUrl: logoUrl
+      });
+    } catch (error) {
+      console.error("Error updating business logo:", error);
+      res.status(500).json({ message: "Failed to update business logo" });
     }
   });
 

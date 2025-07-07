@@ -1,8 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "../storage";
-import { setupAuth, isAuthenticated } from "../replitAuth";
-import { setupGoogleAuth } from "../googleAuth";
+import { storage } from "./storage";
+import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupGoogleAuth } from "./googleAuth";
 import { setupAuthRoutes } from "./modules/auth/routes/authRoutes";
 import { 
   insertBusinessSchema, 
@@ -293,6 +293,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Google OAuth setup
   setupGoogleAuth(app);
 
+  // Setup modular auth routes
+  setupAuthRoutes(app);
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
