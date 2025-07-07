@@ -687,7 +687,7 @@ export class DatabaseStorage implements IStorage {
         .where(
           and(
             eq(conversations.userId, userId),
-            eq(messages.senderType, "user"), // Only inbound customer messages
+            eq(messages.senderType, "customer"), // Only inbound customer messages
             // Exclude test conversations
             sql`${conversations.source} != 'test'`
           )
@@ -707,7 +707,7 @@ export class DatabaseStorage implements IStorage {
           .where(
             and(
               eq(conversations.userId, userId),
-              eq(messages.senderType, "user"), // Only inbound customer messages
+              eq(messages.senderType, "customer"), // Only inbound customer messages
               sql`${conversations.source} != 'test'`,
               sql`${messages.createdAt} >= ${start}`,
               sql`${messages.createdAt} <= ${end}`

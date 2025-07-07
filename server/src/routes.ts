@@ -335,41 +335,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // AI Assistant routes
-  app.get('/api/ai-assistant', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const assistant = await storage.getAiAssistant(userId);
-      res.json(assistant);
-    } catch (error) {
-      console.error("Error fetching AI assistant:", error);
-      res.status(500).json({ message: "Failed to fetch AI assistant" });
-    }
-  });
-
-  app.post('/api/ai-assistant', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const validatedData = insertAiAssistantSchema.parse(req.body);
-      const assistant = await storage.upsertAiAssistant(userId, { ...validatedData, userId });
-      res.json(assistant);
-    } catch (error) {
-      console.error("Error saving AI assistant:", error);
-      res.status(500).json({ message: "Failed to save AI assistant" });
-    }
-  });
-
-  app.delete('/api/ai-assistant', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      await storage.deleteAiAssistant(userId);
-      res.json({ message: "AI Assistant settings deleted successfully" });
-    } catch (error) {
-      console.error("Error deleting AI assistant:", error);
-      res.status(500).json({ message: "Failed to delete AI assistant" });
-    }
-  });
-
   // Product routes
   app.get('/api/products', isAuthenticated, async (req: any, res) => {
     try {
@@ -1025,14 +990,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const { startDate, endDate, comparisonPeriod } = req.query;
       
-      console.log("🔍 Conversations Per Hour Debug - User ID:", userId);
-      console.log("🔍 Conversations Per Hour Debug - Date Range:", { startDate, endDate });
-      console.log("🔍 Conversations Per Hour Debug - Comparison Period:", comparisonPeriod);
+      console.log("🔍 Messages Received Per Hour Debug - User ID:", userId);
+      console.log("🔍 Messages Received Per Hour Debug - Date Range:", { startDate, endDate });
+      console.log("🔍 Messages Received Per Hour Debug - Comparison Period:", comparisonPeriod);
       
       // Get inbound customer messages only from legitimate conversations
       const inboundMessages = await storage.getInboundCustomerMessages(userId, startDate, endDate);
       
-      console.log("🔍 Conversations Per Hour Debug - Inbound Messages found:", inboundMessages.length);
+      console.log("🔍 Messages Received Per Hour Debug - Customer Messages found:", inboundMessages.length);
       
       // Initialize hourly data array (24 hours)
       const hourlyData = Array.from({ length: 24 }, (_, hour) => ({
@@ -1047,9 +1012,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const endDateObj = new Date(endDate);
         const daysDiff = Math.ceil((endDateObj.getTime() - startDateObj.getTime()) / (1000 * 60 * 60 * 24)) + 1;
         
-        console.log("🔍 Conversations Per Hour Debug - Days in range:", daysDiff);
+        console.log("🔍 Messages Received Per Hour Debug - Days in range:", daysDiff);
         
-        // Count messages by hour
+        // Count customer messages received by hour
         const messagesByHour: { [key: number]: number } = {};
         inboundMessages.forEach((message: any) => {
           if (message.createdAt) {
@@ -1059,7 +1024,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         });
         
-        console.log("🔍 Conversations Per Hour Debug - Messages by hour:", messagesByHour);
+        console.log("🔍 Messages Received Per Hour Debug - Messages by hour:", messagesByHour);
         
         // Show total messages for date ranges, actual data for today
         const isToday = startDate === endDate && startDate === new Date().toISOString().split('T')[0];
@@ -1071,7 +1036,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      console.log("🔍 Conversations Per Hour Debug - Final hourly data:", hourlyData);
+      console.log("🔍 Messages Received Per Hour Debug - Final hourly data:", hourlyData.slice(10, 14));
       
       res.json({
         hourlyData,
@@ -1080,8 +1045,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
     } catch (error) {
-      console.error("Error calculating conversations per hour:", error);
-      res.status(500).json({ message: "Failed to calculate conversations per hour" });
+      console.error("Error calculating messages received per hour:", error);
+      res.status(500).json({ message: "Failed to calculate messages received per hour" });
     }
   });
 

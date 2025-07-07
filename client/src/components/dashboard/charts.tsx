@@ -168,7 +168,7 @@ export default function Charts({ messagesData, hourlyData, faqData, faqLoading }
       {/* Messages Per Hour Chart - Reduced height */}
       <Card className="bg-white dark:bg-gray-900 shadow-sm border border-gray-200 dark:border-gray-700">
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">Conversations Per Hour</CardTitle>
+          <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">Messages Received Per Hour</CardTitle>
         </CardHeader>
         <CardContent className="pb-4">
           <div className="h-48">
