@@ -63,18 +63,24 @@ export default function Charts({ messagesData, hourlyData, faqData, faqLoading }
             <ExternalLink className="w-4 h-4 text-gray-400" />
           </CardHeader>
           <CardContent className="pb-4">
-            <div className="flex items-center justify-center space-x-6">
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: '#9CA3AF' }}></div>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Human</span>
+            <div className="flex items-center justify-between">
+              <div className="space-y-6">
+                <div>
+                  <div className="flex items-center space-x-3 mb-2">
+                    <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: '#9CA3AF' }}></div>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Human</span>
+                    <span className="text-2xl font-bold text-gray-900 dark:text-white ml-auto">{humanPercentage}%</span>
+                  </div>
+                  <div className="w-24 h-1 rounded-full" style={{ backgroundColor: '#9CA3AF' }}></div>
                 </div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">{humanPercentage}%</div>
-                <div className="flex items-center space-x-3 mt-6">
-                  <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: '#A53860' }}></div>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">AI</span>
+                <div>
+                  <div className="flex items-center space-x-3 mb-2">
+                    <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: '#A53860' }}></div>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">AI</span>
+                    <span className="text-2xl font-bold text-gray-900 dark:text-white ml-auto">{aiPercentage}%</span>
+                  </div>
+                  <div className="w-24 h-1 rounded-full" style={{ backgroundColor: '#A53860' }}></div>
                 </div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">{aiPercentage}%</div>
               </div>
               <div className="relative">
                 <div className="w-24 h-24">
