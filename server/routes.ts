@@ -469,7 +469,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Business logo upload
-  app.post('/api/business/upload-logo', isAuthenticated, upload.single('image'), async (req: any, res) => {
+  app.post('/api/business/upload-logo', isAuthenticated, imageUpload.single('image'), async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const file = req.file;
