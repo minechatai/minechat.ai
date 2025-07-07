@@ -52,12 +52,17 @@ export default function ManageUserProfiles() {
   // Populate form when editing
   useEffect(() => {
     if (editingProfile) {
+      console.log('🔍 Profile editing initiated for:', editingProfile.name);
+      console.log('🔍 Profile has image URL:', editingProfile.profileImageUrl);
       setFormData({
         name: editingProfile.name,
         email: editingProfile.email,
         password: "", // Don't populate password for security
         position: editingProfile.position || ""
       });
+      // Reset image states when starting to edit
+      setProfileImage(null);
+      setPreviewImage(null);
     }
   }, [editingProfile]);
 
@@ -102,6 +107,7 @@ export default function ManageUserProfiles() {
         const response = await fetch('/api/user-profiles', {
           method: 'POST',
           body: formData,
+          credentials: 'include', // Include session cookies for authentication
         });
         
         if (!response.ok) {
@@ -128,6 +134,8 @@ export default function ManageUserProfiles() {
         description: "User profile created successfully",
       });
       setIsCreateDialogOpen(false);
+      setProfileImage(null);
+      setPreviewImage(null);
       queryClient.invalidateQueries({ queryKey: ['/api/user-profiles'] });
     },
     onError: (error: any) => {
@@ -142,6 +150,9 @@ export default function ManageUserProfiles() {
   // Update user profile mutation
   const updateUserMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      console.log('🔍 UPDATE Profile - Has image:', !!profileImage);
+      console.log('🔍 UPDATE Profile - Data:', data);
+      
       // If there's a profile image, upload it with FormData
       if (profileImage) {
         const formData = new FormData();
@@ -153,17 +164,23 @@ export default function ManageUserProfiles() {
         }
         formData.append('profileImage', profileImage);
         
+        console.log('🔍 UPDATE Profile - FormData entries:', Array.from(formData.entries()));
+        
         const response = await fetch(`/api/user-profiles/${id}`, {
           method: 'PUT',
           body: formData,
+          credentials: 'include', // Include session cookies for authentication
         });
         
         if (!response.ok) {
           const error = await response.json();
+          console.error('🔍 UPDATE Profile - Error response:', error);
           throw new Error(error.message || 'Failed to update user profile');
         }
         
-        return response.json();
+        const result = await response.json();
+        console.log('🔍 UPDATE Profile - Success result:', result);
+        return result;
       } else {
         // Use apiRequest for consistency with authentication
         const updateData = {
@@ -182,6 +199,8 @@ export default function ManageUserProfiles() {
         description: "User profile updated successfully",
       });
       setEditingProfile(null);
+      setProfileImage(null);
+      setPreviewImage(null);
       queryClient.invalidateQueries({ queryKey: ['/api/user-profiles'] });
     },
     onError: (error: any) => {
