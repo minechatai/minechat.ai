@@ -294,6 +294,11 @@ export type Document = typeof documents.$inferSelect;
 export type InsertConversation = typeof conversations.$inferInsert;
 export type Conversation = typeof conversations.$inferSelect;
 
+// Add interface to ensure proper property names
+export interface ConversationWithMessages extends Conversation {
+  lastMessage?: string;
+}
+
 // Extended conversation type with last message
 export type ConversationWithLastMessage = Conversation & {
   lastMessage?: string | null;

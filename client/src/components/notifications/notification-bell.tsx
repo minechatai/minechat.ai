@@ -21,7 +21,7 @@ export default function NotificationBell() {
   // Fetch unread notification count
   const { data: notificationData, isLoading } = useQuery<NotificationData>({
     queryKey: ['/api/notifications/unread-count'],
-    refetchInterval: 5000, // Check for new notifications every 5 seconds
+    refetchInterval: 30000, // Check for new notifications every 30 seconds
     staleTime: 0,
   });
 

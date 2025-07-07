@@ -30,13 +30,13 @@ export default function ChatView({ conversationId }: ChatViewProps) {
   const { data: conversation, isLoading: conversationLoading } = useQuery<Conversation>({
     queryKey: [`/api/conversations/${conversationId}`],
     enabled: !!conversationId,
-    refetchInterval: 10000, // Refresh every 10 seconds
+    refetchInterval: 30000, // Refresh every 30 seconds
   });
 
   const { data: messages = [], isLoading: messagesLoading } = useQuery<Message[]>({
     queryKey: [`/api/conversations/${conversationId}/messages`],
     enabled: !!conversationId,
-    refetchInterval: 10000, // Refresh every 10 seconds
+    refetchInterval: 30000, // Refresh every 30 seconds
   });
 
   // Mark conversation as read when viewing it
@@ -295,7 +295,7 @@ export default function ChatView({ conversationId }: ChatViewProps) {
               </AvatarFallback>
             </Avatar>
             <div>
-              <h3 className="font-semibold text-gray-900">{conversation?.customerName || 'Customer'}</h3>
+              <h3 className="font-semibold text-gray-900">{conversation?.customerName || 'Loading...'}</h3>
               <p 
                 className="text-sm text-blue-600 cursor-pointer hover:underline"
                 onClick={handleViewProfile}
