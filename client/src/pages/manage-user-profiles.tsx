@@ -95,28 +95,17 @@ export default function ManageUserProfiles() {
   // Create user profile mutation
   const createUserMutation = useMutation({
     mutationFn: async (userData: any) => {
-      const formDataToSend = new FormData();
-      formDataToSend.append('name', userData.name);
-      formDataToSend.append('email', userData.email);
-      formDataToSend.append('password', userData.password);
-      formDataToSend.append('position', userData.position || '');
+      // Use apiRequest for consistency with authentication
+      const profileData = {
+        name: userData.name,
+        email: userData.email,
+        password: userData.password,
+        position: userData.position || ''
+      };
       
-      // Add profile image if one was selected
-      if (profileImage) {
-        formDataToSend.append('profileImage', profileImage);
-      }
-      
-      const response = await fetch('/api/users/create', {
-        method: 'POST',
-        body: formDataToSend,
-      });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to create user profile');
-      }
-      
-      return response.json();
+      // For now, we'll handle profile images separately if needed
+      // The main user profile creation should work without images
+      return await apiRequest('POST', '/api/user-profiles', profileData);
     },
     onSuccess: () => {
       toast({
@@ -138,27 +127,15 @@ export default function ManageUserProfiles() {
   // Update user profile mutation
   const updateUserMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      const formDataToSend = new FormData();
-      formDataToSend.append('name', data.name);
-      formDataToSend.append('email', data.email);
-      formDataToSend.append('position', data.position || '');
+      // Use apiRequest for consistency with authentication
+      const updateData = {
+        name: data.name,
+        email: data.email,
+        position: data.position || null,
+        ...(data.password && { password: data.password })
+      };
       
-      // Add profile image if one was selected
-      if (profileImage) {
-        formDataToSend.append('profileImage', profileImage);
-      }
-      
-      const response = await fetch(`/api/user-profiles/${id}`, {
-        method: 'PUT',
-        body: formDataToSend,
-      });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to update user profile');
-      }
-      
-      return response.json();
+      return await apiRequest('PUT', `/api/user-profiles/${id}`, updateData);
     },
     onSuccess: () => {
       toast({
@@ -180,9 +157,7 @@ export default function ManageUserProfiles() {
   // Delete user profile mutation
   const deleteUserMutation = useMutation({
     mutationFn: async (id: string) => {
-      return await fetch(`/api/user-profiles/${id}`, {
-        method: 'DELETE',
-      });
+      return await apiRequest('DELETE', `/api/user-profiles/${id}`);
     },
     onSuccess: () => {
       toast({
@@ -204,9 +179,7 @@ export default function ManageUserProfiles() {
   // Activate user profile mutation
   const activateUserMutation = useMutation({
     mutationFn: async (id: string) => {
-      return await fetch(`/api/user-profiles/${id}/activate`, {
-        method: 'POST',
-      });
+      return await apiRequest('POST', `/api/user-profiles/${id}/activate`);
     },
     onSuccess: () => {
       toast({
