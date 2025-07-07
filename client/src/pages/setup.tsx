@@ -113,14 +113,14 @@ export default function Setup() {
             {/* Page Title with Breadcrumb */}
             <div className="mb-6">
               <div className="flex items-center gap-2">
-                <h1 className="flex items-center gap-2 text-gray-900 dark:text-white">
+                <h1 className="flex items-baseline gap-2 text-gray-900 dark:text-white">
                   <span className="text-2xl font-semibold">
                     {getBreadcrumbContent(currentSection).setupText}
                   </span>
-                  <span className="text-xl font-semibold">
+                  <span className="text-lg font-semibold">
                     &gt;
                   </span>
-                  <span className="text-xl font-semibold">
+                  <span className="text-lg font-semibold">
                     {getBreadcrumbContent(currentSection).sectionText}
                   </span>
                 </h1>
