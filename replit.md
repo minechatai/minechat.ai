@@ -455,6 +455,12 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Analytics now show real-time filtered data instead of old stored values from database
   - Today's data shows accurate low numbers (1 AI message, 1 customer message) vs historical data (79+ messages from July 4th)
   - Cleaned up 78 old analytics records causing data inconsistency
+- July 7, 2025: Messages Received Per Hour Widget Implementation
+  - Added missing `/api/analytics/conversations-per-hour` endpoint to main server/routes.ts file
+  - Implemented proper hourly message counting with comprehensive debug logging
+  - Fixed widget to call correct API endpoint with date filtering support
+  - Identified Facebook OAuth token expiration issue preventing AI responses
+  - Widget now properly calls backend but requires Facebook token refresh for full functionality
 
 # User Preferences
 
