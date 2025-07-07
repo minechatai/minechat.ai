@@ -303,7 +303,7 @@ export default function ChatView({ conversationId }: ChatViewProps) {
       </div>
 
       {/* Sticky Mode Indicator */}
-      <div className="bg-gray-50 border-b border-gray-200 py-2 px-4">
+      <div className="bg-gray-50 py-2 px-4">
         <div className="text-center">
           <span className="text-sm px-3 py-1 rounded-full shadow-sm border-2" style={{color: '#b33054', borderColor: '#b33054'}}>
             {(conversation?.mode === 'ai' || !conversation?.mode) ? 'AI Enabled' : 'Human Mode'}

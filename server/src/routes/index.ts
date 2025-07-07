@@ -11,6 +11,8 @@ import { setupBusinessRoutes } from './business';
 import { setupProductRoutes } from './products';
 import { setupConversationRoutes } from './conversations';
 import { setupAnalyticsRoutes } from './analytics';
+import { setupChannelRoutes } from './channels';
+
 // More modules will be added here as we create them
 
 // Import services (update paths as needed)
@@ -35,6 +37,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   setupProductRoutes(app);         // Product Catalog
   setupConversationRoutes(app);    // Chat & Messaging
   setupAnalyticsRoutes(app);       // Analytics & Reporting
+  setupChannelRoutes(app);         // Facebook & Channel Management
 
   // More modules will be registered here as we create them
 
@@ -52,7 +55,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         'business',      // Business Management
         'products',      // Product Catalog
         'conversations', // Chat & Messaging
-        'analytics'      // Analytics & Reporting
+        'analytics',     // Analytics & Reporting
+        'channels'       // Facebook & Channel Management
       ]
     });
   });
