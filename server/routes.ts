@@ -482,10 +482,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const logoUrl = `/uploads/images/${file.filename}`;
       
       // Update business with new logo URL
+      console.log('Updating business logo for user:', userId, 'with URL:', logoUrl);
       await storage.upsertBusiness(userId, {
         userId,
         logoUrl: logoUrl,
       });
+      console.log('Business logo updated successfully');
       
       res.json({ 
         message: "Company logo uploaded successfully",

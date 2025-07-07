@@ -75,6 +75,10 @@ export default function Account() {
         if (logoResponse.ok) {
           // Invalidate business query to refresh the header logo
           queryClient.invalidateQueries({ queryKey: ["/api/business"] });
+          console.log('Logo upload successful');
+        } else {
+          const errorText = await logoResponse.text();
+          console.error('Logo upload failed:', logoResponse.status, errorText);
         }
       } catch (error) {
         console.error('Error updating header logo:', error);
