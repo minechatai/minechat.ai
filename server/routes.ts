@@ -2235,13 +2235,24 @@ You represent ${business?.companyName || "this business"} and customers expect a
   });
 
   // Create a new user profile
-  app.post('/api/user-profiles', isAuthenticated, async (req: any, res) => {
+  app.post('/api/user-profiles', isAuthenticated, upload.single('profileImage'), async (req: any, res) => {
     try {
       const businessOwnerId = req.user.claims.sub;
+      
+      console.log('🔍 User profile creation - File uploaded:', req.file ? 'Yes' : 'No');
+      console.log('🔍 User profile creation - Body data:', req.body);
+      
       const profileData = {
         ...req.body,
         isActive: false // New profiles are not active by default
       };
+      
+      // Add profile image URL if file was uploaded
+      if (req.file) {
+        const imageUrl = `/uploads/images/${req.file.filename}`;
+        profileData.profileImageUrl = imageUrl;
+        console.log('🔍 User profile creation - Image URL set to:', imageUrl);
+      }
       
       const newProfile = await storage.createUserProfile(businessOwnerId, profileData);
       res.status(201).json(newProfile);
@@ -2252,10 +2263,13 @@ You represent ${business?.companyName || "this business"} and customers expect a
   });
 
   // Update a user profile
-  app.put('/api/user-profiles/:id', isAuthenticated, async (req: any, res) => {
+  app.put('/api/user-profiles/:id', isAuthenticated, upload.single('profileImage'), async (req: any, res) => {
     try {
       const profileId = req.params.id;
       const businessOwnerId = req.user.claims.sub;
+      
+      console.log('🔍 User profile update - File uploaded:', req.file ? 'Yes' : 'No');
+      console.log('🔍 User profile update - Body data:', req.body);
       
       // Verify the profile belongs to the current business owner
       const existingProfile = await storage.getUserProfile(profileId);
@@ -2263,7 +2277,16 @@ You represent ${business?.companyName || "this business"} and customers expect a
         return res.status(404).json({ message: "Profile not found" });
       }
       
-      const updatedProfile = await storage.updateUserProfile(profileId, req.body);
+      const updateData = { ...req.body };
+      
+      // Add profile image URL if file was uploaded
+      if (req.file) {
+        const imageUrl = `/uploads/images/${req.file.filename}`;
+        updateData.profileImageUrl = imageUrl;
+        console.log('🔍 User profile update - Image URL set to:', imageUrl);
+      }
+      
+      const updatedProfile = await storage.updateUserProfile(profileId, updateData);
       res.json(updatedProfile);
     } catch (error) {
       console.error("Error updating user profile:", error);

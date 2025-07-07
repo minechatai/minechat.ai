@@ -87,25 +87,40 @@ export default function ManageUserProfiles() {
     event.target.value = '';
   };
 
-  // Handle clicking the profile picture
-  const handleProfilePictureClick = () => {
-    fileInputRef.current?.click();
-  };
-
   // Create user profile mutation
   const createUserMutation = useMutation({
     mutationFn: async (userData: any) => {
-      // Use apiRequest for consistency with authentication
-      const profileData = {
-        name: userData.name,
-        email: userData.email,
-        password: userData.password,
-        position: userData.position || ''
-      };
-      
-      // For now, we'll handle profile images separately if needed
-      // The main user profile creation should work without images
-      return await apiRequest('POST', '/api/user-profiles', profileData);
+      // If there's a profile image, upload it with FormData
+      if (profileImage) {
+        const formData = new FormData();
+        formData.append('name', userData.name);
+        formData.append('email', userData.email);
+        formData.append('password', userData.password);
+        formData.append('position', userData.position || '');
+        formData.append('profileImage', profileImage);
+        
+        const response = await fetch('/api/user-profiles', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to create user profile');
+        }
+        
+        return response.json();
+      } else {
+        // Use apiRequest for consistency with authentication
+        const profileData = {
+          name: userData.name,
+          email: userData.email,
+          password: userData.password,
+          position: userData.position || ''
+        };
+        
+        return await apiRequest('POST', '/api/user-profiles', profileData);
+      }
     },
     onSuccess: () => {
       toast({
@@ -127,15 +142,39 @@ export default function ManageUserProfiles() {
   // Update user profile mutation
   const updateUserMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      // Use apiRequest for consistency with authentication
-      const updateData = {
-        name: data.name,
-        email: data.email,
-        position: data.position || null,
-        ...(data.password && { password: data.password })
-      };
-      
-      return await apiRequest('PUT', `/api/user-profiles/${id}`, updateData);
+      // If there's a profile image, upload it with FormData
+      if (profileImage) {
+        const formData = new FormData();
+        formData.append('name', data.name);
+        formData.append('email', data.email);
+        formData.append('position', data.position || '');
+        if (data.password) {
+          formData.append('password', data.password);
+        }
+        formData.append('profileImage', profileImage);
+        
+        const response = await fetch(`/api/user-profiles/${id}`, {
+          method: 'PUT',
+          body: formData,
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to update user profile');
+        }
+        
+        return response.json();
+      } else {
+        // Use apiRequest for consistency with authentication
+        const updateData = {
+          name: data.name,
+          email: data.email,
+          position: data.position || null,
+          ...(data.password && { password: data.password })
+        };
+        
+        return await apiRequest('PUT', `/api/user-profiles/${id}`, updateData);
+      }
     },
     onSuccess: () => {
       toast({
@@ -249,6 +288,14 @@ export default function ManageUserProfiles() {
   const handleActivateProfile = (profileId: string) => {
     activateUserMutation.mutate(profileId);
   };
+
+  // Handle profile picture click
+  const handleProfilePictureClick = () => {
+    console.log('🔍 Profile picture clicked for user profile');
+    fileInputRef.current?.click();
+  };
+
+
 
   // Get initials for avatar
   const getInitials = (name: string) => {
