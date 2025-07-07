@@ -287,28 +287,6 @@ export default function Dashboard() {
     console.log("🔍 Date picker change - newDate:", newDate, "isSelectingNewRange:", isSelectingNewRange);
     console.log("🔍 Date picker change - current date:", date);
     
-    // If we have a complete range and user selects a new date that would extend/modify the range,
-    // instead start fresh with just the new date
-    if (date?.from && date?.to && newDate?.from && newDate?.to && !isSelectingNewRange) {
-      // Check if this is actually a new selection (different from current range)
-      const isSameStartDate = newDate.from.getTime() === date.from.getTime();
-      const isSameEndDate = newDate.to.getTime() === date.to.getTime();
-      
-      if (!isSameStartDate || !isSameEndDate) {
-        // This is a new selection, check if we should reset
-        const isStartDateDifferent = newDate.from.getTime() !== date.from.getTime();
-        const isEndDateExtension = newDate.to.getTime() !== date.to.getTime();
-        
-        if (isStartDateDifferent && isEndDateExtension) {
-          // User clicked a different date and calendar auto-extended, reset instead
-          console.log("🔍 Date picker - Auto-extension detected, resetting to start fresh");
-          setIsSelectingNewRange(true);
-          setDate({ from: newDate.from, to: undefined });
-          return;
-        }
-      }
-    }
-    
     // If we're in selecting new range mode, handle it normally
     if (isSelectingNewRange) {
       setDate(newDate);
@@ -320,7 +298,40 @@ export default function Dashboard() {
       return;
     }
     
-    // Normal flow for when no reset is needed
+    // If we have a complete range and the new date has both from and to,
+    // but the from date is different from our current from date,
+    // this means calendar auto-extended - we should reset instead
+    if (date?.from && date?.to && newDate?.from && newDate?.to) {
+      const currentFromTime = date.from.getTime();
+      const newFromTime = newDate.from.getTime();
+      const currentToTime = date.to.getTime();
+      const newToTime = newDate.to.getTime();
+      
+      // If the from date changed but to date stayed the same (or similar pattern),
+      // this indicates auto-extension rather than intentional range selection
+      if (newFromTime !== currentFromTime && newToTime === currentToTime) {
+        console.log("🔍 Date picker - Auto-extension detected (from changed, to stayed), resetting");
+        setIsSelectingNewRange(true);
+        setDate({ from: newDate.from, to: undefined });
+        return;
+      }
+      
+      // If both dates changed but in a way that suggests auto-extension
+      if (newFromTime !== currentFromTime && newToTime !== currentToTime) {
+        // Check if this looks like an auto-extension pattern
+        const fromDateChanged = Math.abs(newFromTime - currentFromTime) > 0;
+        const toDateChanged = Math.abs(newToTime - currentToTime) > 0;
+        
+        if (fromDateChanged && toDateChanged) {
+          console.log("🔍 Date picker - Possible auto-extension detected, resetting");
+          setIsSelectingNewRange(true);
+          setDate({ from: newDate.from, to: undefined });
+          return;
+        }
+      }
+    }
+    
+    // Normal flow
     setDate(newDate);
     
     // Only update the analytics when we have a complete range
@@ -429,16 +440,10 @@ export default function Dashboard() {
                 onSelect={handleDateChange}
                 numberOfMonths={2}
                 onDayClick={(day, activeModifiers) => {
-                  // If we already have a complete range and user clicks a new date, start fresh
+                  // If we already have a complete range and user clicks a new date, prepare for reset
                   if (date?.from && date?.to && !isSelectingNewRange) {
-                    console.log("🔍 Calendar Day Click - Resetting range, starting fresh with:", day);
-                    setIsSelectingNewRange(true);
-                    setDate({ from: day, to: undefined });
-                    
-                    // Prevent the default onSelect from firing
-                    setTimeout(() => {
-                      setDate({ from: day, to: undefined });
-                    }, 0);
+                    console.log("🔍 Calendar Day Click - Preparing for potential reset with:", day);
+                    // The handleDateChange function will handle the actual reset logic
                   }
                 }}
               />
