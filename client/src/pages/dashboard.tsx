@@ -19,29 +19,46 @@ export default function Dashboard() {
   const { isAuthenticated, isLoading } = useAuth();
   const queryClient = useQueryClient();
   
-  // Date range state - initialize with today's date to show today by default
+  // Date range state - initialize with saved dates or today's date
   const getCurrentDate = () => {
     // Get current date in Philippines timezone (UTC+8)
     const now = new Date();
     const philippinesTime = new Date(now.getTime() + (8 * 60 * 60 * 1000));
     return philippinesTime.toISOString().split('T')[0];
   };
-  const [dateRange, setDateRange] = useState<{
-    startDate?: string;
-    endDate?: string;
-  }>(() => {
+  
+  const getSavedDateRange = () => {
+    try {
+      const saved = localStorage.getItem('dashboard-date-range');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        console.log("🔍 Dashboard initialization - Restored saved date range:", parsed);
+        return parsed;
+      }
+    } catch (error) {
+      console.warn("Failed to parse saved date range from localStorage:", error);
+    }
+    
     const today = getCurrentDate();
-    console.log("🔍 Dashboard initialization - Current date (Philippines time):", today);
+    console.log("🔍 Dashboard initialization - Using default date range (today):", today);
     return {
       startDate: today,
       endDate: today
     };
-  });
+  };
+  
+  const [dateRange, setDateRange] = useState<{
+    startDate?: string;
+    endDate?: string;
+  }>(getSavedDateRange);
 
-  // Date picker state - initialize with today's date
-  const [date, setDate] = useState<DateRange | undefined>({
-    from: new Date(),
-    to: new Date()
+  // Date picker state - initialize with saved dates
+  const [date, setDate] = useState<DateRange | undefined>(() => {
+    const savedRange = getSavedDateRange();
+    return {
+      from: savedRange.startDate ? new Date(savedRange.startDate + 'T00:00:00') : new Date(),
+      to: savedRange.endDate ? new Date(savedRange.endDate + 'T00:00:00') : new Date()
+    };
   });
 
   // Track temporary date selection (not saved until user clicks Save)
@@ -265,6 +282,19 @@ export default function Dashboard() {
     const today = getCurrentDate();
     console.log("🔍 Show Today clicked - Setting date range to:", today);
     
+    const todayRange = {
+      startDate: today,
+      endDate: today
+    };
+    
+    // Save today's date to localStorage for persistence
+    try {
+      localStorage.setItem('dashboard-date-range', JSON.stringify(todayRange));
+      console.log("🔍 Today's date range saved to localStorage:", todayRange);
+    } catch (error) {
+      console.warn("Failed to save today's date range to localStorage:", error);
+    }
+    
     // Invalidate all analytics queries to force fresh data
     queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
     queryClient.invalidateQueries({ queryKey: ["/api/analytics/time-saved"] });
@@ -272,10 +302,7 @@ export default function Dashboard() {
     queryClient.invalidateQueries({ queryKey: ["/api/analytics/conversations-per-hour"] });
     queryClient.invalidateQueries({ queryKey: ["/api/faq-analysis"] });
     
-    setDateRange({
-      startDate: today,
-      endDate: today
-    });
+    setDateRange(todayRange);
     setDate({
       from: new Date(),
       to: new Date()
@@ -299,6 +326,21 @@ export default function Dashboard() {
     console.log("🔍 Save button clicked - tempDate:", tempDate);
     if (tempDate?.from && tempDate?.to) {
       setDate(tempDate);
+      
+      // Create new date range object
+      const newDateRange = {
+        startDate: tempDate.from.toISOString().split('T')[0],
+        endDate: tempDate.to.toISOString().split('T')[0]
+      };
+      
+      // Save to localStorage for persistence
+      try {
+        localStorage.setItem('dashboard-date-range', JSON.stringify(newDateRange));
+        console.log("🔍 Date range saved to localStorage:", newDateRange);
+      } catch (error) {
+        console.warn("Failed to save date range to localStorage:", error);
+      }
+      
       updateAnalyticsWithRange(tempDate);
     }
   };
