@@ -8,6 +8,9 @@ import path from 'path';
 // Import modular route modules
 import { setupAiChatRoutes } from './aiChat';
 import { setupBusinessRoutes } from './business';
+import { setupProductRoutes } from './products';
+import { setupConversationRoutes } from './conversations';
+import { setupAnalyticsRoutes } from './analytics';
 // More modules will be added here as we create them
 
 // Import services (update paths as needed)
@@ -29,6 +32,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   setupAiChatRoutes(app);          // CORE: AI Chat Engine
   setupBusinessRoutes(app);        // Business Management
+  setupProductRoutes(app);         // Product Catalog
+  setupConversationRoutes(app);    // Chat & Messaging
+  setupAnalyticsRoutes(app);       // Analytics & Reporting
 
   // More modules will be registered here as we create them
 
@@ -42,8 +48,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       version: '1.0.0',
       architecture: 'modular',
       modules: [
-        'ai-chat',      // CORE AI Engine
-        'business'      // Business Management
+        'ai-chat',       // CORE AI Engine
+        'business',      // Business Management
+        'products',      // Product Catalog
+        'conversations', // Chat & Messaging
+        'analytics'      // Analytics & Reporting
       ]
     });
   });
