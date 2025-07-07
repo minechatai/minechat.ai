@@ -117,7 +117,7 @@ export default function Setup() {
                   <span className="text-2xl font-semibold">
                     {getBreadcrumbContent(currentSection).setupText}
                   </span>
-                  <span className="text-2xl font-semibold">
+                  <span className="text-xl font-semibold">
                     &gt;
                   </span>
                   <span className="text-xl font-semibold">
