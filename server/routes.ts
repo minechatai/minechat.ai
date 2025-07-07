@@ -471,6 +471,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/analytics', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
+      const { startDate, endDate } = req.query;
+      
+      console.log("🔍 Analytics Debug - Date Range:", { startDate, endDate });
+      
+      // For today's date filter, calculate real-time analytics from messages
+      if (startDate && endDate) {
+        // Get messages for the date range
+        const outboundMessages = await storage.getOutboundMessages(userId, startDate as string, endDate as string);
+        const aiMessages = await storage.getCustomerAiMessages(userId, startDate as string, endDate as string);
+        
+        const realTimeAnalytics = {
+          unreadMessages: 0, // Always 0 for filtered date ranges
+          moneySaved: "0", // Calculate based on AI messages
+          leads: 0,
+          opportunities: 0,
+          followUps: 0,
+          messagesHuman: outboundMessages.human.length,
+          messagesAi: outboundMessages.ai.length,
+          hourlyData: null,
+        };
+        
+        console.log("🔍 Analytics Debug - Real-time data:", realTimeAnalytics);
+        return res.json(realTimeAnalytics);
+      }
+      
+      // Fallback to stored analytics if no date filter
       const analytics = await storage.getAnalytics(userId);
       
       // If no analytics exist, return default values

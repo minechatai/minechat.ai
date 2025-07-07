@@ -50,8 +50,22 @@ export default function Dashboard() {
   }, [isAuthenticated, isLoading, toast]);
 
   const { data: analytics, isLoading: analyticsLoading, error } = useQuery({
-    queryKey: ["/api/analytics"],
-    enabled: isAuthenticated,
+    queryKey: ["/api/analytics", dateRange.startDate, dateRange.endDate],
+    enabled: isAuthenticated && !!dateRange.startDate && !!dateRange.endDate,
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (dateRange.startDate) params.append('startDate', dateRange.startDate);
+      if (dateRange.endDate) params.append('endDate', dateRange.endDate);
+      
+      const url = `/api/analytics?${params.toString()}`;
+      console.log("🔍 Analytics Query - Fetching URL:", url);
+      
+      const res = await fetch(url, { credentials: "include" });
+      if (!res.ok) {
+        throw new Error(`${res.status}: ${res.statusText}`);
+      }
+      return await res.json();
+    },
   });
 
   // Time Saved analytics query
