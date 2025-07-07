@@ -505,14 +505,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Conversation not found" });
       }
       
-      // Create message
-      const message = await storage.createMessage({
+      // Get active user profile for human messages
+      let messageData: any = {
         conversationId,
         senderId: userId,
         senderType,
         content,
         messageType: "text"
-      });
+      };
+
+      // If this is a human message, include the active profile information
+      if (senderType === 'human') {
+        try {
+          const activeProfile = await storage.getActiveUserProfile(userId);
+          if (activeProfile) {
+            messageData.humanSenderName = activeProfile.name;
+            messageData.humanSenderProfileImageUrl = activeProfile.profileImageUrl;
+          }
+        } catch (error) {
+          console.error("Error fetching active profile for message:", error);
+          // Continue without profile info
+        }
+      }
+
+      // Create message
+      const message = await storage.createMessage(messageData);
       
       console.log(`🔍 Message sent successfully: ID ${message.id}`);
       
@@ -558,8 +575,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Generate file URL
       const fileUrl = `/uploads/${req.file.filename}`;
       
-      // Create message with file
-      const message = await storage.createMessage({
+      // Get active user profile for human messages
+      let messageData: any = {
         conversationId: parseInt(conversationId),
         senderId: userId,
         senderType,
@@ -568,7 +585,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         fileUrl,
         fileName: req.file.originalname,
         fileSize: req.file.size
-      });
+      };
+
+      // If this is a human message, include the active profile information
+      if (senderType === 'human') {
+        try {
+          const activeProfile = await storage.getActiveUserProfile(userId);
+          if (activeProfile) {
+            messageData.humanSenderName = activeProfile.name;
+            messageData.humanSenderProfileImageUrl = activeProfile.profileImageUrl;
+          }
+        } catch (error) {
+          console.error("Error fetching active profile for file message:", error);
+          // Continue without profile info
+        }
+      }
+
+      // Create message with file
+      const message = await storage.createMessage(messageData);
       
       console.log(`🔍 File message sent successfully: ID ${message.id}`);
       
