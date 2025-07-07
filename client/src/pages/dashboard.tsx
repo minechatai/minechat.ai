@@ -46,6 +46,9 @@ export default function Dashboard() {
 
   // Track whether we're selecting a new range (reset on first click)
   const [isSelectingNewRange, setIsSelectingNewRange] = useState(false);
+  
+  // Track manual click overrides
+  const [pendingDate, setPendingDate] = useState<Date | null>(null);
 
   // Ensure we're always showing today's data on component mount
   useEffect(() => {
@@ -282,69 +285,33 @@ export default function Dashboard() {
     });
   };
 
-  // Handle date picker changes with mandatory range reset
+  // Handle date picker changes with manual click override
   const handleDateChange = (newDate: DateRange | undefined) => {
-    console.log("🔍 Date picker change - newDate:", newDate, "isSelectingNewRange:", isSelectingNewRange);
+    console.log("🔍 Date picker change - newDate:", newDate);
+    console.log("🔍 Date picker change - pendingDate:", pendingDate);
     console.log("🔍 Date picker change - current date:", date);
     
-    // If we don't have any date yet, this is the first selection
-    if (!date?.from && !date?.to) {
-      console.log("🔍 Date picker - First time selection");
-      setDate(newDate);
-      if (newDate?.from && newDate?.to) {
-        updateAnalyticsWithRange(newDate);
-      }
+    // If we have a pending date (manual click), use it to start fresh
+    if (pendingDate) {
+      console.log("🔍 Date picker - Using pending date for fresh start");
+      setDate({ from: pendingDate, to: undefined });
+      setIsSelectingNewRange(true);
+      setPendingDate(null);
       return;
     }
     
-    // If we're in "selecting new range" mode, continue with that
+    // If we're selecting a new range, handle normally
     if (isSelectingNewRange) {
       setDate(newDate);
       if (newDate?.from && newDate?.to) {
-        console.log("🔍 Date picker - Completing new range selection");
+        console.log("🔍 Date picker - Completing new range");
         setIsSelectingNewRange(false);
         updateAnalyticsWithRange(newDate);
       }
       return;
     }
     
-    // If we have a complete range and user selects something new, ALWAYS reset
-    if (date?.from && date?.to) {
-      console.log("🔍 Date picker - We have complete range, user made new selection - RESETTING");
-      
-      // Check if this is just selecting the same range again
-      if (newDate?.from && newDate?.to) {
-        const sameStart = newDate.from.getTime() === date.from.getTime();
-        const sameEnd = newDate.to.getTime() === date.to.getTime();
-        
-        if (sameStart && sameEnd) {
-          console.log("🔍 Date picker - Same range selected, no change needed");
-          return;
-        }
-      }
-      
-      // This is a new selection, reset to start fresh
-      console.log("🔍 Date picker - Starting fresh with new selection");
-      setIsSelectingNewRange(true);
-      
-      // Only set the from date if we have one
-      if (newDate?.from) {
-        setDate({ from: newDate.from, to: undefined });
-      } else {
-        setDate(undefined);
-      }
-      return;
-    }
-    
-    // If we only have a start date and user is completing the range
-    if (date?.from && !date?.to && newDate?.to) {
-      console.log("🔍 Date picker - Completing range selection");
-      setDate(newDate);
-      updateAnalyticsWithRange(newDate);
-      return;
-    }
-    
-    // Default case
+    // Normal flow
     setDate(newDate);
     if (newDate?.from && newDate?.to) {
       updateAnalyticsWithRange(newDate);
@@ -452,7 +419,17 @@ export default function Dashboard() {
                 numberOfMonths={2}
                 onDayClick={(day, activeModifiers) => {
                   console.log("🔍 Calendar Day Click - User clicked:", day, "Current range:", date);
-                  // All reset logic is handled in handleDateChange
+                  
+                  // If we have a complete range, intercept the click and force reset
+                  if (date?.from && date?.to) {
+                    console.log("🔍 Calendar Day Click - Complete range exists, setting pending date for reset");
+                    setPendingDate(day);
+                    
+                    // Prevent the default calendar behavior by triggering our override
+                    setTimeout(() => {
+                      handleDateChange({ from: day, to: undefined });
+                    }, 0);
+                  }
                 }}
               />
             </PopoverContent>
