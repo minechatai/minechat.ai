@@ -417,6 +417,14 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Enhanced user experience with file type detection (images show image icon, documents show paperclip)
   - Files display with name, size, and remove button for complete control before sending
   - Placeholder text changes to "Add a caption for your files..." when files are attached
+- July 7, 2025: Company Logo Upload System Implementation
+  - Fixed company logo update issue: logo now uploads through Account page instead of business form
+  - Added complete company logo upload interface in Account page with visual feedback
+  - Created dedicated `/api/business/upload-logo` backend endpoint for logo file handling
+  - Implemented proper cache invalidation to refresh header logo immediately after upload
+  - Added hover effects, camera icon overlay, and proper error handling for logo uploads
+  - Logo displays current company logo or fallback gradient with company initial
+  - Enhanced user experience with click-to-upload functionality and success/error notifications
 
 # User Preferences
 

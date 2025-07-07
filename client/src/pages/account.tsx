@@ -26,6 +26,7 @@ export default function Account() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -157,6 +158,71 @@ export default function Account() {
   const handleCancelEditingName = () => {
     setIsEditingName(false);
     setEditedName("");
+  };
+
+  // Handle logo upload
+  const handleLogoClick = () => {
+    logoInputRef.current?.click();
+  };
+
+  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Error",
+        description: "Please select a valid image file",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const response = await fetch('/api/business/upload-logo', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          toast({
+            title: "Unauthorized",
+            description: "You are logged out. Logging in again...",
+            variant: "destructive",
+          });
+          setTimeout(() => {
+            window.location.href = "/api/login";
+          }, 500);
+          return;
+        }
+        throw new Error('Upload failed');
+      }
+
+      const data = await response.json();
+      
+      // Invalidate business query to refresh the header logo
+      queryClient.invalidateQueries({ queryKey: ["/api/business"] });
+      
+      toast({
+        title: "Success",
+        description: "Company logo uploaded successfully",
+      });
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+      toast({
+        title: "Error",
+        description: "Failed to upload logo",
+        variant: "destructive",
+      });
+    }
+    
+    // Reset file input
+    event.target.value = '';
   };
 
   // Get user's name or email for display
@@ -334,6 +400,64 @@ export default function Account() {
                 >
                   View profile
                 </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Company Logo Section */}
+          <Card className="mb-8">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="relative">
+                    <div 
+                      className="w-16 h-16 cursor-pointer hover:ring-2 hover:ring-primary hover:ring-offset-2 rounded-lg transition-all duration-200 group"
+                      onClick={handleLogoClick}
+                      title="Click to change company logo"
+                    >
+                      {business?.logoUrl ? (
+                        <img
+                          src={business.logoUrl}
+                          alt="Company logo"
+                          className="w-16 h-16 rounded-lg object-cover"
+                        />
+                      ) : (
+                        <div 
+                          className="w-16 h-16 rounded-lg flex items-center justify-center"
+                          style={{
+                            background: 'linear-gradient(135deg, #8b1950, #b33054, #b73850)'
+                          }}
+                        >
+                          <span className="text-white font-semibold text-lg">
+                            {business?.companyName?.[0]?.toUpperCase() || 'L'}
+                          </span>
+                        </div>
+                      )}
+                      
+                      {/* Hover overlay with camera icon */}
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 rounded-lg transition-all duration-200 flex items-center justify-center pointer-events-none">
+                        <Camera className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                      </div>
+                    </div>
+                    
+                    <input
+                      ref={logoInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoUpload}
+                      className="hidden"
+                    />
+                  </div>
+                  
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                      Company Logo
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      Click to upload or change your company logo
+                    </p>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>

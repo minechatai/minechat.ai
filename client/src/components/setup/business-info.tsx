@@ -561,67 +561,6 @@ export default function BusinessInfo() {
     }
   };
 
-  const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      toast({
-        title: "Error",
-        description: "Please select a valid image file",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('image', file);
-
-    try {
-      const response = await fetch('/api/business/upload-logo', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          toast({
-            title: "Unauthorized",
-            description: "You are logged out. Logging in again...",
-            variant: "destructive",
-          });
-          setTimeout(() => {
-            window.location.href = "/api/login";
-          }, 500);
-          return;
-        }
-        throw new Error('Upload failed');
-      }
-
-      const data = await response.json();
-      const logoUrl = data.logoUrl;
-      
-      // Update the form with the new logo URL
-      businessForm.setValue('logoUrl', logoUrl);
-      
-      // Invalidate business query to refresh the header
-      queryClient.invalidateQueries({ queryKey: ["/api/business"] });
-      
-      toast({
-        title: "Success",
-        description: "Company logo uploaded successfully",
-      });
-    } catch (error) {
-      console.error('Error uploading logo:', error);
-      toast({
-        title: "Error",
-        description: "Failed to upload logo",
-        variant: "destructive",
-      });
-    }
-  };
-
   const onBusinessSubmit = (data: BusinessFormData) => {
     businessMutation.mutate(data);
   };
@@ -1054,51 +993,6 @@ export default function BusinessInfo() {
                 </FormItem>
               )}
             />
-
-            {/* Company Logo Upload */}
-            <div className="space-y-2">
-              <FormLabel className="text-sm font-medium text-gray-700">Company Logo</FormLabel>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                {business?.logoUrl ? (
-                  <div className="space-y-4">
-                    <img
-                      src={business.logoUrl}
-                      alt="Company logo"
-                      className="w-24 h-24 mx-auto rounded-lg object-cover"
-                    />
-                    <div className="space-y-2">
-                      <p className="text-sm text-gray-600">Current logo</p>
-                      <label htmlFor="logo-upload">
-                        <Button type="button" variant="outline" className="cursor-pointer">
-                          <Camera className="w-4 h-4 mr-2" />
-                          Change Logo
-                        </Button>
-                      </label>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <Camera className="w-12 h-12 text-gray-400 mx-auto" />
-                    <div className="space-y-2">
-                      <p className="text-gray-600">Upload your company logo</p>
-                      <label htmlFor="logo-upload">
-                        <Button type="button" className="cursor-pointer">
-                          <Camera className="w-4 h-4 mr-2" />
-                          Choose Logo
-                        </Button>
-                      </label>
-                    </div>
-                  </div>
-                )}
-                <input
-                  id="logo-upload"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleLogoUpload}
-                />
-              </div>
-            </div>
 
             <FormField
               control={businessForm.control}
