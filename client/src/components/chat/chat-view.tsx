@@ -59,12 +59,39 @@ export default function ChatView({ conversationId }: ChatViewProps) {
   // Auto-scroll to bottom when messages change or conversation changes
   useEffect(() => {
     if (messagesEndRef.current) {
-      // Use a small delay to ensure DOM is updated
+      // Force scroll to bottom immediately and after DOM updates
+      messagesEndRef.current.scrollIntoView({ behavior: 'auto' });
       setTimeout(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
       }, 100);
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+      }, 300);
     }
   }, [messages, conversationId]);
+
+  // Additional scroll on tab focus/window focus
+  useEffect(() => {
+    const handleFocus = () => {
+      if (messagesEndRef.current) {
+        setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+        }, 100);
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
+
+  // Force scroll when loading states change
+  useEffect(() => {
+    if (!conversationLoading && !messagesLoading && messagesEndRef.current) {
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+      }, 200);
+    }
+  }, [conversationLoading, messagesLoading]);
 
   // Mark conversation as read when conversation changes
   useEffect(() => {

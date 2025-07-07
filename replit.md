@@ -445,6 +445,9 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Fixed conversation auto-selection to display most recent chat automatically
   - Customer profile pictures and names now displaying correctly (Chan Sou, Justine Joyce)
   - System handling 82+ messages across conversations with proper sender type recognition
+  - Enhanced auto-scroll functionality with multiple triggers: conversation changes, tab focus, loading completion
+  - Implemented aggressive scroll-to-bottom behavior to ensure chat always shows most recent messages
+  - Added window focus event listener to force scroll when returning from other tabs
 
 # User Preferences
 
