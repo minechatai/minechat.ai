@@ -282,12 +282,12 @@ export default function Dashboard() {
     });
   };
 
-  // Handle date picker changes with smart range reset
+  // Handle date picker changes with mandatory range reset
   const handleDateChange = (newDate: DateRange | undefined) => {
     console.log("🔍 Date picker change - newDate:", newDate, "isSelectingNewRange:", isSelectingNewRange);
     console.log("🔍 Date picker change - current date:", date);
     
-    // If we're in selecting new range mode, handle it normally
+    // If we're currently selecting a new range, handle it normally
     if (isSelectingNewRange) {
       setDate(newDate);
       if (newDate?.from && newDate?.to) {
@@ -298,40 +298,15 @@ export default function Dashboard() {
       return;
     }
     
-    // If we have a complete range and the new date has both from and to,
-    // but the from date is different from our current from date,
-    // this means calendar auto-extended - we should reset instead
-    if (date?.from && date?.to && newDate?.from && newDate?.to) {
-      const currentFromTime = date.from.getTime();
-      const newFromTime = newDate.from.getTime();
-      const currentToTime = date.to.getTime();
-      const newToTime = newDate.to.getTime();
-      
-      // If the from date changed but to date stayed the same (or similar pattern),
-      // this indicates auto-extension rather than intentional range selection
-      if (newFromTime !== currentFromTime && newToTime === currentToTime) {
-        console.log("🔍 Date picker - Auto-extension detected (from changed, to stayed), resetting");
-        setIsSelectingNewRange(true);
-        setDate({ from: newDate.from, to: undefined });
-        return;
-      }
-      
-      // If both dates changed but in a way that suggests auto-extension
-      if (newFromTime !== currentFromTime && newToTime !== currentToTime) {
-        // Check if this looks like an auto-extension pattern
-        const fromDateChanged = Math.abs(newFromTime - currentFromTime) > 0;
-        const toDateChanged = Math.abs(newToTime - currentToTime) > 0;
-        
-        if (fromDateChanged && toDateChanged) {
-          console.log("🔍 Date picker - Possible auto-extension detected, resetting");
-          setIsSelectingNewRange(true);
-          setDate({ from: newDate.from, to: undefined });
-          return;
-        }
-      }
+    // If we have a complete range (both from and to), ANY new selection should reset
+    if (date?.from && date?.to && newDate?.from) {
+      console.log("🔍 Date picker - Complete range exists, resetting for new selection");
+      setIsSelectingNewRange(true);
+      setDate({ from: newDate.from, to: undefined });
+      return;
     }
     
-    // Normal flow
+    // Normal flow for first-time selection or incomplete ranges
     setDate(newDate);
     
     // Only update the analytics when we have a complete range
@@ -440,11 +415,8 @@ export default function Dashboard() {
                 onSelect={handleDateChange}
                 numberOfMonths={2}
                 onDayClick={(day, activeModifiers) => {
-                  // If we already have a complete range and user clicks a new date, prepare for reset
-                  if (date?.from && date?.to && !isSelectingNewRange) {
-                    console.log("🔍 Calendar Day Click - Preparing for potential reset with:", day);
-                    // The handleDateChange function will handle the actual reset logic
-                  }
+                  console.log("🔍 Calendar Day Click - User clicked:", day, "Current range:", date);
+                  // All reset logic is handled in handleDateChange
                 }}
               />
             </PopoverContent>
