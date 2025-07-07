@@ -469,6 +469,12 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Human mode now works perfectly: messages appear in UI and send to Facebook Messenger
   - AI mode respects conversation settings and only responds when enabled
   - Both text messages and file uploads work correctly in human mode
+- July 7, 2025: Setup Navigation Breadcrumb Implementation
+  - Changed "Business" tab to "AI Knowledge" in both navigation and page titles
+  - Restructured setup navigation to breadcrumb format (Setup > AI Assistant, Setup > AI Knowledge, Setup > Channels)
+  - Added tutorial video link specifically for Channels section
+  - Maintained URL compatibility while updating visual presentation
+  - Enhanced user experience with clear page navigation context
 
 # User Preferences
 

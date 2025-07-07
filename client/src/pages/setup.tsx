@@ -57,6 +57,19 @@ export default function Setup() {
     }
   };
 
+  const getBreadcrumbText = (section: string) => {
+    switch (section) {
+      case "ai-assistant":
+        return "Setup > AI Assistant";
+      case "business":
+        return "Setup > AI Knowledge";
+      case "channels":
+        return "Setup > Channels";
+      default:
+        return "Setup > AI Assistant";
+    }
+  };
+
   const renderSection = () => {
     switch (currentSection) {
       case "ai-assistant":
@@ -97,9 +110,18 @@ export default function Setup() {
         {/* Main Content */}
         <div className="flex-1 p-4 sm:p-6 overflow-y-auto min-h-0">
           <div className="max-w-none sm:max-w-4xl">
-            {/* Page Title */}
+            {/* Page Title with Breadcrumb */}
             <div className="mb-6">
-              <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Setup</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                  {getBreadcrumbText(currentSection)}
+                </h1>
+                {currentSection === "channels" && (
+                  <span className="text-sm text-blue-600 cursor-pointer hover:underline">
+                    (watch tutorial video)
+                  </span>
+                )}
+              </div>
             </div>
 
             {renderSection()}
