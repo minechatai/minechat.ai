@@ -300,63 +300,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup modular business routes
   setupBusinessRoutes(app);
 
-  // Business routes
-  app.get('/api/business', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const business = await storage.getBusiness(userId);
-      
-      // Prevent caching to ensure fresh data
-      res.set({
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
-      });
-      
-      console.log('Business API response for user', userId, ':', business);
-      res.json(business);
-    } catch (error) {
-      console.error("Error fetching business:", error);
-      res.status(500).json({ message: "Failed to fetch business" });
-    }
-  });
-
-  app.post('/api/business', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      console.log("📝 Business save request - userId:", userId);
-      console.log("📝 Business save request - body:", req.body);
-      console.log("📝 Business save request - FAQs specifically:", req.body.faqs);
-      // Log emoji presence for debugging
-      console.log("📝 Business save request - contains emoji:", req.body.faqs ? req.body.faqs.includes('📞') : false);
-      
-      const validatedData = insertBusinessSchema.parse(req.body);
-      console.log("📝 Business save - validated data:", validatedData);
-      console.log("📝 Business save - validated FAQs:", validatedData.faqs);
-      console.log("📝 Business save - validated contains emoji:", validatedData.faqs ? validatedData.faqs.includes('📞') : false);
-      
-      const business = await storage.upsertBusiness(userId, { ...validatedData, userId });
-      console.log("📝 Business save - result:", business);
-      console.log("📝 Business save - result FAQs:", business.faqs);
-      console.log("📝 Business save - result contains emoji:", business.faqs ? business.faqs.includes('📞') : false);
-      res.json(business);
-    } catch (error) {
-      console.error("Error saving business:", error);
-      res.status(500).json({ message: "Failed to save business" });
-    }
-  });
-
-  app.delete('/api/business', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      await storage.deleteBusiness(userId);
-      res.json({ message: "Business information deleted successfully" });
-    } catch (error) {
-      console.error("Error deleting business:", error);
-      res.status(500).json({ message: "Failed to delete business" });
-    }
-  });
-
   // Business logo upload
   app.post('/api/business/upload-logo', isAuthenticated, imageUpload.single('image'), async (req: any, res) => {
     try {

@@ -295,7 +295,7 @@ export default function ChatView({ conversationId }: ChatViewProps) {
               </AvatarFallback>
             </Avatar>
             <div>
-              <h3 className="font-semibold text-gray-900">{conversation?.customerName || 'Unknown Customer'}</h3>
+              <h3 className="font-semibold text-gray-900">{conversation?.customerName || 'Customer'}</h3>
               <p 
                 className="text-sm text-blue-600 cursor-pointer hover:underline"
                 onClick={handleViewProfile}

@@ -205,7 +205,7 @@ export default function ConversationList({ selectedConversation, onSelectConvers
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-1">
                   <h4 className="font-medium text-gray-900 text-sm truncate">
-                    {conversation.customerName || 'Unknown Customer'}
+                    {conversation.customerName || 'Customer'}
                   </h4>
                   <span className="text-xs text-gray-500">
                     {formatTime(conversation.lastMessageAt || conversation.createdAt)}
