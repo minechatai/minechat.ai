@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { setupGoogleAuth } from "./googleAuth";
+import { setupAuthRoutes } from "./modules/auth/routes/authRoutes";
 import { 
   insertBusinessSchema, 
   insertAiAssistantSchema, 

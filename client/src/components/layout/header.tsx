@@ -42,9 +42,12 @@ export default function Header({ title, onMenuClick, sidebarCollapsed = false }:
           <div className="flex items-center space-x-2 -ml-3">
             {business?.logoUrl ? (
               <img
-                src={business.logoUrl}
+                src={`${business.logoUrl}?v=${Date.now()}`}
                 alt={`${business.companyName} logo`}
                 className="w-8 h-8 rounded-full object-cover"
+                key={business.logoUrl}
+                onError={(e) => console.error('Logo failed to load:', business.logoUrl)}
+                onLoad={() => console.log('Logo loaded successfully:', business.logoUrl)}
               />
             ) : (
               <div 
