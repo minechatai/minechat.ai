@@ -475,6 +475,9 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Added tutorial video link specifically for Channels section
   - Maintained URL compatibility while updating visual presentation
   - Enhanced user experience with clear page navigation context
+  - Removed redundant section headers from AI Assistant and Channels components
+  - Implemented hierarchical font sizing: "Setup" at text-2xl, section names at text-xl (half size)
+  - Fixed JSX syntax error with proper HTML entity encoding for breadcrumb separator
 
 # User Preferences
 
