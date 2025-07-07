@@ -5,7 +5,7 @@ import {
   Settings, 
   BarChart3, 
   FileText, 
-  Users, 
+  User, 
   HelpCircle,
   LogOut,
   ChevronDown,
@@ -32,7 +32,7 @@ const navigation = [
     ]
   },
   { name: "CRM", href: "/crm", icon: BarChart3 },
-  { name: "Accounts", href: "/accounts", icon: Users },
+  { name: "Account", href: "/accounts", icon: User },
 ];
 
 interface SidebarProps {
