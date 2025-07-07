@@ -295,9 +295,16 @@ export default function Dashboard() {
     queryClient.invalidateQueries({ queryKey: ["/api/faq-analysis"] });
     
     setDateRange(todayRange);
+    
+    // Set date picker to today's date
+    const todayDate = new Date();
     setDate({
-      from: new Date(),
-      to: new Date()
+      from: todayDate,
+      to: todayDate
+    });
+    setTempDate({
+      from: todayDate,
+      to: todayDate
     });
   };
 
@@ -319,10 +326,17 @@ export default function Dashboard() {
     if (tempDate?.from && tempDate?.to) {
       setDate(tempDate);
       
-      // Create new date range object
+      // Create new date range object using local date formatting to avoid timezone issues
+      const formatLocalDate = (date: Date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
+      
       const newDateRange = {
-        startDate: tempDate.from.toISOString().split('T')[0],
-        endDate: tempDate.to.toISOString().split('T')[0]
+        startDate: formatLocalDate(tempDate.from),
+        endDate: formatLocalDate(tempDate.to)
       };
       
       // Save to localStorage for persistence
