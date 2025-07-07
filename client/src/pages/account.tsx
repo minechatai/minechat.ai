@@ -202,7 +202,14 @@ export default function Account() {
     console.log('🔍 Profile picture clicked!');
     console.log('🔍 File input ref:', fileInputRef.current);
     console.log('🔍 About to trigger file input click');
-    fileInputRef.current?.click();
+    
+    // Add more debugging
+    if (fileInputRef.current) {
+      console.log('🔍 File input element exists, triggering click');
+      fileInputRef.current.click();
+    } else {
+      console.error('🔍 File input ref is null!');
+    }
   };
 
   // Handle account name editing
