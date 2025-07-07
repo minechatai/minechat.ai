@@ -58,30 +58,35 @@ export default function Account() {
     },
     onSuccess: async (data, file) => {
       queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/user-profiles'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/user-profiles/active'] });
       setPreviewImage(null);
       setIsUploadingImage(false);
       
-      // Also upload to business logo to update header logo
-      try {
-        const logoFormData = new FormData();
-        logoFormData.append('image', file);
-        
-        const logoResponse = await fetch('/api/business/upload-logo', {
-          method: 'POST',
-          body: logoFormData,
-          credentials: 'include',
-        });
-        
-        if (logoResponse.ok) {
-          // Invalidate business query to refresh the header logo
-          queryClient.invalidateQueries({ queryKey: ["/api/business"] });
-          console.log('Logo upload successful');
-        } else {
-          const errorText = await logoResponse.text();
-          console.error('Logo upload failed:', logoResponse.status, errorText);
+      // Get the uploaded file path and update business logo
+      if (data && data.profileImageUrl) {
+        try {
+          const response = await fetch('/api/business', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+              logoUrl: data.profileImageUrl
+            }),
+          });
+          
+          if (response.ok) {
+            // Force invalidate business query to refresh the header logo
+            queryClient.invalidateQueries({ queryKey: ["/api/business"] });
+            queryClient.removeQueries({ queryKey: ["/api/business"] });
+            // Refetch immediately
+            queryClient.refetchQueries({ queryKey: ["/api/business"] });
+          }
+        } catch (error) {
+          console.error('Error updating business logo:', error);
         }
-      } catch (error) {
-        console.error('Error updating header logo:', error);
       }
       
       toast({

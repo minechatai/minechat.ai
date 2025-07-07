@@ -418,11 +418,11 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Files display with name, size, and remove button for complete control before sending
   - Placeholder text changes to "Add a caption for your files..." when files are attached
 - July 7, 2025: Company Logo Upload System Implementation
-  - Fixed company logo update issue: existing profile photo upload now updates header logo
-  - Modified profile picture upload to simultaneously update both user profile and business logo
-  - When uploading profile picture in Account page, it also updates the top bar header logo
-  - Implemented proper cache invalidation to refresh header logo immediately after upload
-  - Maintained clean UI design without adding unnecessary separate logo upload sections
+  - Fixed company logo update issue: profile photo upload now correctly updates header logo
+  - Updated database to sync business logo with current profile picture
+  - Enhanced cache invalidation with removeQueries and refetchQueries for immediate header refresh
+  - Profile picture uploads now use business API to update logo URL directly
+  - Fixed header logo display to show current profile picture consistently
   - Single upload action serves dual purpose: profile picture and company logo display
 
 # User Preferences
