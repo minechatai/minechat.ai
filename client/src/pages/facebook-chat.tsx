@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { Search, MessageCircle, Facebook, Clock, ChevronDown, Globe, Mail, MessageSquare } from "lucide-react";
-import chatbotIcon from "@assets/Frame_1751633918219.png";
+import chatbotIcon from "@assets/AI Chat Assistant_1751897744917.png";
 import aiModeImage from "@assets/AI_1751717516599.png";
 import humanModeImage from "@assets/Human_1751717521808.png";
 import { FacebookIcon } from "@/components/icons/FacebookIcon";
@@ -502,31 +502,6 @@ export default function FacebookChat() {
                         ) : (
                           <div className="max-w-xs lg:max-w-md">
                             <div className="px-4 py-3 rounded-lg bg-[#E1E1EB] text-gray-900">
-                              <div className="flex items-center space-x-2 mb-2">
-                                {message.senderType === 'human' ? (
-                                  // Show the actual sender's profile for human messages
-                                  <Avatar className="w-5 h-5">
-                                    <AvatarImage 
-                                      src={(message as any).humanSenderProfileImageUrl || undefined} 
-                                      alt={(message as any).humanSenderName || 'Team Member'}
-                                    />
-                                    <AvatarFallback className="bg-minechat-red text-white text-xs">
-                                      {((message as any).humanSenderName?.charAt(0).toUpperCase()) || 'T'}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                ) : (
-                                  <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center">
-                                    <img 
-                                      src={chatbotIcon} 
-                                      alt="AI Assistant" 
-                                      className="w-3 h-3"
-                                    />
-                                  </div>
-                                )}
-                                <span className="text-xs font-medium text-gray-600">
-                                  {message.senderType === 'human' ? ((message as any).humanSenderName || 'Team Member') : 'AI Assistant'}
-                                </span>
-                              </div>
                               <p className="text-sm">{message.content}</p>
                             </div>
                             <p className="text-xs mt-1 text-gray-500">

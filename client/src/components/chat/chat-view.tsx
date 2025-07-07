@@ -8,7 +8,7 @@ import { Message, Conversation } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useActiveProfile } from "@/hooks/useActiveProfile";
-import chatbotIcon from "@assets/Frame_1751633918219.png";
+import chatbotIcon from "@assets/AI Chat Assistant_1751897744917.png";
 import aiModeImage from "@assets/AI_1751717516599.png";
 import humanModeImage from "@assets/Human_1751717521808.png";
 
@@ -453,31 +453,6 @@ export default function ChatView({ conversationId }: ChatViewProps) {
                 ) : (
                   <div className="max-w-md lg:max-w-lg">
                     <div className="p-4 rounded-lg shadow-sm bg-[#E1E1EB] text-gray-900">
-                      <div className="flex items-center space-x-2 mb-2">
-                        {msg.senderType === 'human' ? (
-                          // Show the actual sender's profile for human messages
-                          <Avatar className="w-6 h-6">
-                            <AvatarImage 
-                              src={(msg as any).humanSenderProfileImageUrl || undefined} 
-                              alt={(msg as any).humanSenderName || 'Team Member'}
-                            />
-                            <AvatarFallback className="bg-minechat-red text-white text-xs">
-                              {((msg as any).humanSenderName?.charAt(0).toUpperCase()) || 'T'}
-                            </AvatarFallback>
-                          </Avatar>
-                        ) : (
-                          <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                            <img 
-                              src={chatbotIcon} 
-                              alt="AI Assistant" 
-                              className="w-4 h-4"
-                            />
-                          </div>
-                        )}
-                        <span className="text-xs font-medium text-gray-600">
-                          {msg.senderType === 'human' ? ((msg as any).humanSenderName || 'Team Member') : 'AI Assistant'}
-                        </span>
-                      </div>
                       {msg.messageType === 'file' ? (
                         <div>
                           {/* Check if it's an image */}
