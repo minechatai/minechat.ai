@@ -56,12 +56,15 @@ export default function ChatView({ conversationId }: ChatViewProps) {
     }
   }, [conversation]);
 
-  // Auto-scroll to bottom when messages change
+  // Auto-scroll to bottom when messages change or conversation changes
   useEffect(() => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'auto' });
+      // Use a small delay to ensure DOM is updated
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
+      }, 100);
     }
-  }, [messages]);
+  }, [messages, conversationId]);
 
   // Mark conversation as read when conversation changes
   useEffect(() => {
