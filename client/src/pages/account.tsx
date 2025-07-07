@@ -55,11 +55,11 @@ export default function Account() {
       
       console.log('🔍 Making request to /api/auth/profile-picture with current user:', user);
       
-      // Use the same pattern as other API calls but with FormData
+      // Use same credentials as other API calls
       const response = await fetch('/api/auth/profile-picture', {
         method: 'POST',
         body: formData,
-        credentials: 'same-origin', // Use same-origin instead of include for better session handling
+        credentials: 'include', // Match the credentials used by other API calls
       });
       
       console.log('🔍 Response status:', response.status);
