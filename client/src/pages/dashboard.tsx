@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -17,15 +17,20 @@ import { DateRange } from "react-day-picker";
 export default function Dashboard() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
+  const queryClient = useQueryClient();
   
   // Date range state - initialize with today's date to show today by default
-  const today = new Date().toISOString().split('T')[0];
+  const getCurrentDate = () => new Date().toISOString().split('T')[0];
   const [dateRange, setDateRange] = useState<{
     startDate?: string;
     endDate?: string;
-  }>({
-    startDate: today,
-    endDate: today
+  }>(() => {
+    const today = getCurrentDate();
+    console.log("🔍 Dashboard initialization - Current date:", today);
+    return {
+      startDate: today,
+      endDate: today
+    };
   });
 
   // Date picker state - initialize with today's date
@@ -33,6 +38,28 @@ export default function Dashboard() {
     from: new Date(),
     to: new Date()
   });
+
+  // Ensure we're always showing today's data on component mount
+  useEffect(() => {
+    const today = getCurrentDate();
+    console.log("🔍 Dashboard mounted - Ensuring current date:", today);
+    
+    // Clear existing cache to force fresh data fetch
+    queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/analytics/time-saved"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/analytics/messages-sent"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/analytics/conversations-per-hour"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/faq-analysis"] });
+    
+    setDateRange({
+      startDate: today,
+      endDate: today
+    });
+    setDate({
+      from: new Date(),
+      to: new Date()
+    });
+  }, [queryClient]);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -227,7 +254,7 @@ export default function Dashboard() {
 
   // Handle date range changes
   const handleShowToday = () => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = getCurrentDate();
     console.log("🔍 Show Today clicked - Setting date range to:", today);
     setDateRange({
       startDate: today,
