@@ -461,6 +461,14 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Fixed widget to call correct API endpoint with date filtering support
   - Identified Facebook OAuth token expiration issue preventing AI responses
   - Widget now properly calls backend but requires Facebook token refresh for full functionality
+- July 7, 2025: Complete Human Mode Facebook Integration Fix
+  - Fixed critical Facebook property mismatch (customerFacebookId → facebookSenderId)
+  - Added conversation mode check in Facebook webhook to respect AI/Human toggle
+  - Updated Facebook access token with valid credentials for message delivery
+  - Fixed frontend query cache invalidation for real-time message updates
+  - Human mode now works perfectly: messages appear in UI and send to Facebook Messenger
+  - AI mode respects conversation settings and only responds when enabled
+  - Both text messages and file uploads work correctly in human mode
 
 # User Preferences
 

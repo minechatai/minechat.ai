@@ -1697,6 +1697,12 @@ You represent ${business?.companyName || "this business"} and customers expect a
         readByAdmin: false
       });
 
+      // Check conversation mode - only generate AI response if in AI mode
+      if (conversation.mode === 'human') {
+        console.log(`Conversation ${conversation.id} is in human mode - skipping AI response`);
+        return;
+      }
+
       // Generate AI response using the same logic as the chat endpoint
       let aiMessage = "";
 
