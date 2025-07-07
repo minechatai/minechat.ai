@@ -750,6 +750,110 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // FAQ Analysis endpoint
+  app.get('/api/faq-analysis', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { startDate, endDate } = req.query;
+      
+      console.log("🔍 FAQ Analysis Debug - User ID:", userId);
+      console.log("🔍 FAQ Analysis Debug - Date Range:", { startDate, endDate });
+      
+      // Get customer messages for FAQ analysis
+      const messages = await storage.getMessagesForFaqAnalysis(userId, startDate, endDate);
+      console.log("🔍 FAQ Analysis Debug - Messages found:", messages.length);
+      
+      if (messages.length === 0) {
+        console.log("🔍 FAQ Analysis Debug - No messages found, returning empty result");
+        return res.json([]);
+      }
+      
+      // Extract questions from customer messages
+      const customerQuestions = messages
+        .filter(msg => msg.senderType === 'customer')
+        .map(msg => msg.content)
+        .filter(content => content && content.trim().length > 0)
+        .filter(content => {
+          // Filter out simple greetings and single words
+          const trimmed = content.trim().toLowerCase();
+          const simpleGreetings = ['hi', 'hello', 'hey', 'yo', 'sup', 'good morning', 'good afternoon', 'good evening'];
+          return !simpleGreetings.includes(trimmed) && content.length > 3;
+        });
+      
+      console.log("🔍 FAQ Analysis Debug - Customer questions extracted:", customerQuestions.length);
+      
+      if (customerQuestions.length === 0) {
+        console.log("🔍 FAQ Analysis Debug - No valid questions found, returning empty result");
+        return res.json([]);
+      }
+      
+      // Get existing FAQs from business info
+      const business = await storage.getBusiness(userId);
+      const existingFaqs = business?.faqs || '';
+      const faqList = existingFaqs ? existingFaqs.split('\n').filter(faq => faq.trim()) : [];
+      
+      console.log("🔍 FAQ Analysis Debug - Existing FAQs:", faqList.length);
+      
+      // Count frequency of similar questions
+      const questionCounts: { [key: string]: number } = {};
+      const processedQuestions: string[] = [];
+      
+      customerQuestions.forEach(question => {
+        const normalized = question.toLowerCase().trim();
+        // Group similar questions (basic similarity check)
+        let foundSimilar = false;
+        
+        for (const processed of processedQuestions) {
+          const processedNormalized = processed.toLowerCase().trim();
+          // Simple similarity check - if questions share significant words
+          const questionWords = normalized.split(' ').filter(word => word.length > 3);
+          const processedWords = processedNormalized.split(' ').filter(word => word.length > 3);
+          
+          const commonWords = questionWords.filter(word => processedWords.includes(word));
+          const similarityRatio = commonWords.length / Math.max(questionWords.length, processedWords.length);
+          
+          if (similarityRatio > 0.5) { // 50% similarity threshold
+            questionCounts[processed] = (questionCounts[processed] || 1) + 1;
+            foundSimilar = true;
+            break;
+          }
+        }
+        
+        if (!foundSimilar) {
+          processedQuestions.push(question);
+          questionCounts[question] = 1;
+        }
+      });
+      
+      // Convert to array and sort by frequency
+      const frequentQuestions = Object.entries(questionCounts)
+        .map(([question, count]) => {
+          // Check if this question (or similar) already exists in FAQs
+          const isInFaq = faqList.some(faq => {
+            const faqLower = faq.toLowerCase();
+            const questionLower = question.toLowerCase();
+            return faqLower.includes(questionLower) || questionLower.includes(faqLower);
+          });
+          
+          return {
+            question,
+            count,
+            isInFaq
+          };
+        })
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10); // Top 10 most frequent questions
+      
+      console.log("🔍 FAQ Analysis Debug - Final frequent questions:", frequentQuestions.length);
+      console.log("🔍 FAQ Analysis Debug - Sample questions:", frequentQuestions.slice(0, 3));
+      
+      res.json(frequentQuestions);
+    } catch (error) {
+      console.error("Error analyzing FAQ:", error);
+      res.status(500).json({ message: "Failed to analyze FAQ" });
+    }
+  });
+
   // Channel routes
   app.get('/api/channels', isAuthenticated, async (req: any, res) => {
     try {
