@@ -1,8 +1,9 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Bell, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import { ModeToggle } from "@/components/ui/mode-toggle";
 import UserProfileDropdown from "./user-profile-dropdown";
+import NotificationBell from "@/components/notifications/notification-bell";
 import { useQuery } from "@tanstack/react-query";
 import type { Business } from "@shared/schema";
 
@@ -67,12 +68,7 @@ export default function Header({ title, onMenuClick, sidebarCollapsed = false }:
         </div>
         
         <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="sm" className="relative">
-            <Bell className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-            <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
-              2
-            </span>
-          </Button>
+          <NotificationBell />
           
           <ModeToggle />
           

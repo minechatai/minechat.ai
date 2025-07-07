@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MoreVertical, Paperclip, Image, Mic, Send, MessageCircle, X } from "lucide-react";
 import { Message, Conversation } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import { useActiveProfile } from "@/hooks/useActiveProfile";
 import chatbotIcon from "@assets/Frame_1751633918219.png";
 import aiModeImage from "@assets/AI_1751717516599.png";
@@ -38,6 +39,16 @@ export default function ChatView({ conversationId }: ChatViewProps) {
     refetchInterval: 3000, // Refresh every 3 seconds
   });
 
+  // Mark conversation as read when viewing it
+  const markAsReadMutation = useMutation({
+    mutationFn: async (conversationId: number) => {
+      return await apiRequest('POST', '/api/notifications/mark-read', { conversationId });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/notifications/unread-count'] });
+    },
+  });
+
   // Sync toggle state with conversation mode from database
   useEffect(() => {
     if (conversation) {
@@ -51,6 +62,18 @@ export default function ChatView({ conversationId }: ChatViewProps) {
       messagesEndRef.current.scrollIntoView({ behavior: 'auto' });
     }
   }, [messages]);
+
+  // Mark conversation as read when conversation changes
+  useEffect(() => {
+    if (conversationId && messages.length > 0) {
+      const hasUnreadCustomerMessages = messages.some(
+        msg => msg.senderType === 'customer' && (!msg.readByAdmin || msg.readByAdmin === false)
+      );
+      if (hasUnreadCustomerMessages) {
+        markAsReadMutation.mutate(conversationId);
+      }
+    }
+  }, [conversationId, messages]);
 
   const isLoading = conversationLoading || messagesLoading;
 

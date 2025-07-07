@@ -425,6 +425,14 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Profile picture uploads now correctly update both user profile and business logo in header
   - Single upload action serves dual purpose: profile picture and company logo display
   - Removed debug logging and cache-busting after successful implementation
+- July 7, 2025: Real-Time Notification Bell System Implementation
+  - Added `readByAdmin` field to messages schema for tracking admin read status
+  - Created comprehensive notification API endpoints: `/api/notifications/unread-count` and `/api/notifications/mark-read`
+  - Built NotificationBell component with real-time updates (5-second polling)
+  - Notification bell shows actual unread count with popover interface
+  - Automatic marking of conversations as read when viewed in chat interface
+  - Graceful error handling for database schema transitions
+  - Replaces hardcoded "2" notification with dynamic system tracking customer messages from all channels
 
 # User Preferences
 

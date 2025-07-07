@@ -103,6 +103,11 @@ export interface IStorage {
   updateUserProfile(profileId: string, profile: Partial<InsertUserProfile>): Promise<UserProfile>;
   deleteUserProfile(profileId: string): Promise<void>;
   setActiveUserProfile(businessOwnerId: string, profileId: string): Promise<void>;
+
+  // Notification operations
+  getUnreadNotificationCount(userId: string): Promise<number>;
+  markConversationAsRead(userId: string, conversationId: number): Promise<void>;
+  markAllNotificationsAsRead(userId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -716,6 +721,78 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error("Error fetching inbound customer messages:", error);
       throw error;
+    }
+  }
+
+  // Notification operations
+  async getUnreadNotificationCount(userId: string): Promise<number> {
+    try {
+      // Count unread customer messages across all conversations
+      const result = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(messages)
+        .innerJoin(conversations, eq(messages.conversationId, conversations.id))
+        .where(
+          and(
+            eq(conversations.userId, userId),
+            eq(messages.senderType, "customer"),
+            or(
+              eq(messages.readByAdmin, false),
+              sql`messages.read_by_admin IS NULL`
+            )
+          )
+        );
+      
+      return result[0]?.count || 0;
+    } catch (error) {
+      console.error("Error getting unread notification count:", error);
+      // Return 0 if readByAdmin column doesn't exist yet
+      return 0;
+    }
+  }
+
+  async markConversationAsRead(userId: string, conversationId: number): Promise<void> {
+    try {
+      // Mark all customer messages in this conversation as read
+      await db
+        .update(messages)
+        .set({ readByAdmin: true })
+        .where(
+          and(
+            eq(messages.conversationId, conversationId),
+            eq(messages.senderType, "customer")
+          )
+        );
+    } catch (error) {
+      console.error("Error marking conversation as read:", error);
+      // Ignore error if readByAdmin column doesn't exist yet
+    }
+  }
+
+  async markAllNotificationsAsRead(userId: string): Promise<void> {
+    try {
+      // Mark all customer messages across all user's conversations as read
+      const userConversations = await db
+        .select({ id: conversations.id })
+        .from(conversations)
+        .where(eq(conversations.userId, userId));
+      
+      const conversationIds = userConversations.map(c => c.id);
+      
+      if (conversationIds.length > 0) {
+        await db
+          .update(messages)
+          .set({ readByAdmin: true })
+          .where(
+            and(
+              sql`messages.conversation_id IN (${sql.join(conversationIds, sql`, `)})`,
+              eq(messages.senderType, "customer")
+            )
+          );
+      }
+    } catch (error) {
+      console.error("Error marking all notifications as read:", error);
+      // Ignore error if readByAdmin column doesn't exist yet
     }
   }
 }

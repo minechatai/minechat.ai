@@ -171,6 +171,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Notifications API
+  app.get('/api/notifications/unread-count', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const unreadCount = await storage.getUnreadNotificationCount(userId);
+      res.json({ count: unreadCount });
+    } catch (error) {
+      console.error("Error fetching unread notification count:", error);
+      res.status(500).json({ message: "Failed to fetch notifications" });
+    }
+  });
+
+  app.post('/api/notifications/mark-read', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { conversationId } = req.body;
+      
+      if (conversationId) {
+        await storage.markConversationAsRead(userId, conversationId);
+      } else {
+        await storage.markAllNotificationsAsRead(userId);
+      }
+      
+      res.json({ message: "Notifications marked as read" });
+    } catch (error) {
+      console.error("Error marking notifications as read:", error);
+      res.status(500).json({ message: "Failed to mark notifications as read" });
+    }
+  });
+
   // AI Assistant routes
   app.get('/api/ai-assistant', isAuthenticated, async (req: any, res) => {
     try {

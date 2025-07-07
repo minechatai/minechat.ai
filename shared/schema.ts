@@ -132,6 +132,8 @@ export const messages = pgTable("messages", {
   humanSenderProfileId: varchar("human_sender_profile_id"),
   humanSenderName: varchar("human_sender_name"),
   humanSenderProfileImageUrl: varchar("human_sender_profile_image_url"),
+  // Notification tracking
+  readByAdmin: boolean("read_by_admin").default(false), // Track if admin has read customer messages
   createdAt: timestamp("created_at").defaultNow(),
 });
 
