@@ -64,6 +64,18 @@ export default function Charts({ messagesData, hourlyData, faqData, faqLoading }
           </CardHeader>
           <CardContent className="pb-4">
             <div className="flex items-center justify-center space-x-6">
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: '#9CA3AF' }}></div>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Human</span>
+                </div>
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">{humanPercentage}%</div>
+                <div className="flex items-center space-x-3 mt-6">
+                  <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: '#A53860' }}></div>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">AI</span>
+                </div>
+                <div className="text-2xl font-bold text-gray-900 dark:text-white">{aiPercentage}%</div>
+              </div>
               <div className="relative">
                 <div className="w-24 h-24">
                   <ResponsiveContainer width="100%" height="100%">
@@ -89,18 +101,6 @@ export default function Charts({ messagesData, hourlyData, faqData, faqLoading }
                     <div className="text-xl font-bold text-gray-900 dark:text-white">{totalMessages}</div>
                     <div className="text-xs text-gray-500 dark:text-gray-400">Total</div>
                   </div>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#9CA3AF' }}></div>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Human</span>
-                  <span className="text-sm font-semibold text-gray-900 dark:text-white">{humanPercentage}%</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#A53860' }}></div>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">AI</span>
-                  <span className="text-sm font-semibold text-gray-900 dark:text-white">{aiPercentage}%</span>
                 </div>
               </div>
             </div>
