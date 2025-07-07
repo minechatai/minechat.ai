@@ -343,54 +343,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Document upload route
-  app.post('/api/documents/upload', isAuthenticated, upload.single('file'), async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      
-      if (!req.file) {
-        return res.status(400).json({ message: "No file uploaded" });
-      }
-
-      const documentData = {
-        userId,
-        filename: req.file.filename,
-        originalName: req.file.originalname,
-        fileType: req.file.mimetype,
-        fileSize: req.file.size,
-        uploadStatus: 'completed' as const,
-      };
-
-      const document = await storage.createDocument(userId, documentData);
-      res.json(document);
-    } catch (error) {
-      console.error("Error uploading document:", error);
-      res.status(500).json({ message: "Failed to upload document" });
-    }
-  });
-
-  app.get('/api/documents', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const documents = await storage.getDocuments(userId);
-      res.json(documents);
-    } catch (error) {
-      console.error("Error fetching documents:", error);
-      res.status(500).json({ message: "Failed to fetch documents" });
-    }
-  });
-
-  app.delete('/api/documents/:id', isAuthenticated, async (req: any, res) => {
-    try {
-      const documentId = parseInt(req.params.id);
-      await storage.deleteDocument(documentId);
-      res.json({ success: true });
-    } catch (error) {
-      console.error("Error deleting document:", error);
-      res.status(500).json({ message: "Failed to delete document" });
-    }
-  });
-
   // Conversation routes
   app.get('/api/conversations', isAuthenticated, async (req: any, res) => {
     try {

@@ -500,13 +500,34 @@ export default function FacebookChat() {
                             </p>
                           </div>
                         ) : (
-                          <div className="max-w-xs lg:max-w-md">
-                            <div className="px-4 py-3 rounded-lg bg-[#E1E1EB] text-gray-900">
-                              <p className="text-sm">{message.content}</p>
+                          <div className="flex space-x-3 max-w-xs lg:max-w-md">
+                            {message.senderType === 'human' ? (
+                              <Avatar className="w-8 h-8 flex-shrink-0">
+                                <AvatarImage 
+                                  src={(message as any).humanSenderProfileImageUrl || undefined} 
+                                  alt={(message as any).humanSenderName || 'Team Member'}
+                                />
+                                <AvatarFallback className="bg-minechat-red text-white text-xs">
+                                  {((message as any).humanSenderName?.charAt(0).toUpperCase()) || 'T'}
+                                </AvatarFallback>
+                              </Avatar>
+                            ) : (
+                              <div className="w-8 h-8 flex-shrink-0 flex items-center justify-center">
+                                <img 
+                                  src={chatbotIcon} 
+                                  alt="AI Assistant" 
+                                  className="w-8 h-8"
+                                />
+                              </div>
+                            )}
+                            <div className="flex-1">
+                              <div className="px-4 py-3 rounded-lg bg-[#E1E1EB] text-gray-900">
+                                <p className="text-sm">{message.content}</p>
+                              </div>
+                              <p className="text-xs mt-1 text-gray-500">
+                                {formatMessageTime(message.createdAt)}
+                              </p>
                             </div>
-                            <p className="text-xs mt-1 text-gray-500">
-                              {formatMessageTime(message.createdAt)}
-                            </p>
                           </div>
                         )}
                       </div>
