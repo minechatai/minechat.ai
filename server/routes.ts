@@ -1589,6 +1589,63 @@ You represent ${business?.companyName || "this business"} and customers expect a
   // Helper function to send image to Facebook
   async function sendFacebookImage(accessToken: string, recipientId: string, imageUrl: string, caption?: string) {
     try {
+      // Try to upload the image file directly to Facebook first
+      const fs = require('fs');
+      const FormData = require('form-data');
+      
+      // Extract file path from URL
+      const filePath = imageUrl.split('/uploads/')[1];
+      const fullFilePath = `uploads/${filePath}`;
+      
+      if (fs.existsSync(fullFilePath)) {
+        // Upload file directly using multipart/form-data
+        const form = new FormData();
+        form.append('recipient', JSON.stringify({ id: recipientId }));
+        form.append('message', JSON.stringify({
+          attachment: {
+            type: "image",
+            payload: {
+              is_reusable: true
+            }
+          }
+        }));
+        form.append('filedata', fs.createReadStream(fullFilePath));
+        
+        const response = await fetch(`https://graph.facebook.com/v19.0/me/messages?access_token=${accessToken}`, {
+          method: "POST",
+          body: form
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Facebook send image error:", errorData);
+          
+          // Fallback: try URL method
+          console.log("Trying URL fallback method...");
+          await sendFacebookImageUrl(accessToken, recipientId, imageUrl);
+        } else {
+          console.log(`Facebook image sent successfully via file upload`);
+          
+          // Send caption as separate message if provided
+          if (caption) {
+            setTimeout(() => {
+              sendFacebookMessage(accessToken, recipientId, caption);
+            }, 500);
+          }
+        }
+      } else {
+        console.log("File not found, trying URL method");
+        await sendFacebookImageUrl(accessToken, recipientId, imageUrl);
+      }
+    } catch (error) {
+      console.error("Error sending Facebook image:", error);
+      // Fallback to URL method
+      await sendFacebookImageUrl(accessToken, recipientId, imageUrl);
+    }
+  }
+
+  async function sendFacebookImageUrl(accessToken: string, recipientId: string, imageUrl: string) {
+    try {
       const messageData = {
         access_token: accessToken,
         recipient: { id: recipientId },
@@ -1613,19 +1670,12 @@ You represent ${business?.companyName || "this business"} and customers expect a
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("Facebook send image error:", errorData);
+        console.error("Facebook send image URL error:", errorData);
       } else {
-        console.log(`Facebook image sent successfully: ${imageUrl}`);
-        
-        // Send caption as separate message if provided
-        if (caption) {
-          setTimeout(() => {
-            sendFacebookMessage(accessToken, recipientId, caption);
-          }, 500);
-        }
+        console.log(`Facebook image sent successfully via URL: ${imageUrl}`);
       }
     } catch (error) {
-      console.error("Error sending Facebook image:", error);
+      console.error("Error sending Facebook image URL:", error);
     }
   }
 
@@ -1663,7 +1713,9 @@ You represent ${business?.companyName || "this business"} and customers expect a
       
       if (imageTypes.includes(ext)) {
         // Send as image
-        const fullImageUrl = `${process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000'}${fileUrl}`;
+        const domain = process.env.REPLIT_DOMAINS?.split(',')[0];
+        const fullImageUrl = domain ? `https://${domain}${fileUrl}` : `https://localhost:5000${fileUrl}`;
+        console.log(`🔍 Attempting to send image to Facebook: ${fullImageUrl}`);
         await sendFacebookImage(connection.accessToken, conversation.facebookSenderId, fullImageUrl);
         console.log(`Sent image file to Facebook: ${file.originalname}`);
       } else {
