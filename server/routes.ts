@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+// Removed setupAuthRoutes to avoid path issues - using direct implementation instead
 import { 
   insertBusinessSchema, 
   insertAiAssistantSchema, 
@@ -50,6 +51,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
+  // Direct implementation of profile picture upload to avoid path issues
+
   // Serve uploaded files statically
   app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
@@ -66,66 +69,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Profile picture upload endpoint
-  app.post('/api/auth/profile-picture', (req: any, res, next) => {
+  app.post('/api/auth/profile-picture', isAuthenticated, imageUpload.single('profileImage'), async (req: any, res) => {
     console.log('🔍 Profile picture upload endpoint hit');
-    console.log('🔍 Request headers:', JSON.stringify(req.headers, null, 2));
-    console.log('🔍 Session ID:', req.sessionID);
-    console.log('🔍 Session data:', req.session);
     console.log('🔍 User authenticated:', !!req.user);
-    
-    // Check authentication first
-    if (!req.isAuthenticated() || !req.user) {
-      console.log('🔍 User not authenticated - returning 401');
-      return res.status(401).json({ message: "Unauthorized - User not authenticated" });
-    }
-    
     console.log('🔍 User ID:', req.user?.claims?.sub);
+    console.log('🔍 File received:', !!req.file);
     
-    // Handle file upload
-    imageUpload.single('profileImage')(req, res, async (err) => {
-      if (err) {
-        console.error('🔍 Multer error:', err);
-        return res.status(400).json({ message: err.message });
-      }
-      
-      console.log('🔍 File received:', !!req.file);
-      console.log('🔍 File details:', req.file ? {
-        filename: req.file.filename,
-        originalname: req.file.originalname,
-        size: req.file.size,
-        mimetype: req.file.mimetype
-      } : 'No file');
-      
-      try {
-        const userId = req.user.claims.sub;
-        const file = req.file;
-        
-        if (!file) {
-          console.log('🔍 No file uploaded - returning 400');
-          return res.status(400).json({ message: "No file uploaded" });
-        }
+    try {
+      const userId = req.user.claims.sub;
+      const file = req.file;
 
-        // Generate the public URL for the uploaded image
-        const imageUrl = `/uploads/images/${file.filename}`;
-        console.log('🔍 Generated image URL:', imageUrl);
-        
-        // Update user profile with new image URL
-        console.log('🔍 Updating user profile with new image URL');
-        await storage.upsertUser({
-          id: userId,
-          profileImageUrl: imageUrl,
-        });
-        
-        console.log('🔍 Profile picture updated successfully');
-        res.json({ 
-          message: "Profile picture updated successfully",
-          profileImageUrl: imageUrl
-        });
-      } catch (error) {
-        console.error("🔍 Error updating profile picture:", error);
-        res.status(500).json({ message: "Failed to update profile picture" });
+      if (!file) {
+        console.log('🔍 No file uploaded');
+        return res.status(400).json({ message: "No file uploaded" });
       }
-    });
+
+      console.log('🔍 File details:', {
+        filename: file.filename,
+        originalname: file.originalname,
+        size: file.size,
+        mimetype: file.mimetype
+      });
+
+      // Generate the public URL for the uploaded image
+      const imageUrl = `/uploads/images/${file.filename}`;
+      console.log('🔍 Generated image URL:', imageUrl);
+
+      // Update user profile with new image URL
+      await storage.upsertUser({
+        id: userId,
+        profileImageUrl: imageUrl,
+      });
+
+      console.log('🔍 Profile picture updated successfully');
+      res.json({ 
+        message: "Profile picture updated successfully",
+        profileImageUrl: imageUrl
+      });
+    } catch (error) {
+      console.error("🔍 Error updating profile picture:", error);
+      res.status(500).json({ message: "Failed to update profile picture" });
+    }
   });
 
   // Business routes

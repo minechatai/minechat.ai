@@ -1,6 +1,6 @@
 import type { Express } from "express";
-import { storage } from "../../../storage";
-import { isAuthenticated } from "../../../replitAuth";
+import { storage } from "../../../../../server/storage";
+import { isAuthenticated } from "../../../../../server/replitAuth";
 import multer from "multer";
 import path from "path";
 
