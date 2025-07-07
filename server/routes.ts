@@ -468,6 +468,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Business logo upload
+  app.post('/api/business/upload-logo', isAuthenticated, upload.single('image'), async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const file = req.file;
+
+      if (!file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      // Generate the public URL for the uploaded logo
+      const logoUrl = `/uploads/images/${file.filename}`;
+      
+      // Update business with new logo URL
+      await storage.upsertBusiness(userId, {
+        userId,
+        logoUrl: logoUrl,
+      });
+      
+      res.json({ 
+        message: "Company logo uploaded successfully",
+        logoUrl: logoUrl
+      });
+    } catch (error) {
+      console.error("Error uploading logo:", error);
+      res.status(500).json({ message: "Failed to upload logo" });
+    }
+  });
+
   // AI Assistant routes
   app.get('/api/ai-assistant', isAuthenticated, async (req: any, res) => {
     try {
