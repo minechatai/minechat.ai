@@ -56,7 +56,7 @@ export default function Header({ title, onMenuClick, sidebarCollapsed = false }:
                 </span>
               </div>
             )}
-            <div className="text-base">
+            <div className="text-lg">
               <div className="font-semibold text-gray-900 dark:text-white">
                 {business?.companyName || 'Your Company'}
               </div>
