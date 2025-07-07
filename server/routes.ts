@@ -1605,7 +1605,7 @@ You represent ${business?.companyName || "this business"} and customers expect a
         return;
       }
 
-      await sendFacebookMessage(connection.accessToken, conversation.customerFacebookId, messageText);
+      await sendFacebookMessage(connection.accessToken, conversation.facebookSenderId, messageText);
       console.log(`Sent human message to Facebook: ${messageText.substring(0, 50)}...`);
     } catch (error) {
       console.error("Error sending text to Facebook:", error);
@@ -1630,12 +1630,12 @@ You represent ${business?.companyName || "this business"} and customers expect a
       if (imageTypes.includes(ext)) {
         // Send as image
         const fullImageUrl = `${process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000'}${fileUrl}`;
-        await sendFacebookImage(connection.accessToken, conversation.customerFacebookId, fullImageUrl);
+        await sendFacebookImage(connection.accessToken, conversation.facebookSenderId, fullImageUrl);
         console.log(`Sent image file to Facebook: ${file.originalname}`);
       } else {
         // Send as file notification
         const fileMessage = `File shared: ${file.originalname} (${Math.round(file.size / 1024)}KB)`;
-        await sendFacebookMessage(connection.accessToken, conversation.customerFacebookId, fileMessage);
+        await sendFacebookMessage(connection.accessToken, conversation.facebookSenderId, fileMessage);
         console.log(`Sent file notification to Facebook: ${file.originalname}`);
       }
     } catch (error) {
