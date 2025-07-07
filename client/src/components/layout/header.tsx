@@ -18,7 +18,9 @@ export default function Header({ title, onMenuClick, sidebarCollapsed = false }:
   // Fetch business information to display company logo
   const { data: business } = useQuery<Business>({
     queryKey: ['/api/business'],
-    enabled: !!user
+    enabled: !!user,
+    staleTime: 0, // Always fetch fresh data
+    cacheTime: 0  // Don't cache the result
   });
 
 
