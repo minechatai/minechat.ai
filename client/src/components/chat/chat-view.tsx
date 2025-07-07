@@ -452,25 +452,6 @@ export default function ChatView({ conversationId }: ChatViewProps) {
                   </div>
                 ) : (
                   <div className="flex space-x-3 max-w-md lg:max-w-lg">
-                    {msg.senderType === 'human' ? (
-                      <Avatar className="w-8 h-8 flex-shrink-0">
-                        <AvatarImage 
-                          src={(msg as any).humanSenderProfileImageUrl || activeProfile?.profileImageUrl || undefined} 
-                          alt={(msg as any).humanSenderName || activeProfile?.name || 'Team Member'}
-                        />
-                        <AvatarFallback className="bg-minechat-red text-white text-xs">
-                          {((msg as any).humanSenderName?.charAt(0).toUpperCase()) || (activeProfile?.name?.charAt(0).toUpperCase()) || 'T'}
-                        </AvatarFallback>
-                      </Avatar>
-                    ) : (
-                      <div className="w-8 h-8 flex-shrink-0 flex items-center justify-center">
-                        <img 
-                          src={chatbotIcon} 
-                          alt="AI Assistant" 
-                          className="w-8 h-8"
-                        />
-                      </div>
-                    )}
                     <div className="flex-1">
                       <div className="p-4 rounded-lg shadow-sm bg-[#E1E1EB] text-gray-900">
                       {msg.messageType === 'file' ? (
@@ -523,6 +504,25 @@ export default function ChatView({ conversationId }: ChatViewProps) {
                       </div>
                       <p className="text-xs text-gray-500 mt-1 text-right">{formatTime(msg.createdAt)}</p>
                     </div>
+                    {msg.senderType === 'human' ? (
+                      <Avatar className="w-8 h-8 flex-shrink-0">
+                        <AvatarImage 
+                          src={(msg as any).humanSenderProfileImageUrl || activeProfile?.profileImageUrl || undefined} 
+                          alt={(msg as any).humanSenderName || activeProfile?.name || 'Team Member'}
+                        />
+                        <AvatarFallback className="bg-minechat-red text-white text-xs">
+                          {((msg as any).humanSenderName?.charAt(0).toUpperCase()) || (activeProfile?.name?.charAt(0).toUpperCase()) || 'T'}
+                        </AvatarFallback>
+                      </Avatar>
+                    ) : (
+                      <div className="w-8 h-8 flex-shrink-0 flex items-center justify-center">
+                        <img 
+                          src={chatbotIcon} 
+                          alt="AI Assistant" 
+                          className="w-8 h-8"
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

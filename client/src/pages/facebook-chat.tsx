@@ -501,6 +501,14 @@ export default function FacebookChat() {
                           </div>
                         ) : (
                           <div className="flex space-x-3 max-w-xs lg:max-w-md">
+                            <div className="flex-1">
+                              <div className="px-4 py-3 rounded-lg bg-[#E1E1EB] text-gray-900">
+                                <p className="text-sm">{message.content}</p>
+                              </div>
+                              <p className="text-xs mt-1 text-gray-500">
+                                {formatMessageTime(message.createdAt)}
+                              </p>
+                            </div>
                             {message.senderType === 'human' ? (
                               <Avatar className="w-8 h-8 flex-shrink-0">
                                 <AvatarImage 
@@ -520,14 +528,6 @@ export default function FacebookChat() {
                                 />
                               </div>
                             )}
-                            <div className="flex-1">
-                              <div className="px-4 py-3 rounded-lg bg-[#E1E1EB] text-gray-900">
-                                <p className="text-sm">{message.content}</p>
-                              </div>
-                              <p className="text-xs mt-1 text-gray-500">
-                                {formatMessageTime(message.createdAt)}
-                              </p>
-                            </div>
                           </div>
                         )}
                       </div>
