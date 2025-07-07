@@ -125,7 +125,7 @@ export default function ChatView({ conversationId }: ChatViewProps) {
     },
     onSuccess: () => {
       // Invalidate and refetch messages
-      queryClient.invalidateQueries({ queryKey: [`/api/messages/${conversationId}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}/messages`] });
       queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
     },
     onError: (error) => {
@@ -204,7 +204,7 @@ export default function ChatView({ conversationId }: ChatViewProps) {
       setMessage("");
       
       // Invalidate and refetch messages
-      queryClient.invalidateQueries({ queryKey: [`/api/messages/${conversationId}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/conversations/${conversationId}/messages`] });
       queryClient.invalidateQueries({ queryKey: ['/api/conversations'] });
       
     } catch (error) {
