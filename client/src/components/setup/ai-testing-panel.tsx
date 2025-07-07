@@ -93,11 +93,10 @@ export default function AiTestingPanel() {
       {/* Header */}
       <div className="p-4 border-b border-gray-200 flex-shrink-0">
         <h3 className="text-lg font-semibold text-gray-900">AI Testing</h3>
-        <p className="text-sm text-gray-500 mt-1">Test your AI responses - conversations are not saved</p>
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 p-4 overflow-y-auto custom-scrollbar min-h-0 pb-0">
+      <div className="flex-1 p-4 overflow-y-auto custom-scrollbar min-h-0 pb-0 bg-gray-50">
         {messages.length === 0 ? (
           <div className="text-center text-gray-500 mt-8">
             <img 
@@ -105,47 +104,52 @@ export default function AiTestingPanel() {
               alt="AI Assistant" 
               className="w-16 h-16 mx-auto mb-4 opacity-50"
             />
-            <p className="text-sm">Test your AI assistant here</p>
             <p className="text-xs text-gray-400 mt-1">Send a message to start testing</p>
           </div>
         ) : (
           <div className="space-y-4">
             {messages.map((msg) => (
-              <div key={msg.id} className={`flex ${msg.isUser ? 'justify-end' : 'justify-start'}`}>
+              <div key={msg.id} className={`flex ${msg.isUser ? 'justify-start' : 'justify-end'}`}>
                 {msg.isUser ? (
-                  <div className="max-w-xs">
-                    <div className="bg-primary text-white p-3 rounded-lg shadow-sm">
-                      <p className="text-sm">{msg.content}</p>
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1 text-right">{formatTime(msg.timestamp)}</p>
-                  </div>
-                ) : (
-                  <div className="flex space-x-2 max-w-xs">
-                    <div className="flex items-center justify-center flex-shrink-0 mt-1">
-                      <img 
-                        src={chatbotIcon} 
-                        alt="AI Assistant" 
-                        className="w-7 h-7"
-                      />
+                  <div className="flex space-x-3 max-w-md lg:max-w-lg">
+                    <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
+                      U
                     </div>
                     <div>
-                      <div className="bg-gray-100 p-3 rounded-lg shadow-sm">
+                      <div className="bg-white p-3 rounded-lg shadow-sm">
                         <p className="text-sm text-gray-900">{msg.content}</p>
-                        {msg.images && msg.images.length > 0 && (
-                          <div className="mt-2 grid grid-cols-2 gap-2">
-                            {msg.images.map((image, index) => (
-                              <img
-                                key={index}
-                                src={image}
-                                alt={`Product image ${index + 1}`}
-                                className="w-full h-32 object-cover rounded-lg border"
-                              />
-                            ))}
-                          </div>
-                        )}
                       </div>
                       <p className="text-xs text-gray-500 mt-1">{formatTime(msg.timestamp)}</p>
                     </div>
+                  </div>
+                ) : (
+                  <div className="max-w-md lg:max-w-lg">
+                    <div className="p-4 rounded-lg shadow-sm bg-[#E1E1EB] text-gray-900">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
+                          <img 
+                            src={chatbotIcon} 
+                            alt="AI Assistant" 
+                            className="w-4 h-4"
+                          />
+                        </div>
+                        <span className="text-xs font-medium text-gray-600">AI Assistant</span>
+                      </div>
+                      <p className="text-sm text-gray-900">{msg.content}</p>
+                      {msg.images && msg.images.length > 0 && (
+                        <div className="mt-2 grid grid-cols-2 gap-2">
+                          {msg.images.map((image, index) => (
+                            <img
+                              key={index}
+                              src={image}
+                              alt={`Product image ${index + 1}`}
+                              className="w-full h-32 object-cover rounded-lg border"
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">{formatTime(msg.timestamp)}</p>
                   </div>
                 )}
               </div>
