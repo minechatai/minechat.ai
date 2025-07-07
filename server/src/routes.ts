@@ -8,6 +8,7 @@ import { setupBusinessRoutes } from "./modules/business/routes/businessRoutes";
 import { setupAiRoutes } from "./modules/ai/routes/aiRoutes";
 import { setupProductRoutes } from "./modules/products/routes/productRoutes";
 import { setupDocumentRoutes } from "./modules/documents/routes/documentRoutes";
+import { setupConversationRoutes } from "./modules/conversations/routes/conversationRoutes";
 import { 
   insertBusinessSchema, 
   insertAiAssistantSchema, 
