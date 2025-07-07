@@ -818,7 +818,7 @@ export default function BusinessInfo() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 space-y-8">
       {/* Sub-section Navigation */}
       <div className="border-b border-gray-200">
         <nav className="flex space-x-8">
