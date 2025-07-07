@@ -55,11 +55,21 @@ export default function Account() {
       
       console.log('🔍 Making request to /api/auth/profile-picture with current user:', user);
       
+      // Test session first
+      const testResponse = await fetch('/api/auth/user', {
+        method: 'GET',
+        credentials: 'include',
+      });
+      console.log('🔍 Test session response:', testResponse.status);
+      
       // Use same credentials as other API calls
       const response = await fetch('/api/auth/profile-picture', {
         method: 'POST',
         body: formData,
         credentials: 'include', // Match the credentials used by other API calls
+        headers: {
+          // Don't set Content-Type for FormData - let browser set it with boundary
+        },
       });
       
       console.log('🔍 Response status:', response.status);
