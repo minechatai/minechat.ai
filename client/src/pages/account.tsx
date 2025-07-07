@@ -42,20 +42,29 @@ export default function Account() {
   // Mutation for updating profile picture
   const updateProfilePictureMutation = useMutation({
     mutationFn: async (file: File) => {
+      console.log('🔍 Profile picture upload started for file:', file.name, 'Size:', file.size);
       setIsUploadingImage(true);
       const formData = new FormData();
       formData.append('profileImage', file);
       
+      console.log('🔍 Making request to /api/auth/profile-picture');
       const response = await fetch('/api/auth/profile-picture', {
         method: 'POST',
         body: formData,
+        credentials: 'include', // Ensure cookies are sent for authentication
       });
       
+      console.log('🔍 Response status:', response.status);
+      
       if (!response.ok) {
-        throw new Error('Failed to upload profile picture');
+        const errorText = await response.text();
+        console.error('🔍 Upload failed:', response.status, errorText);
+        throw new Error(`Failed to upload profile picture: ${response.status} ${errorText}`);
       }
       
-      return response.json();
+      const result = await response.json();
+      console.log('🔍 Upload successful:', result);
+      return result;
     },
     onSuccess: async (data, file) => {
       queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
