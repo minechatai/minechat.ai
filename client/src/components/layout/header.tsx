@@ -16,12 +16,17 @@ export default function Header({ title, onMenuClick, sidebarCollapsed = false }:
   const { user } = useAuth();
   
   // Fetch business information to display company logo
-  const { data: business } = useQuery<Business>({
+  const { data: business, isLoading: businessLoading, error: businessError } = useQuery<Business>({
     queryKey: ['/api/business'],
     enabled: !!user,
     staleTime: 0,
     cacheTime: 0
   });
+
+  console.log('Header - user:', user);
+  console.log('Header - business:', business);
+  console.log('Header - businessLoading:', businessLoading);
+  console.log('Header - businessError:', businessError);
 
 
 
