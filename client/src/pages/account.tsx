@@ -46,7 +46,7 @@ export default function Account() {
   // Mutation for updating profile picture
   const updateProfilePictureMutation = useMutation({
     mutationFn: async (file: File) => {
-      console.log('🔍 Profile picture upload started for file:', file.name, 'Size:', file.size);
+      console.log('🔍 MUTATION FUNCTION CALLED - Profile picture upload started for file:', file.name, 'Size:', file.size);
       setIsUploadingImage(true);
       
       // Create FormData
@@ -143,13 +143,15 @@ export default function Account() {
 
   // Handle profile picture upload
   const handleProfilePictureUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('🔍 File input change event triggered');
+    console.log('🔍 UPLOAD HANDLER CALLED - File input change event triggered');
     const file = event.target.files?.[0];
     console.log('🔍 Selected file:', file ? {
       name: file.name,
       size: file.size,
       type: file.type
     } : 'No file selected');
+    console.log('🔍 Current user state:', user);
+    console.log('🔍 Mutation state:', updateProfilePictureMutation);
     
     if (file) {
       // Check file size (max 5MB)
