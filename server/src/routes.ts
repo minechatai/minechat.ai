@@ -313,6 +313,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup modular document routes
   setupDocumentRoutes(app);
 
+  // Setup modular conversation routes
+  setupConversationRoutes(app);
+
   // Business logo upload
   app.post('/api/business/upload-logo', isAuthenticated, imageUpload.single('image'), async (req: any, res) => {
     try {

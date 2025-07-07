@@ -617,9 +617,15 @@ export class DatabaseStorage implements IStorage {
 
       // Add date filtering if provided
       if (startDate && endDate) {
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        end.setHours(23, 59, 59, 999); // Include full end date
+        // Convert to Philippines timezone properly
+        const startDatePH = new Date(startDate + 'T00:00:00+08:00');
+        const endDatePH = new Date(endDate + 'T23:59:59+08:00');
+        
+        // Convert to UTC for database query
+        const startUTC = startDatePH.toISOString();
+        const endUTC = endDatePH.toISOString();
+        
+        console.log(`🔍 Time Saved Debug - Date filtering: PH ${startDate} to ${endDate} -> UTC ${startUTC} to ${endUTC}`);
         
         query = db
           .select()
@@ -630,9 +636,9 @@ export class DatabaseStorage implements IStorage {
               eq(conversations.userId, userId),
               eq(messages.senderType, "ai"),
               sql`${conversations.source} != 'test'`,
-              sql`${conversations.mode} = 'ai'`, // Only count AI mode conversations
-              sql`${messages.createdAt} >= ${start}`,
-              sql`${messages.createdAt} <= ${end}`
+              // Count all AI messages regardless of current conversation mode
+              sql`${messages.createdAt} >= ${startUTC}`,
+              sql`${messages.createdAt} <= ${endUTC}`
             )
           )
           .orderBy(desc(messages.createdAt));
