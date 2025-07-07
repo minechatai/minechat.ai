@@ -493,6 +493,12 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Implemented business keyword detection for pricing, services, hours, location, contact, support topics
   - FAQ widget now only shows questions that help businesses identify genuine customer information needs
   - Improved business intelligence by focusing on actionable FAQ suggestions that add real value
+- July 7, 2025: Date Range Picker User Experience Enhancement
+  - Fixed date range selection to reset automatically when users start a new selection
+  - Enhanced date picker behavior: first click sets start date, second click sets end date
+  - Eliminated user frustration from complex range modification by implementing smart range reset
+  - Added comprehensive click tracking and state management for intuitive date selection
+  - Users can now easily change date ranges without manual reset button clicking
 
 # User Preferences
 

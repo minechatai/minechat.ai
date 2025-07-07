@@ -44,6 +44,9 @@ export default function Dashboard() {
     to: new Date()
   });
 
+  // Track whether we're selecting a new range (reset on first click)
+  const [isSelectingNewRange, setIsSelectingNewRange] = useState(false);
+
   // Ensure we're always showing today's data on component mount
   useEffect(() => {
     const today = getCurrentDate();
@@ -279,9 +282,27 @@ export default function Dashboard() {
     });
   };
 
-  // Handle date picker changes
+  // Handle date picker changes with smart range reset
   const handleDateChange = (newDate: DateRange | undefined) => {
+    console.log("🔍 Date picker change - newDate:", newDate, "isSelectingNewRange:", isSelectingNewRange);
+    
+    // If user clicks on a date and we already have a complete range, start fresh
+    if (date?.from && date?.to && newDate?.from && !newDate?.to) {
+      console.log("🔍 Date picker - Starting new range selection");
+      setIsSelectingNewRange(true);
+      setDate({ from: newDate.from, to: undefined });
+      return;
+    }
+    
+    // If we're in the middle of selecting a new range and user picks the end date
+    if (isSelectingNewRange && newDate?.from && newDate?.to) {
+      console.log("🔍 Date picker - Completing new range selection");
+      setIsSelectingNewRange(false);
+    }
+    
     setDate(newDate);
+    
+    // Only update the analytics when we have a complete range
     if (newDate?.from && newDate?.to) {
       // Use local date string to avoid timezone conversion issues
       const startDate = newDate.from.getFullYear() + '-' + 
@@ -304,6 +325,7 @@ export default function Dashboard() {
         startDate,
         endDate
       });
+      setIsSelectingNewRange(false);
     }
   };
 
@@ -379,6 +401,14 @@ export default function Dashboard() {
                 selected={date}
                 onSelect={handleDateChange}
                 numberOfMonths={2}
+                onDayClick={(day, activeModifiers) => {
+                  // If we already have a complete range and user clicks a new date, start fresh
+                  if (date?.from && date?.to && !isSelectingNewRange) {
+                    console.log("🔍 Calendar Day Click - Resetting range, starting fresh with:", day);
+                    setIsSelectingNewRange(true);
+                    setDate({ from: day, to: undefined });
+                  }
+                }}
               />
             </PopoverContent>
           </Popover>
