@@ -287,7 +287,17 @@ export default function Dashboard() {
     console.log("🔍 Date picker change - newDate:", newDate, "isSelectingNewRange:", isSelectingNewRange);
     console.log("🔍 Date picker change - current date:", date);
     
-    // If we're currently selecting a new range, handle it normally
+    // If we don't have any date yet, this is the first selection
+    if (!date?.from && !date?.to) {
+      console.log("🔍 Date picker - First time selection");
+      setDate(newDate);
+      if (newDate?.from && newDate?.to) {
+        updateAnalyticsWithRange(newDate);
+      }
+      return;
+    }
+    
+    // If we're in "selecting new range" mode, continue with that
     if (isSelectingNewRange) {
       setDate(newDate);
       if (newDate?.from && newDate?.to) {
@@ -298,18 +308,44 @@ export default function Dashboard() {
       return;
     }
     
-    // If we have a complete range (both from and to), ANY new selection should reset
-    if (date?.from && date?.to && newDate?.from) {
-      console.log("🔍 Date picker - Complete range exists, resetting for new selection");
+    // If we have a complete range and user selects something new, ALWAYS reset
+    if (date?.from && date?.to) {
+      console.log("🔍 Date picker - We have complete range, user made new selection - RESETTING");
+      
+      // Check if this is just selecting the same range again
+      if (newDate?.from && newDate?.to) {
+        const sameStart = newDate.from.getTime() === date.from.getTime();
+        const sameEnd = newDate.to.getTime() === date.to.getTime();
+        
+        if (sameStart && sameEnd) {
+          console.log("🔍 Date picker - Same range selected, no change needed");
+          return;
+        }
+      }
+      
+      // This is a new selection, reset to start fresh
+      console.log("🔍 Date picker - Starting fresh with new selection");
       setIsSelectingNewRange(true);
-      setDate({ from: newDate.from, to: undefined });
+      
+      // Only set the from date if we have one
+      if (newDate?.from) {
+        setDate({ from: newDate.from, to: undefined });
+      } else {
+        setDate(undefined);
+      }
       return;
     }
     
-    // Normal flow for first-time selection or incomplete ranges
-    setDate(newDate);
+    // If we only have a start date and user is completing the range
+    if (date?.from && !date?.to && newDate?.to) {
+      console.log("🔍 Date picker - Completing range selection");
+      setDate(newDate);
+      updateAnalyticsWithRange(newDate);
+      return;
+    }
     
-    // Only update the analytics when we have a complete range
+    // Default case
+    setDate(newDate);
     if (newDate?.from && newDate?.to) {
       updateAnalyticsWithRange(newDate);
     }
