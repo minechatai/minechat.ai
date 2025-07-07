@@ -150,8 +150,6 @@ export default function AiAssistant() {
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
-      <h2 className="text-xl font-semibold text-gray-900 mb-8">AI Assistant</h2>
-      
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField

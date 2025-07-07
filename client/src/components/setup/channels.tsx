@@ -186,10 +186,6 @@ export default function Channels() {
   return (
     <Card className="bg-white shadow-sm border border-gray-200">
       <CardContent className="p-8">
-        <div className="flex items-center space-x-2 mb-8">
-          <h2 className="text-xl font-semibold text-gray-900">Channels</h2>
-          <span className="text-sm text-blue-600 cursor-pointer hover:underline">(watch tutorial video)</span>
-        </div>
 
         {/* Channel Tabs */}
         <div className="flex flex-wrap gap-2 mb-8">
