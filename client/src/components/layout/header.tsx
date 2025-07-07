@@ -35,15 +35,9 @@ export default function Header({ title, onMenuClick, sidebarCollapsed = false }:
           >
             <Menu className="w-5 h-5" />
           </Button>
-          {/* Hide title from header - will be shown in page content instead */}
-          {/* <h1 className="text-xl font-semibold text-gray-900 dark:text-white ml-8">{title}</h1> */}
-        </div>
-        
-        <div className="flex items-center space-x-4">
-          <ModeToggle />
           
-          {/* Company Logo */}
-          <div className="flex items-center space-x-2 px-3 py-1 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          {/* Company Logo and Name - aligned with sidebar */}
+          <div className="flex items-center space-x-2 ml-2">
             {business?.logoUrl ? (
               <img
                 src={business.logoUrl}
@@ -66,20 +60,21 @@ export default function Header({ title, onMenuClick, sidebarCollapsed = false }:
               <div className="font-medium text-gray-900 dark:text-white">
                 {business?.companyName || 'Your Company'}
               </div>
-              <div className="text-gray-500 dark:text-gray-400 text-xs">
-                {business?.email || 'company@example.com'}
-              </div>
             </div>
           </div>
-          
-          <UserProfileDropdown user={user} />
-          
+        </div>
+        
+        <div className="flex items-center space-x-4">
           <Button variant="ghost" size="sm" className="relative">
             <Bell className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
               2
             </span>
           </Button>
+          
+          <ModeToggle />
+          
+          <UserProfileDropdown user={user} />
         </div>
       </div>
     </header>

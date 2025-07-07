@@ -37,15 +37,13 @@ export default function UserProfileDropdown({ user }: UserProfileDropdownProps) 
 
   if (isLoading) {
     return (
-      <div className="flex items-center space-x-3">
+      <div className="flex items-center space-x-2">
         <Avatar className="w-8 h-8">
           <AvatarFallback className="bg-primary text-white text-xs">
             {getInitials(currentUser.name)}
           </AvatarFallback>
         </Avatar>
-        <span className="text-sm font-medium text-gray-900 dark:text-white">
-          Loading...
-        </span>
+        <ChevronDown className="w-4 h-4 text-gray-500" />
       </div>
     );
   }
@@ -53,16 +51,14 @@ export default function UserProfileDropdown({ user }: UserProfileDropdownProps) 
   // If no user profiles exist, show the main user
   if (!allProfiles || allProfiles.length === 0) {
     return (
-      <div className="flex items-center space-x-3">
+      <div className="flex items-center space-x-2">
         <Avatar className="w-8 h-8">
           <AvatarImage src={currentUser.profileImageUrl || ''} alt={currentUser.name} />
           <AvatarFallback className="bg-primary text-white text-xs">
             {getInitials(currentUser.name)}
           </AvatarFallback>
         </Avatar>
-        <span className="text-sm font-medium text-gray-900 dark:text-white">
-          {currentUser.name}
-        </span>
+        <ChevronDown className="w-4 h-4 text-gray-500" />
       </div>
     );
   }
@@ -70,16 +66,13 @@ export default function UserProfileDropdown({ user }: UserProfileDropdownProps) 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="flex items-center space-x-3 p-2 hover:bg-gray-100 dark:hover:bg-gray-800">
+        <Button variant="ghost" className="flex items-center space-x-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-800">
           <Avatar className="w-8 h-8">
             <AvatarImage src={currentUser.profileImageUrl || ''} alt={currentUser.name} />
             <AvatarFallback className="bg-primary text-white text-xs">
               {getInitials(currentUser.name)}
             </AvatarFallback>
           </Avatar>
-          <span className="text-sm font-medium text-gray-900 dark:text-white">
-            {currentUser.name}
-          </span>
           <ChevronDown className="w-4 h-4 text-gray-500" />
         </Button>
       </DropdownMenuTrigger>
