@@ -467,6 +467,128 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update conversation mode (AI/Human)
+  app.patch('/api/conversations/:id/mode', isAuthenticated, async (req: any, res) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      const { mode } = req.body;
+      
+      if (!mode || !['ai', 'human'].includes(mode)) {
+        return res.status(400).json({ message: "Mode must be 'ai' or 'human'" });
+      }
+      
+      console.log(`🔍 Updating conversation ${conversationId} mode to: ${mode}`);
+      
+      await storage.updateConversationMode(conversationId, mode);
+      res.json({ success: true, mode });
+    } catch (error) {
+      console.error("Error updating conversation mode:", error);
+      res.status(500).json({ message: "Failed to update conversation mode" });
+    }
+  });
+
+  // Send message endpoint
+  app.post('/api/messages', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { conversationId, content, senderType } = req.body;
+      
+      if (!conversationId || !content || !senderType) {
+        return res.status(400).json({ message: "conversationId, content, and senderType are required" });
+      }
+      
+      console.log(`🔍 Sending message: ${senderType} -> ${content.substring(0, 50)}...`);
+      
+      // Validate conversation belongs to user
+      const conversation = await storage.getConversation(conversationId);
+      if (!conversation || conversation.userId !== userId) {
+        return res.status(404).json({ message: "Conversation not found" });
+      }
+      
+      // Create message
+      const message = await storage.createMessage({
+        conversationId,
+        senderId: userId,
+        senderType,
+        content,
+        messageType: "text"
+      });
+      
+      console.log(`🔍 Message sent successfully: ID ${message.id}`);
+      
+      // If this is human sending to Facebook conversation, also send to Facebook
+      if (conversation.source === 'facebook' && senderType === 'human') {
+        try {
+          await sendTextToFacebook(conversation, content);
+        } catch (error) {
+          console.error("Error sending message to Facebook:", error);
+          // Continue anyway since message was saved to database
+        }
+      }
+      
+      res.json(message);
+    } catch (error) {
+      console.error("Error sending message:", error);
+      res.status(500).json({ message: "Failed to send message" });
+    }
+  });
+
+  // File upload endpoint for messages
+  app.post('/api/messages/file', isAuthenticated, upload.single('file'), async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { conversationId, senderType } = req.body;
+      
+      if (!req.file) {
+        return res.status(400).json({ message: "No file provided" });
+      }
+      
+      if (!conversationId || !senderType) {
+        return res.status(400).json({ message: "conversationId and senderType are required" });
+      }
+      
+      console.log(`🔍 Uploading file: ${req.file.originalname} (${req.file.size} bytes)`);
+      
+      // Validate conversation belongs to user
+      const conversation = await storage.getConversation(parseInt(conversationId));
+      if (!conversation || conversation.userId !== userId) {
+        return res.status(404).json({ message: "Conversation not found" });
+      }
+      
+      // Generate file URL
+      const fileUrl = `/uploads/${req.file.filename}`;
+      
+      // Create message with file
+      const message = await storage.createMessage({
+        conversationId: parseInt(conversationId),
+        senderId: userId,
+        senderType,
+        content: `File shared: ${req.file.originalname}`,
+        messageType: "file",
+        fileUrl,
+        fileName: req.file.originalname,
+        fileSize: req.file.size
+      });
+      
+      console.log(`🔍 File message sent successfully: ID ${message.id}`);
+      
+      // If this is human sending to Facebook conversation, also send to Facebook
+      if (conversation.source === 'facebook' && senderType === 'human') {
+        try {
+          await sendFileToFacebook(conversation, req.file, fileUrl);
+        } catch (error) {
+          console.error("Error sending file to Facebook:", error);
+          // Continue anyway since message was saved to database
+        }
+      }
+      
+      res.json(message);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      res.status(500).json({ message: "Failed to upload file" });
+    }
+  });
+
   // Analytics routes
   app.get('/api/analytics', isAuthenticated, async (req: any, res) => {
     try {
@@ -1450,6 +1572,55 @@ You represent ${business?.companyName || "this business"} and customers expect a
       }
     } catch (error) {
       console.error("Error sending Facebook image:", error);
+    }
+  }
+
+  async function sendTextToFacebook(conversation: any, messageText: string) {
+    try {
+      const facebookConnections = await storage.getAllFacebookConnections();
+      const connection = facebookConnections.find(conn => conn.userId === conversation.userId);
+      
+      if (!connection || !connection.isConnected) {
+        console.log("No active Facebook connection found for user:", conversation.userId);
+        return;
+      }
+
+      await sendFacebookMessage(connection.facebookAccessToken, conversation.customerFacebookId, messageText);
+      console.log(`Sent human message to Facebook: ${messageText.substring(0, 50)}...`);
+    } catch (error) {
+      console.error("Error sending text to Facebook:", error);
+      throw error;
+    }
+  }
+
+  async function sendFileToFacebook(conversation: any, file: any, fileUrl: string) {
+    try {
+      const facebookConnections = await storage.getAllFacebookConnections();
+      const connection = facebookConnections.find(conn => conn.userId === conversation.userId);
+      
+      if (!connection || !connection.isConnected) {
+        console.log("No active Facebook connection found for user:", conversation.userId);
+        return;
+      }
+
+      // Check if it's an image file
+      const imageTypes = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+      const ext = path.extname(file.originalname).toLowerCase();
+      
+      if (imageTypes.includes(ext)) {
+        // Send as image
+        const fullImageUrl = `${process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000'}${fileUrl}`;
+        await sendFacebookImage(connection.facebookAccessToken, conversation.customerFacebookId, fullImageUrl);
+        console.log(`Sent image file to Facebook: ${file.originalname}`);
+      } else {
+        // Send as file notification
+        const fileMessage = `File shared: ${file.originalname} (${Math.round(file.size / 1024)}KB)`;
+        await sendFacebookMessage(connection.facebookAccessToken, conversation.customerFacebookId, fileMessage);
+        console.log(`Sent file notification to Facebook: ${file.originalname}`);
+      }
+    } catch (error) {
+      console.error("Error sending file to Facebook:", error);
+      throw error;
     }
   }
 
