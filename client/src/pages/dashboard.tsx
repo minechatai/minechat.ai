@@ -44,11 +44,8 @@ export default function Dashboard() {
     to: new Date()
   });
 
-  // Track whether we're selecting a new range (reset on first click)
-  const [isSelectingNewRange, setIsSelectingNewRange] = useState(false);
-  
-  // Track manual click overrides
-  const [pendingDate, setPendingDate] = useState<Date | null>(null);
+  // Track temporary date selection (not saved until user clicks Save)
+  const [tempDate, setTempDate] = useState<DateRange | undefined>(date);
 
   // Ensure we're always showing today's data on component mount
   useEffect(() => {
@@ -285,36 +282,24 @@ export default function Dashboard() {
     });
   };
 
-  // Handle date picker changes with manual click override
-  const handleDateChange = (newDate: DateRange | undefined) => {
-    console.log("🔍 Date picker change - newDate:", newDate);
-    console.log("🔍 Date picker change - pendingDate:", pendingDate);
-    console.log("🔍 Date picker change - current date:", date);
-    
-    // If we have a pending date (manual click), use it to start fresh
-    if (pendingDate) {
-      console.log("🔍 Date picker - Using pending date for fresh start");
-      setDate({ from: pendingDate, to: undefined });
-      setIsSelectingNewRange(true);
-      setPendingDate(null);
-      return;
-    }
-    
-    // If we're selecting a new range, handle normally
-    if (isSelectingNewRange) {
-      setDate(newDate);
-      if (newDate?.from && newDate?.to) {
-        console.log("🔍 Date picker - Completing new range");
-        setIsSelectingNewRange(false);
-        updateAnalyticsWithRange(newDate);
-      }
-      return;
-    }
-    
-    // Normal flow
-    setDate(newDate);
-    if (newDate?.from && newDate?.to) {
-      updateAnalyticsWithRange(newDate);
+  // Handle temporary date changes (not saved until user clicks Save)
+  const handleTempDateChange = (newDate: DateRange | undefined) => {
+    console.log("🔍 Temp date picker change - newDate:", newDate);
+    setTempDate(newDate);
+  };
+
+  // Reset the date picker to allow new selection
+  const handleResetDatePicker = () => {
+    console.log("🔍 Reset button clicked");
+    setTempDate(undefined);
+  };
+
+  // Save the selected date range and update analytics
+  const handleSaveDateRange = () => {
+    console.log("🔍 Save button clicked - tempDate:", tempDate);
+    if (tempDate?.from && tempDate?.to) {
+      setDate(tempDate);
+      updateAnalyticsWithRange(tempDate);
     }
   };
 
@@ -413,25 +398,29 @@ export default function Dashboard() {
               <Calendar
                 initialFocus
                 mode="range"
-                defaultMonth={date?.from}
-                selected={date}
-                onSelect={handleDateChange}
+                defaultMonth={tempDate?.from || date?.from}
+                selected={tempDate}
+                onSelect={handleTempDateChange}
                 numberOfMonths={2}
-                onDayClick={(day, activeModifiers) => {
-                  console.log("🔍 Calendar Day Click - User clicked:", day, "Current range:", date);
-                  
-                  // If we have a complete range, intercept the click and force reset
-                  if (date?.from && date?.to) {
-                    console.log("🔍 Calendar Day Click - Complete range exists, setting pending date for reset");
-                    setPendingDate(day);
-                    
-                    // Prevent the default calendar behavior by triggering our override
-                    setTimeout(() => {
-                      handleDateChange({ from: day, to: undefined });
-                    }, 0);
-                  }
-                }}
               />
+              <div className="p-3 border-t border-gray-200 flex gap-2 justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleResetDatePicker}
+                  className="text-xs"
+                >
+                  Reset
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleSaveDateRange}
+                  disabled={!tempDate?.from || !tempDate?.to}
+                  className="text-xs bg-minechat-red hover:bg-minechat-red/90"
+                >
+                  Save
+                </Button>
+              </div>
             </PopoverContent>
           </Popover>
           </div>
