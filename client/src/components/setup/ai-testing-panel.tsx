@@ -111,30 +111,15 @@ export default function AiTestingPanel() {
             {messages.map((msg) => (
               <div key={msg.id} className={`flex ${msg.isUser ? 'justify-end' : 'justify-start'}`}>
                 {msg.isUser ? (
-                  <div className="flex space-x-3 max-w-md lg:max-w-lg">
-                    <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
-                      U
+                  <div className="max-w-md lg:max-w-lg">
+                    <div className="p-3 rounded-lg shadow-sm bg-[#E1E1EB] text-gray-900">
+                      <p className="text-sm text-gray-900">{msg.content}</p>
                     </div>
-                    <div>
-                      <div className="p-3 rounded-lg shadow-sm bg-[#E1E1EB] text-gray-900">
-                        <p className="text-sm text-gray-900">{msg.content}</p>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">{formatTime(msg.timestamp)}</p>
-                    </div>
+                    <p className="text-xs text-gray-500 mt-1 text-right">{formatTime(msg.timestamp)}</p>
                   </div>
                 ) : (
                   <div className="max-w-md lg:max-w-lg">
-                    <div className="p-4 rounded-lg shadow-sm bg-white text-gray-900">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
-                          <img 
-                            src={chatbotIcon} 
-                            alt="AI Assistant" 
-                            className="w-4 h-4"
-                          />
-                        </div>
-                        <span className="text-xs font-medium text-gray-600">AI Assistant</span>
-                      </div>
+                    <div className="p-3 rounded-lg shadow-sm bg-white text-gray-900">
                       <p className="text-sm text-gray-900">{msg.content}</p>
                       {msg.images && msg.images.length > 0 && (
                         <div className="mt-2 grid grid-cols-2 gap-2">
