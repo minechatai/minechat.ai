@@ -30,6 +30,7 @@ export default function Dashboard() {
   const getSavedDateRange = () => {
     try {
       const saved = localStorage.getItem('dashboard-date-range');
+      console.log("🔍 getSavedDateRange - localStorage value:", saved);
       if (saved) {
         const parsed = JSON.parse(saved);
         console.log("🔍 Dashboard initialization - Restored saved date range:", parsed);
@@ -40,7 +41,7 @@ export default function Dashboard() {
     }
     
     const today = getCurrentDate();
-    console.log("🔍 Dashboard initialization - Using default date range (today):", today);
+    console.log("🔍 Dashboard initialization - No saved date found, using default (today):", today);
     return {
       startDate: today,
       endDate: today
@@ -64,26 +65,17 @@ export default function Dashboard() {
   // Track temporary date selection (not saved until user clicks Save)
   const [tempDate, setTempDate] = useState<DateRange | undefined>(date);
 
-  // Ensure we're always showing today's data on component mount
+  // Initialize with saved date range - no forced today override
   useEffect(() => {
-    const today = getCurrentDate();
-    console.log("🔍 Dashboard mounted - Ensuring current date:", today);
+    const savedRange = getSavedDateRange();
+    console.log("🔍 Dashboard mounted - Using saved date range:", savedRange);
     
-    // Clear existing cache to force fresh data fetch
+    // Clear existing cache to force fresh data fetch with saved dates
     queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
     queryClient.invalidateQueries({ queryKey: ["/api/analytics/time-saved"] });
     queryClient.invalidateQueries({ queryKey: ["/api/analytics/messages-sent"] });
     queryClient.invalidateQueries({ queryKey: ["/api/analytics/conversations-per-hour"] });
     queryClient.invalidateQueries({ queryKey: ["/api/faq-analysis"] });
-    
-    setDateRange({
-      startDate: today,
-      endDate: today
-    });
-    setDate({
-      from: new Date(),
-      to: new Date()
-    });
   }, [queryClient]);
 
   // Redirect to login if not authenticated
