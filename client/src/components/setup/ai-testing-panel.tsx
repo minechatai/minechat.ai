@@ -98,13 +98,13 @@ export default function AiTestingPanel() {
       {/* Messages Area */}
       <div className="flex-1 p-4 overflow-y-auto custom-scrollbar min-h-0 pb-0 bg-gray-50">
         {messages.length === 0 ? (
-          <div className="text-center text-gray-500 mt-8">
+          <div className="flex flex-col items-center justify-center h-full text-center text-gray-500">
             <img 
               src={chatbotIcon} 
               alt="AI Assistant" 
-              className="w-16 h-16 mx-auto mb-4 opacity-50"
+              className="w-16 h-16 mb-4 opacity-50"
             />
-            <p className="text-xs text-gray-400 mt-1">Send a message to start testing</p>
+            <p className="text-xs text-gray-400">Send a message to start testing</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -116,7 +116,7 @@ export default function AiTestingPanel() {
                       U
                     </div>
                     <div>
-                      <div className="bg-white p-3 rounded-lg shadow-sm">
+                      <div className="p-3 rounded-lg shadow-sm bg-[#E1E1EB] text-gray-900">
                         <p className="text-sm text-gray-900">{msg.content}</p>
                       </div>
                       <p className="text-xs text-gray-500 mt-1">{formatTime(msg.timestamp)}</p>
@@ -124,7 +124,7 @@ export default function AiTestingPanel() {
                   </div>
                 ) : (
                   <div className="max-w-md lg:max-w-lg">
-                    <div className="p-4 rounded-lg shadow-sm bg-[#E1E1EB] text-gray-900">
+                    <div className="p-4 rounded-lg shadow-sm bg-white text-gray-900">
                       <div className="flex items-center space-x-2 mb-2">
                         <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
                           <img 
