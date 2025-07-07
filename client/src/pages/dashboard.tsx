@@ -261,6 +261,14 @@ export default function Dashboard() {
   const handleShowToday = () => {
     const today = getCurrentDate();
     console.log("🔍 Show Today clicked - Setting date range to:", today);
+    
+    // Invalidate all analytics queries to force fresh data
+    queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/analytics/time-saved"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/analytics/messages-sent"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/analytics/conversations-per-hour"] });
+    queryClient.invalidateQueries({ queryKey: ["/api/faq-analysis"] });
+    
     setDateRange({
       startDate: today,
       endDate: today
@@ -275,9 +283,26 @@ export default function Dashboard() {
   const handleDateChange = (newDate: DateRange | undefined) => {
     setDate(newDate);
     if (newDate?.from && newDate?.to) {
+      // Use local date string to avoid timezone conversion issues
+      const startDate = newDate.from.getFullYear() + '-' + 
+        String(newDate.from.getMonth() + 1).padStart(2, '0') + '-' + 
+        String(newDate.from.getDate()).padStart(2, '0');
+      const endDate = newDate.to.getFullYear() + '-' + 
+        String(newDate.to.getMonth() + 1).padStart(2, '0') + '-' + 
+        String(newDate.to.getDate()).padStart(2, '0');
+      
+      console.log("🔍 Date picker change - Setting range:", { startDate, endDate });
+      
+      // Invalidate all analytics queries to force fresh data
+      queryClient.invalidateQueries({ queryKey: ["/api/analytics"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/analytics/time-saved"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/analytics/messages-sent"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/analytics/conversations-per-hour"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/faq-analysis"] });
+      
       setDateRange({
-        startDate: newDate.from.toISOString().split('T')[0],
-        endDate: newDate.to.toISOString().split('T')[0]
+        startDate,
+        endDate
       });
     }
   };

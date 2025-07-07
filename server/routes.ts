@@ -645,12 +645,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { startDate, endDate } = req.query;
       
       console.log("🔍 Analytics Debug - Date Range:", { startDate, endDate });
+      console.log("🔍 Analytics Debug - User ID:", userId);
       
       // For today's date filter, calculate real-time analytics from messages
       if (startDate && endDate) {
         // Get messages for the date range
+        console.log("🔍 Analytics Debug - Fetching outbound messages for:", { startDate, endDate });
         const outboundMessages = await storage.getOutboundMessages(userId, startDate as string, endDate as string);
+        console.log("🔍 Analytics Debug - Outbound messages result:", {
+          human: outboundMessages.human.length,
+          ai: outboundMessages.ai.length,
+          totalHuman: outboundMessages.human.length,
+          totalAi: outboundMessages.ai.length
+        });
+        
+        console.log("🔍 Analytics Debug - Fetching AI messages for:", { startDate, endDate });
         const aiMessages = await storage.getCustomerAiMessages(userId, startDate as string, endDate as string);
+        console.log("🔍 Analytics Debug - AI messages result:", aiMessages.length);
         
         const realTimeAnalytics = {
           unreadMessages: 0, // Always 0 for filtered date ranges
@@ -663,7 +674,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           hourlyData: null,
         };
         
-        console.log("🔍 Analytics Debug - Real-time data:", realTimeAnalytics);
+        console.log("🔍 Analytics Debug - Final real-time data:", realTimeAnalytics);
         return res.json(realTimeAnalytics);
       }
       
