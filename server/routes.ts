@@ -71,8 +71,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Profile picture upload endpoint
   app.post('/api/auth/profile-picture', isAuthenticated, imageUpload.single('profileImage'), async (req: any, res) => {
     console.log('🔍 Profile picture upload endpoint hit');
+    console.log('🔍 Session ID:', req.session?.id);
+    console.log('🔍 Session data:', req.session);
     console.log('🔍 User authenticated:', !!req.user);
-    console.log('🔍 User ID:', req.user?.claims?.sub);
+    console.log('🔍 User data:', req.user);
+    console.log('🔍 Request headers:', req.headers);
     console.log('🔍 File received:', !!req.file);
     
     try {

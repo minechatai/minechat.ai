@@ -53,13 +53,14 @@ export default function Account() {
       const formData = new FormData();
       formData.append('profileImage', file);
       
-      console.log('🔍 Making request to /api/auth/profile-picture with current user:', user);
+      console.log('🔍 Making request to /api/auth/profile-picture with proper authentication');
       
-      // Use raw fetch with same config as other working endpoints
+      // Use fetch with proper session cookies (same pattern as working endpoints)
       const response = await fetch('/api/auth/profile-picture', {
         method: 'POST',
         body: formData,
         credentials: 'include',
+        // Don't set Content-Type header - let browser set it with boundary for multipart
       });
       
       if (!response.ok) {
