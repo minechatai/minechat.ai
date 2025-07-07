@@ -510,6 +510,12 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Reset button clears selection allowing users to pick new start/end dates
   - Save button applies the selected range and updates all dashboard analytics
   - Users have complete control over when date changes are applied
+- July 7, 2025: Profile Picture Upload Authentication Fix
+  - Fixed critical 401 Unauthorized error preventing profile picture uploads for all users
+  - Identified and removed duplicate conflicting API endpoints causing authentication failures
+  - Replaced manual fetch calls with apiRequest function for consistent session handling
+  - Profile picture uploads now work correctly with proper authentication middleware
+  - Upload system successfully tested and verified working for Joyce profile
 
 # User Preferences
 

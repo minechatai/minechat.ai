@@ -55,14 +55,23 @@ export default function Account() {
       
       console.log('🔍 Making request to /api/auth/profile-picture with current user:', user);
       
-      // Use apiRequest like all other successful API calls in the app
-      const response = await apiRequest('/api/auth/profile-picture', {
+      // Use raw fetch with same config as other working endpoints
+      const response = await fetch('/api/auth/profile-picture', {
         method: 'POST',
         body: formData,
+        credentials: 'include',
       });
       
-      console.log('🔍 Upload successful:', response);
-      return response;
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('🔍 Upload failed:', response.status, errorText);
+        throw new Error(`Failed to upload profile picture: ${response.status} - ${errorText}`);
+      }
+      
+      const result = await response.json();
+      
+      console.log('🔍 Upload successful:', result);
+      return result;
     },
     onSuccess: async (data, file) => {
       queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
