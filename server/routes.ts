@@ -12,19 +12,19 @@ import multer from "multer";
 import path from "path";
 import express from "express";
 
-// Configure multer for file uploads
+// Configure multer for file uploads (supports both documents and images)
 const upload = multer({
   dest: 'uploads/',
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
+    fileSize: 15 * 1024 * 1024, // 15MB limit
   },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ['.pdf', '.docx', '.txt', '.doc'];
+    const allowedTypes = ['.pdf', '.docx', '.txt', '.doc', '.jpg', '.jpeg', '.png', '.gif', '.webp'];
     const ext = path.extname(file.originalname).toLowerCase();
     if (allowedTypes.includes(ext)) {
       cb(null, true);
     } else {
-      cb(new Error('Invalid file type. Only PDF, DOCX, DOC, and TXT files are allowed.'));
+      cb(new Error('Invalid file type. Only PDF, DOCX, DOC, TXT, JPG, JPEG, PNG, GIF, and WEBP files are allowed.'));
     }
   }
 });
