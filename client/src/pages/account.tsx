@@ -145,10 +145,18 @@ export default function Account() {
 
   // Handle profile picture upload
   const handleProfilePictureUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('🔍 File input change event triggered');
     const file = event.target.files?.[0];
+    console.log('🔍 Selected file:', file ? {
+      name: file.name,
+      size: file.size,
+      type: file.type
+    } : 'No file selected');
+    
     if (file) {
       // Check file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
+        console.log('🔍 File too large:', file.size);
         toast({
           title: "Error",
           description: "File size must be less than 5MB",
@@ -159,6 +167,7 @@ export default function Account() {
       
       // Check file type
       if (!file.type.startsWith('image/')) {
+        console.log('🔍 Invalid file type:', file.type);
         toast({
           title: "Error",
           description: "Please select an image file",
@@ -166,6 +175,8 @@ export default function Account() {
         });
         return;
       }
+      
+      console.log('🔍 File validation passed, creating preview and uploading');
       
       // Create preview
       const reader = new FileReader();
@@ -175,7 +186,10 @@ export default function Account() {
       reader.readAsDataURL(file);
       
       // Upload immediately
+      console.log('🔍 Starting mutation...');
       updateProfilePictureMutation.mutate(file);
+    } else {
+      console.log('🔍 No file selected from input');
     }
     
     // Reset file input
@@ -184,7 +198,9 @@ export default function Account() {
 
   // Handle clicking the profile picture
   const handleProfilePictureClick = () => {
-    console.log('Profile picture clicked!');
+    console.log('🔍 Profile picture clicked!');
+    console.log('🔍 File input ref:', fileInputRef.current);
+    console.log('🔍 About to trigger file input click');
     fileInputRef.current?.click();
   };
 
