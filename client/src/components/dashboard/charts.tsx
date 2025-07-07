@@ -63,35 +63,47 @@ export default function Charts({ messagesData, hourlyData, faqData, faqLoading }
             <ExternalLink className="w-4 h-4 text-gray-400" />
           </CardHeader>
           <CardContent className="pb-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-6">
+            <div className="flex items-center justify-center space-x-4">
+              <div className="space-y-6 flex-shrink-0">
                 <div>
                   <div className="flex items-center space-x-3 mb-2">
                     <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: '#9CA3AF' }}></div>
                     <span className="text-sm text-gray-600 dark:text-gray-400">Human</span>
-                    <span className="text-2xl font-bold text-gray-900 dark:text-white ml-auto">{humanPercentage}%</span>
+                    <span className="text-2xl font-bold text-gray-900 dark:text-white ml-6">{humanPercentage}%</span>
                   </div>
-                  <div className="w-24 h-1 rounded-full" style={{ backgroundColor: '#9CA3AF' }}></div>
+                  <div 
+                    className="h-1 rounded-full" 
+                    style={{ 
+                      backgroundColor: '#9CA3AF',
+                      width: `${Math.max(humanPercentage * 1.2, 12)}px`
+                    }}
+                  ></div>
                 </div>
                 <div>
                   <div className="flex items-center space-x-3 mb-2">
                     <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: '#A53860' }}></div>
                     <span className="text-sm text-gray-600 dark:text-gray-400">AI</span>
-                    <span className="text-2xl font-bold text-gray-900 dark:text-white ml-auto">{aiPercentage}%</span>
+                    <span className="text-2xl font-bold text-gray-900 dark:text-white ml-6">{aiPercentage}%</span>
                   </div>
-                  <div className="w-24 h-1 rounded-full" style={{ backgroundColor: '#A53860' }}></div>
+                  <div 
+                    className="h-1 rounded-full" 
+                    style={{ 
+                      backgroundColor: '#A53860',
+                      width: `${Math.max(aiPercentage * 1.2, 12)}px`
+                    }}
+                  ></div>
                 </div>
               </div>
               <div className="relative">
-                <div className="w-24 h-24">
+                <div className="w-32 h-32">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
                         data={pieData}
                         cx="50%"
                         cy="50%"
-                        innerRadius={30}
-                        outerRadius={48}
+                        innerRadius={40}
+                        outerRadius={64}
                         paddingAngle={0}
                         dataKey="value"
                       >
@@ -104,8 +116,8 @@ export default function Charts({ messagesData, hourlyData, faqData, faqLoading }
                 </div>
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center">
-                    <div className="text-xl font-bold text-gray-900 dark:text-white">{totalMessages}</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">Total</div>
+                    <div className="text-2xl font-bold text-gray-900 dark:text-white">{totalMessages}</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">Total</div>
                   </div>
                 </div>
               </div>
