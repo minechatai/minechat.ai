@@ -58,26 +58,45 @@ export default function ChatView({ conversationId }: ChatViewProps) {
 
   // Auto-scroll to bottom when messages change or conversation changes
   useEffect(() => {
-    if (messagesEndRef.current) {
-      // Force scroll to bottom immediately and after DOM updates
-      messagesEndRef.current.scrollIntoView({ behavior: 'auto' });
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
-      }, 100);
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
-      }, 300);
-    }
+    const scrollToBottom = () => {
+      if (messagesEndRef.current) {
+        // Multiple scroll attempts with different approaches for maximum reliability
+        messagesEndRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
+        
+        // Force scroll using container if available
+        const container = messagesEndRef.current.closest('.overflow-y-auto');
+        if (container) {
+          container.scrollTop = container.scrollHeight;
+        }
+      }
+    };
+
+    // Immediate scroll
+    scrollToBottom();
+    
+    // Multiple delayed scrolls to handle async content loading
+    setTimeout(scrollToBottom, 50);
+    setTimeout(scrollToBottom, 150);
+    setTimeout(scrollToBottom, 300);
+    setTimeout(scrollToBottom, 500);
   }, [messages, conversationId]);
 
   // Additional scroll on tab focus/window focus
   useEffect(() => {
     const handleFocus = () => {
-      if (messagesEndRef.current) {
-        setTimeout(() => {
-          messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
-        }, 100);
-      }
+      const scrollToBottom = () => {
+        if (messagesEndRef.current) {
+          messagesEndRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
+          
+          const container = messagesEndRef.current.closest('.overflow-y-auto');
+          if (container) {
+            container.scrollTop = container.scrollHeight;
+          }
+        }
+      };
+
+      setTimeout(scrollToBottom, 100);
+      setTimeout(scrollToBottom, 300);
     };
 
     window.addEventListener('focus', handleFocus);
@@ -86,10 +105,23 @@ export default function ChatView({ conversationId }: ChatViewProps) {
 
   // Force scroll when loading states change
   useEffect(() => {
-    if (!conversationLoading && !messagesLoading && messagesEndRef.current) {
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
-      }, 200);
+    if (!conversationLoading && !messagesLoading) {
+      const scrollToBottom = () => {
+        if (messagesEndRef.current) {
+          messagesEndRef.current.scrollIntoView({ behavior: 'auto', block: 'end' });
+          
+          const container = messagesEndRef.current.closest('.overflow-y-auto');
+          if (container) {
+            container.scrollTop = container.scrollHeight;
+          }
+        }
+      };
+
+      // Multiple aggressive scrolls after loading completes
+      setTimeout(scrollToBottom, 100);
+      setTimeout(scrollToBottom, 300);
+      setTimeout(scrollToBottom, 600);
+      setTimeout(scrollToBottom, 1000);
     }
   }, [conversationLoading, messagesLoading]);
 
