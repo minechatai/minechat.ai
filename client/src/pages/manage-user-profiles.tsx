@@ -440,62 +440,69 @@ export default function ManageUserProfiles() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {profiles.map((profile: UserProfile) => (
               <Card key={profile.id} className={`transition-all ${profile.isActive ? 'ring-2 ring-minechat-red' : ''}`}>
                 <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <Avatar className="w-12 h-12">
-                        <AvatarImage src={profile.profileImageUrl || ''} />
-                        <AvatarFallback className="bg-minechat-red/10 text-minechat-red">
-                          {getInitials(profile.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="flex items-center space-x-2">
-                          <h3 className="font-medium text-gray-900 dark:text-white">
-                            {profile.name}
-                          </h3>
-                          {profile.isActive && (
-                            <Crown className="w-4 h-4 text-minechat-red" />
-                          )}
-                        </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
-                          {profile.email}
-                        </p>
-                        {profile.position && (
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {profile.position}
-                          </p>
+                  {/* Profile Header */}
+                  <div className="flex flex-col items-center text-center mb-4">
+                    <Avatar className="w-16 h-16 mb-3">
+                      <AvatarImage src={profile.profileImageUrl || ''} />
+                      <AvatarFallback className="bg-minechat-red/10 text-minechat-red text-lg">
+                        {getInitials(profile.name)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div className="flex items-center justify-center space-x-2 mb-1">
+                        <h3 className="font-medium text-gray-900 dark:text-white">
+                          {profile.name}
+                        </h3>
+                        {profile.isActive && (
+                          <Crown className="w-4 h-4 text-minechat-red" />
                         )}
                       </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      {!profile.isActive && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleActivateProfile(profile.id)}
-                          disabled={activateUserMutation.isPending}
-                        >
-                          Switch to User
-                        </Button>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        {profile.email}
+                      </p>
+                      {profile.position && (
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                          {profile.position}
+                        </p>
                       )}
+                    </div>
+                  </div>
+                  
+                  {/* Action Buttons */}
+                  <div className="flex flex-col space-y-2">
+                    {!profile.isActive && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleActivateProfile(profile.id)}
+                        disabled={activateUserMutation.isPending}
+                        className="w-full"
+                      >
+                        Switch to User
+                      </Button>
+                    )}
+                    <div className="flex space-x-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setEditingProfile(profile)}
+                        className="flex-1"
                       >
-                        <Edit3 className="w-4 h-4" />
+                        <Edit3 className="w-4 h-4 mr-1" />
+                        Edit
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setDeletingProfile(profile)}
-                        className="text-red-600 hover:text-red-700"
+                        className="flex-1 text-red-600 hover:text-red-700"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-4 h-4 mr-1" />
+                        Delete
                       </Button>
                     </div>
                   </div>

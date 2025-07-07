@@ -523,6 +523,16 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Enhanced date initialization to restore saved dates on component mount
   - Added comprehensive debugging for date save/restore operations
   - Users maintain consistent data view regardless of browser navigation or session changes
+- July 7, 2025: Account Creation and Profile Upload Fixes
+  - Fixed Create User Profile API endpoint from incorrect `/api/users/create` to correct `/api/user-profiles`
+  - Resolved profile picture upload conflicts by removing duplicate endpoint from auth routes module
+  - Updated authentication to use `apiRequest` function for proper session handling
+  - Account creation and profile management functionality fully restored
+- July 7, 2025: User Profiles Layout Enhancement
+  - Changed user profiles display from vertical list to horizontal grid layout
+  - Implemented responsive design: 1 column mobile, 2 columns medium, 3 columns large screens
+  - Redesigned profile cards with centered avatars and improved visual hierarchy
+  - Enhanced action button layout for better mobile experience
 
 # User Preferences
 
