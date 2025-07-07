@@ -1505,6 +1505,26 @@ You represent ${business?.companyName || "this business"} and customers expect a
     }
   });
 
+  // Test endpoint to refresh Facebook token
+  app.post('/api/facebook/refresh-token', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const newToken = process.env.FACEBOOK_PAGE_ACCESS_TOKEN;
+      
+      if (!newToken) {
+        return res.status(400).json({ message: "No Facebook token available" });
+      }
+      
+      await storage.updateFacebookConnection(userId, { accessToken: newToken });
+      console.log("Facebook token refreshed for user:", userId);
+      
+      res.json({ message: "Facebook token refreshed successfully" });
+    } catch (error) {
+      console.error("Error refreshing Facebook token:", error);
+      res.status(500).json({ message: "Failed to refresh Facebook token" });
+    }
+  });
+
   // Helper function to handle Facebook messages
   // Helper function to send message to Facebook
   async function sendFacebookMessage(accessToken: string, recipientId: string, messageText: string) {
@@ -1585,7 +1605,7 @@ You represent ${business?.companyName || "this business"} and customers expect a
         return;
       }
 
-      await sendFacebookMessage(connection.facebookAccessToken, conversation.customerFacebookId, messageText);
+      await sendFacebookMessage(connection.accessToken, conversation.customerFacebookId, messageText);
       console.log(`Sent human message to Facebook: ${messageText.substring(0, 50)}...`);
     } catch (error) {
       console.error("Error sending text to Facebook:", error);
@@ -1610,12 +1630,12 @@ You represent ${business?.companyName || "this business"} and customers expect a
       if (imageTypes.includes(ext)) {
         // Send as image
         const fullImageUrl = `${process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000'}${fileUrl}`;
-        await sendFacebookImage(connection.facebookAccessToken, conversation.customerFacebookId, fullImageUrl);
+        await sendFacebookImage(connection.accessToken, conversation.customerFacebookId, fullImageUrl);
         console.log(`Sent image file to Facebook: ${file.originalname}`);
       } else {
         // Send as file notification
         const fileMessage = `File shared: ${file.originalname} (${Math.round(file.size / 1024)}KB)`;
-        await sendFacebookMessage(connection.facebookAccessToken, conversation.customerFacebookId, fileMessage);
+        await sendFacebookMessage(connection.accessToken, conversation.customerFacebookId, fileMessage);
         console.log(`Sent file notification to Facebook: ${file.originalname}`);
       }
     } catch (error) {

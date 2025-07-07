@@ -92,6 +92,7 @@ export interface IStorage {
   // Facebook connection operations
   getFacebookConnection(userId: string): Promise<FacebookConnection | undefined>;
   upsertFacebookConnection(userId: string, connection: InsertFacebookConnection): Promise<FacebookConnection>;
+  updateFacebookConnection(userId: string, updates: Partial<InsertFacebookConnection>): Promise<void>;
   disconnectFacebook(userId: string): Promise<void>;
   getAllFacebookConnections(): Promise<FacebookConnection[]>;
   getConversationByFacebookSender(userId: string, facebookSenderId: string): Promise<Conversation | undefined>;
@@ -427,6 +428,13 @@ export class DatabaseStorage implements IStorage {
         .returning();
       return connection;
     }
+  }
+
+  async updateFacebookConnection(userId: string, updates: Partial<InsertFacebookConnection>): Promise<void> {
+    await db
+      .update(facebookConnections)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(facebookConnections.userId, userId));
   }
 
   async disconnectFacebook(userId: string): Promise<void> {
