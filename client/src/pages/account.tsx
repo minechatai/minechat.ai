@@ -39,27 +39,36 @@ export default function Account() {
     queryKey: ['/api/business'],
   });
 
+  // Debug current authentication status
+  console.log('🔍 Account page - user data:', user);
+  console.log('🔍 Account page - business data:', business);
+
   // Mutation for updating profile picture
   const updateProfilePictureMutation = useMutation({
     mutationFn: async (file: File) => {
       console.log('🔍 Profile picture upload started for file:', file.name, 'Size:', file.size);
       setIsUploadingImage(true);
+      
+      // Create FormData
       const formData = new FormData();
       formData.append('profileImage', file);
       
-      console.log('🔍 Making request to /api/auth/profile-picture');
+      console.log('🔍 Making request to /api/auth/profile-picture with current user:', user);
+      
+      // Use the same pattern as other API calls but with FormData
       const response = await fetch('/api/auth/profile-picture', {
         method: 'POST',
         body: formData,
-        credentials: 'include', // Ensure cookies are sent for authentication
+        credentials: 'same-origin', // Use same-origin instead of include for better session handling
       });
       
       console.log('🔍 Response status:', response.status);
+      console.log('🔍 Response headers:', [...response.headers.entries()]);
       
       if (!response.ok) {
         const errorText = await response.text();
         console.error('🔍 Upload failed:', response.status, errorText);
-        throw new Error(`Failed to upload profile picture: ${response.status} ${errorText}`);
+        throw new Error(`Failed to upload profile picture: ${response.status} - ${errorText}`);
       }
       
       const result = await response.json();
