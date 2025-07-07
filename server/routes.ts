@@ -425,6 +425,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const business = await storage.getBusiness(userId);
+      
+      // Prevent caching to ensure fresh data
+      res.set({
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
+      
+      console.log('Business API response for user', userId, ':', business);
       res.json(business);
     } catch (error) {
       console.error("Error fetching business:", error);
