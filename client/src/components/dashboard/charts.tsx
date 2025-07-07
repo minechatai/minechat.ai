@@ -69,13 +69,13 @@ export default function Charts({ messagesData, hourlyData, faqData, faqLoading }
                   <div className="flex items-center space-x-3 mb-2">
                     <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: '#9CA3AF' }}></div>
                     <span className="text-sm text-gray-600 dark:text-gray-400">Human</span>
-                    <span className="text-2xl font-bold text-gray-900 dark:text-white ml-6">{humanPercentage}%</span>
+                    <span className="text-2xl font-bold text-gray-900 dark:text-white ml-12">{humanPercentage}%</span>
                   </div>
                   <div 
                     className="h-1 rounded-full" 
                     style={{ 
                       backgroundColor: '#9CA3AF',
-                      width: `${Math.max(humanPercentage * 2, 20)}px`
+                      width: `${Math.max(humanPercentage * 4, 40)}px`
                     }}
                   ></div>
                 </div>
@@ -83,13 +83,13 @@ export default function Charts({ messagesData, hourlyData, faqData, faqLoading }
                   <div className="flex items-center space-x-3 mb-2">
                     <div className="w-4 h-4 rounded-sm" style={{ backgroundColor: '#A53860' }}></div>
                     <span className="text-sm text-gray-600 dark:text-gray-400">AI</span>
-                    <span className="text-2xl font-bold text-gray-900 dark:text-white ml-6">{aiPercentage}%</span>
+                    <span className="text-2xl font-bold text-gray-900 dark:text-white ml-12">{aiPercentage}%</span>
                   </div>
                   <div 
                     className="h-1 rounded-full" 
                     style={{ 
                       backgroundColor: '#A53860',
-                      width: `${Math.max(aiPercentage * 2, 20)}px`
+                      width: `${Math.max(aiPercentage * 4, 40)}px`
                     }}
                   ></div>
                 </div>
