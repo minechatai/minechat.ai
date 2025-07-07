@@ -36,8 +36,8 @@ export default function Header({ title, onMenuClick, sidebarCollapsed = false }:
             <Menu className="w-5 h-5" />
           </Button>
           
-          {/* Company Logo and Name - aligned with sidebar */}
-          <div className="flex items-center space-x-2 ml-2">
+          {/* Company Logo and Name - aligned with sidebar Dashboard text */}
+          <div className="flex items-center space-x-2 ml-6 lg:ml-6">
             {business?.logoUrl ? (
               <img
                 src={business.logoUrl}
