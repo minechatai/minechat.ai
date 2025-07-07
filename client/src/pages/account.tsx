@@ -344,28 +344,30 @@ export default function Account() {
                         </Button>
                       </div>
                     ) : (
-                      <div className="flex items-center space-x-2 group">
-                        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                          {getUserName()}
-                        </h2>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={handleStartEditingName}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity p-1 h-8 w-8"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
+                      <div className="flex flex-col space-y-1">
+                        <div className="flex items-center space-x-2 group">
+                          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                            {getUserName()}
+                          </h2>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={handleStartEditingName}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 h-8 w-8"
+                            title="Click to edit account name"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <div className="flex flex-col space-y-1">
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            Click the name to edit • Click the photo to change
+                          </span>
+                        </div>
                       </div>
                     )}
                   </div>
                 </div>
-                <Button 
-                  variant="default"
-                  className="bg-primary hover:bg-primary-dark text-white"
-                >
-                  View profile
-                </Button>
               </div>
             </CardContent>
           </Card>

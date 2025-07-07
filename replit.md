@@ -476,8 +476,17 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Maintained URL compatibility while updating visual presentation
   - Enhanced user experience with clear page navigation context
   - Removed redundant section headers from AI Assistant and Channels components
-  - Implemented hierarchical font sizing: "Setup" at text-2xl, section names at text-xl (half size)
+  - Implemented hierarchical font sizing: "Setup" at text-2xl, section names at text-base (much smaller)
   - Fixed JSX syntax error with proper HTML entity encoding for breadcrumb separator
+  - Tutorial video link uses text-xs for minimal visual impact
+- July 7, 2025: Enhanced Chat Auto-Scroll and Account UI Improvements
+  - Implemented aggressive auto-scroll system for chat conversations with multiple timing intervals
+  - Added direct container scroll manipulation (scrollTop = scrollHeight) for maximum reliability
+  - Enhanced scrollIntoView with block: 'end' parameter and multiple delayed scroll attempts
+  - Fixed chat auto-scroll to always show latest messages without manual scrolling required
+  - Removed "View Profile" button from Account page as requested
+  - Added clear indicators: "Click the name to edit • Click the photo to change" for better user guidance
+  - Enhanced account profile section with intuitive editing instructions and proper tooltips
 
 # User Preferences
 
