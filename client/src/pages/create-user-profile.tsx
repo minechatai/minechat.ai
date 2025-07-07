@@ -73,28 +73,17 @@ export default function CreateUserProfile() {
   // Create user profile mutation
   const createUserMutation = useMutation({
     mutationFn: async (userData: any) => {
-      const formDataToSend = new FormData();
-      formDataToSend.append('name', userData.name);
-      formDataToSend.append('email', userData.email);
-      formDataToSend.append('password', userData.password);
-      formDataToSend.append('position', userData.position || '');
+      // Use apiRequest for consistency with authentication
+      const profileData = {
+        name: userData.name,
+        email: userData.email,
+        password: userData.password,
+        position: userData.position || ''
+      };
       
-      // Add profile image if one was selected
-      if (profileImage) {
-        formDataToSend.append('profileImage', profileImage);
-      }
-      
-      const response = await fetch('/api/users/create', {
-        method: 'POST',
-        body: formDataToSend,
-      });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to create user profile');
-      }
-      
-      return response.json();
+      // For now, we'll handle profile images separately if needed
+      // The main user profile creation should work without images
+      return await apiRequest('POST', '/api/user-profiles', profileData);
     },
     onSuccess: () => {
       toast({
