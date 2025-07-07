@@ -6,6 +6,7 @@ import { setupGoogleAuth } from "./googleAuth";
 import { setupAuthRoutes } from "./modules/auth/routes/authRoutes";
 import { setupBusinessRoutes } from "./modules/business/routes/businessRoutes";
 import { setupAiRoutes } from "./modules/ai/routes/aiRoutes";
+import { setupProductRoutes } from "./modules/products/routes/productRoutes";
 import { 
   insertBusinessSchema, 
   insertAiAssistantSchema, 
@@ -303,6 +304,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Setup modular AI routes
   setupAiRoutes(app);
+
+  // Setup modular product routes
+  setupProductRoutes(app);
 
   // Business logo upload
   app.post('/api/business/upload-logo', isAuthenticated, imageUpload.single('image'), async (req: any, res) => {

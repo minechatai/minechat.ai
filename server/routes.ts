@@ -585,6 +585,171 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Messages Sent Analytics endpoint
+  app.get('/api/analytics/messages-sent', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { startDate, endDate, comparisonPeriod } = req.query;
+      
+      console.log("🔍 Messages Sent Debug - User ID:", userId);
+      console.log("🔍 Messages Sent Debug - Date Range:", { startDate, endDate });
+      console.log("🔍 Messages Sent Debug - Comparison Period:", comparisonPeriod);
+      
+      // Get outbound messages (AI and human) from legitimate customer conversations only
+      const outboundMessages = await storage.getOutboundMessages(userId, startDate, endDate);
+      
+      const aiCount = outboundMessages.ai.length;
+      const humanCount = outboundMessages.human.length;
+      const totalMessages = aiCount + humanCount;
+      
+      console.log("🔍 Messages Sent Debug - AI Messages:", aiCount);
+      console.log("🔍 Messages Sent Debug - Human Messages:", humanCount);
+      console.log("🔍 Messages Sent Debug - Total Messages:", totalMessages);
+      
+      // Calculate percentages
+      let aiPercentage = 0;
+      let humanPercentage = 0;
+      
+      if (totalMessages > 0) {
+        aiPercentage = Math.round((aiCount / totalMessages) * 100);
+        humanPercentage = Math.round((humanCount / totalMessages) * 100);
+        
+        // Ensure percentages add up to 100% (handle rounding)
+        if (aiPercentage + humanPercentage !== 100) {
+          if (aiCount > humanCount) {
+            aiPercentage = 100 - humanPercentage;
+          } else {
+            humanPercentage = 100 - aiPercentage;
+          }
+        }
+      }
+      
+      // Calculate comparison period if provided
+      let change = "same as last month";
+      if (comparisonPeriod && startDate && endDate) {
+        // Calculate previous period dates
+        const startDateObj = new Date(startDate);
+        const endDateObj = new Date(endDate);
+        const daysDiff = Math.ceil((endDateObj.getTime() - startDateObj.getTime()) / (1000 * 60 * 60 * 24));
+        
+        const prevEndDate = new Date(startDateObj);
+        prevEndDate.setDate(prevEndDate.getDate() - 1);
+        const prevStartDate = new Date(prevEndDate);
+        prevStartDate.setDate(prevStartDate.getDate() - daysDiff + 1);
+        
+        const prevOutboundMessages = await storage.getOutboundMessages(
+          userId, 
+          prevStartDate.toISOString().split('T')[0], 
+          prevEndDate.toISOString().split('T')[0]
+        );
+        
+        const prevTotalMessages = prevOutboundMessages.ai.length + prevOutboundMessages.human.length;
+        
+        if (totalMessages > prevTotalMessages) {
+          const diff = totalMessages - prevTotalMessages;
+          change = `+${diff} messages vs last period`;
+        } else if (totalMessages < prevTotalMessages) {
+          const diff = prevTotalMessages - totalMessages;
+          change = `-${diff} messages vs last period`;
+        }
+      }
+      
+      res.json({
+        totalMessages,
+        aiMessages: aiCount,
+        humanMessages: humanCount,
+        aiPercentage,
+        humanPercentage,
+        change,
+        period: { startDate, endDate }
+      });
+    } catch (error) {
+      console.error("Error calculating messages sent:", error);
+      res.status(500).json({ message: "Failed to calculate messages sent" });
+    }
+  });
+
+  // Time Saved Analytics endpoint
+  app.get('/api/analytics/time-saved', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { startDate, endDate, comparisonPeriod } = req.query;
+
+      console.log("🔍 Time Saved Debug - User ID:", userId);
+      console.log("🔍 Time Saved Debug - Date Range:", { startDate, endDate });
+      console.log("🔍 Time Saved Debug - Comparison Period:", comparisonPeriod);
+
+      // Get AI messages from legitimate customer conversations only
+      const aiMessages = await storage.getCustomerAiMessages(userId, startDate as string, endDate as string);
+      console.log("🔍 Time Saved Debug - AI Messages found:", aiMessages.length);
+
+      // Calculate time saved (assuming 2 minutes per AI response vs manual response)
+      const timePerMessageMinutes = 2;
+      const totalMinutesSaved = aiMessages.length * timePerMessageMinutes;
+      
+      let timeSaved = "0 mins";
+      if (totalMinutesSaved >= 60) {
+        const hours = Math.floor(totalMinutesSaved / 60);
+        const minutes = totalMinutesSaved % 60;
+        if (minutes > 0) {
+          timeSaved = `${hours}h ${minutes}m`;
+        } else {
+          timeSaved = `${hours}h`;
+        }
+      } else if (totalMinutesSaved > 0) {
+        timeSaved = `${totalMinutesSaved} mins`;
+      }
+
+      // Calculate comparison period if provided
+      let change = "same as last month";
+      if (comparisonPeriod && startDate && endDate) {
+        // Calculate previous period dates
+        const startDateObj = new Date(startDate);
+        const endDateObj = new Date(endDate);
+        const daysDiff = Math.ceil((endDateObj.getTime() - startDateObj.getTime()) / (1000 * 60 * 60 * 24));
+        
+        const prevEndDate = new Date(startDateObj);
+        prevEndDate.setDate(prevEndDate.getDate() - 1);
+        const prevStartDate = new Date(prevEndDate);
+        prevStartDate.setDate(prevStartDate.getDate() - daysDiff + 1);
+        
+        const prevAiMessages = await storage.getCustomerAiMessages(
+          userId, 
+          prevStartDate.toISOString().split('T')[0], 
+          prevEndDate.toISOString().split('T')[0]
+        );
+        
+        const prevTotalMinutesSaved = prevAiMessages.length * timePerMessageMinutes;
+        
+        if (totalMinutesSaved > prevTotalMinutesSaved) {
+          const diff = totalMinutesSaved - prevTotalMinutesSaved;
+          change = `+${diff} mins vs last period`;
+        } else if (totalMinutesSaved < prevTotalMinutesSaved) {
+          const diff = prevTotalMinutesSaved - totalMinutesSaved;
+          change = `-${diff} mins vs last period`;
+        }
+      }
+
+      console.log("🔍 Time Saved Debug - Final calculation:", {
+        aiMessagesCount: aiMessages.length,
+        totalMinutesSaved,
+        timeSaved,
+        change
+      });
+
+      res.json({
+        timeSaved,
+        totalMinutesSaved,
+        aiMessagesCount: aiMessages.length,
+        change,
+        period: { startDate, endDate }
+      });
+    } catch (error) {
+      console.error("Error calculating time saved:", error);
+      res.status(500).json({ message: "Failed to calculate time saved" });
+    }
+  });
+
   // Channel routes
   app.get('/api/channels', isAuthenticated, async (req: any, res) => {
     try {
