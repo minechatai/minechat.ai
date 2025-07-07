@@ -230,11 +230,11 @@ export default function Account() {
   ];
 
   return (
-    <MainLayout title="Accounts">
+    <MainLayout title="Account">
       <div className="p-4 sm:p-6">
         {/* Page Title */}
         <div className="mb-6">
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Accounts</h1>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Account</h1>
         </div>
         
         {/* Profile Section */}
@@ -326,7 +326,6 @@ export default function Account() {
                         </Button>
                       </div>
                     )}
-                    <p className="text-sm text-gray-500">{(user as any)?.email}</p>
                   </div>
                 </div>
                 <Button 
