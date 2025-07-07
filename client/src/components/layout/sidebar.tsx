@@ -27,7 +27,7 @@ const navigation = [
     icon: Settings,
     submenu: [
       { name: "AI Assistant", href: "/setup/ai-assistant" },
-      { name: "Business", href: "/setup/business" },
+      { name: "AI Knowledge", href: "/setup/business" },
       { name: "Channels", href: "/setup/channels" },
     ]
   },

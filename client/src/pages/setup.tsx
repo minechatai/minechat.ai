@@ -49,7 +49,7 @@ export default function Setup() {
       case "ai-assistant":
         return "AI Assistant";
       case "business":
-        return "Business";
+        return "AI Knowledge";
       case "channels":
         return "Channels";
       default:
