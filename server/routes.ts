@@ -2235,7 +2235,7 @@ You represent ${business?.companyName || "this business"} and customers expect a
   });
 
   // Create a new user profile
-  app.post('/api/user-profiles', isAuthenticated, upload.single('profileImage'), async (req: any, res) => {
+  app.post('/api/user-profiles', isAuthenticated, imageUpload.single('profileImage'), async (req: any, res) => {
     try {
       const businessOwnerId = req.user.claims.sub;
       
@@ -2263,7 +2263,7 @@ You represent ${business?.companyName || "this business"} and customers expect a
   });
 
   // Update a user profile
-  app.put('/api/user-profiles/:id', isAuthenticated, upload.single('profileImage'), async (req: any, res) => {
+  app.put('/api/user-profiles/:id', isAuthenticated, imageUpload.single('profileImage'), async (req: any, res) => {
     try {
       const profileId = req.params.id;
       const businessOwnerId = req.user.claims.sub;

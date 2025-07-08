@@ -35,6 +35,18 @@ export default function ManageUserProfiles() {
     queryKey: ['/api/user-profiles'],
   });
 
+  // Debug: Log profiles data to see profile image URLs
+  useEffect(() => {
+    if (profiles.length > 0) {
+      console.log('🔍 Profiles data received:', profiles);
+      const justine = profiles.find(p => p.name === 'Justine');
+      if (justine) {
+        console.log('🔍 Justine profile data:', justine);
+        console.log('🔍 Justine profileImageUrl:', justine.profileImageUrl);
+      }
+    }
+  }, [profiles]);
+
   // Reset form when dialogs close
   useEffect(() => {
     if (!isCreateDialogOpen && !editingProfile) {
@@ -486,7 +498,11 @@ export default function ManageUserProfiles() {
                   {/* Profile Header */}
                   <div className="flex flex-col items-center text-center mb-4">
                     <Avatar className="w-16 h-16 mb-3">
-                      <AvatarImage src={profile.profileImageUrl || ''} />
+                      <AvatarImage 
+                        src={profile.profileImageUrl || ''} 
+                        onLoad={() => console.log(`🔍 Image loaded for ${profile.name}:`, profile.profileImageUrl)}
+                        onError={(e) => console.log(`🔍 Image failed to load for ${profile.name}:`, profile.profileImageUrl, e)}
+                      />
                       <AvatarFallback className="bg-minechat-red/10 text-minechat-red text-lg">
                         {getInitials(profile.name)}
                       </AvatarFallback>

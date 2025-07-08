@@ -336,37 +336,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup modular AI Chat Engine routes
   setupAiChatEngineRoutes(app);
 
-  // Business logo upload
-  app.post('/api/business/upload-logo', isAuthenticated, imageUpload.single('image'), async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const file = req.file;
-
-      if (!file) {
-        return res.status(400).json({ message: "No file uploaded" });
-      }
-
-      // Generate the public URL for the uploaded logo
-      const logoUrl = `/uploads/images/${file.filename}`;
-      
-      // Update business with new logo URL
-      console.log('Updating business logo for user:', userId, 'with URL:', logoUrl);
-      await storage.upsertBusiness(userId, {
-        userId,
-        logoUrl: logoUrl,
-      });
-      console.log('Business logo updated successfully');
-      
-      res.json({ 
-        message: "Company logo uploaded successfully",
-        logoUrl: logoUrl
-      });
-    } catch (error) {
-      console.error("Error uploading logo:", error);
-      res.status(500).json({ message: "Failed to upload logo" });
-    }
-  });
-
   const httpServer = createServer(app);
   return httpServer;
 }
