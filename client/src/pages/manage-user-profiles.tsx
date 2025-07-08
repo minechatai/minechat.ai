@@ -205,7 +205,8 @@ export default function ManageUserProfiles() {
         return await apiRequest('PUT', `/api/user-profiles/${id}`, updateData);
       }
     },
-    onSuccess: () => {
+    onSuccess: (updatedProfile) => {
+      console.log('🔍 Profile update success - Updated profile:', updatedProfile);
       toast({
         title: "Success",
         description: "User profile updated successfully",
@@ -213,7 +214,9 @@ export default function ManageUserProfiles() {
       setEditingProfile(null);
       setProfileImage(null);
       setPreviewImage(null);
+      // Force refresh the profiles data
       queryClient.invalidateQueries({ queryKey: ['/api/user-profiles'] });
+      queryClient.refetchQueries({ queryKey: ['/api/user-profiles'] });
     },
     onError: (error: any) => {
       toast({
@@ -497,7 +500,7 @@ export default function ManageUserProfiles() {
                 <CardContent className="p-6">
                   {/* Profile Header */}
                   <div className="flex flex-col items-center text-center mb-4">
-                    <Avatar className="w-16 h-16 mb-3">
+                    <Avatar className="w-16 h-16 mb-3" key={`${profile.id}-${profile.profileImageUrl || 'no-image'}`}>
                       <AvatarImage 
                         src={profile.profileImageUrl || ''} 
                         onLoad={() => console.log(`🔍 Image loaded for ${profile.name}:`, profile.profileImageUrl)}
