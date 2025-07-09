@@ -1,12 +1,14 @@
 # Google OAuth "invalid_client" Error Fix
 
 ## Problem Identified
-Google OAuth is returning `invalid_client` error: "The OAuth client was not found"
+Google OAuth is returning `invalid_client` error despite OAuth client existing in Google Console.
 
-This means either:
-1. The Client ID is incorrect
-2. The OAuth client was deleted from Google Console
-3. The OAuth client is in a different Google Cloud project
+**Status**: OAuth client exists with correct Client ID, but authentication still fails.
+
+**Most likely causes**:
+1. Client Secret mismatch (needs regeneration)
+2. Google OAuth API not enabled in project
+3. Project/API permissions issue
 
 ## Current Configuration
 - Client ID: `617083895783-1khpahfgl9uslt7ln119qlgmnghog7l2.apps.googleusercontent.com`
@@ -14,14 +16,20 @@ This means either:
 
 ## Fix Steps
 
-### Step 1: Verify OAuth Client Exists
+### Step 1: Regenerate Client Secret (Most Likely Fix)
 1. Go to: https://console.cloud.google.com/apis/credentials
-2. Look for OAuth 2.0 Client ID with the ID: `617083895783-1khpahfgl9uslt7ln119qlgmnghog7l2.apps.googleusercontent.com`
-3. If you don't see it, it may have been deleted or is in a different project
+2. Find OAuth 2.0 Client ID: `617083895783-1khpahfgl9uslt7ln119qlgmnghog7l2.apps.googleusercontent.com`
+3. Click the edit (pencil) icon
+4. Delete the existing client secret
+5. Click "Add Secret" to generate a new one
+6. Copy the new Client Secret
+7. Update GOOGLE_CLIENT_SECRET in Replit Secrets
 
-### Step 2: Check Google Cloud Project
-1. Make sure you're in the correct Google Cloud project
-2. The OAuth client must be in the same project as your OAuth consent screen
+### Step 2: Enable Required APIs
+1. Go to: https://console.cloud.google.com/apis/library
+2. Search for "Google+ API" and enable it
+3. Search for "OAuth 2.0 API" and enable it
+4. Make sure you're in the same project as your OAuth client
 
 ### Step 3: Recreate OAuth Client (if needed)
 1. If the OAuth client is missing:

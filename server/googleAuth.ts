@@ -12,6 +12,7 @@ export function setupGoogleAuth(app: Express) {
 
   console.log("✅ Google OAuth credentials found, setting up Google authentication");
   console.log(`🔑 Google Client ID: "${process.env.GOOGLE_CLIENT_ID!.trim()}"`);
+  console.log(`🔑 Google Client Secret length: ${process.env.GOOGLE_CLIENT_SECRET!.length} characters`);
   
   // Use the current deployment URL for OAuth callback
   const deploymentDomain = process.env.REPLIT_DOMAINS?.split(',')[0] || '449a5e08-99f4-4100-9571-62eeba47fe54-00-3gozoz68wjgp4.spock.replit.dev';
@@ -19,11 +20,9 @@ export function setupGoogleAuth(app: Express) {
   
   console.log(`🚨 GOOGLE OAUTH TROUBLESHOOTING:`);
   console.log(`📍 Current callback URL: ${callbackURL}`);
-  console.log(`🔗 Go to: https://console.cloud.google.com/apis/credentials`);
-  console.log(`📝 Checking OAuth application configuration...`);
-  console.log(`❌ CRITICAL: Google returning "invalid_client" error - OAuth client not found`);
-  console.log(`🔄 This means the Client ID is incorrect or the OAuth client was deleted`);
-  console.log(`💡 Solution: 1) Verify Client ID in Google Console 2) Check if OAuth client exists 3) Recreate OAuth client if needed`);
+  console.log(`🔗 OAuth client exists in Google Console but returns "invalid_client"`);
+  console.log(`📝 Possible causes: 1) Client Secret mismatch 2) Project mismatch 3) API not enabled`);
+  console.log(`💡 Solution: Try regenerating Client Secret in Google Console and updating Replit Secrets`);
   
   console.log(`📍 Google OAuth callback URL: ${callbackURL}`);
 
