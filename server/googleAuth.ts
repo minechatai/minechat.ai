@@ -17,6 +17,13 @@ export function setupGoogleAuth(app: Express) {
   const deploymentDomain = process.env.REPLIT_DOMAINS?.split(',')[0] || '449a5e08-99f4-4100-9571-62eeba47fe54-00-3gozoz68wjgp4.spock.replit.dev';
   const callbackURL = `https://${deploymentDomain}/auth/callback`;
   
+  console.log(`🚨 IMPORTANT: Add this redirect URI to your Google Console:`);
+  console.log(`   ${callbackURL}`);
+  console.log(`🔗 Go to: https://console.cloud.google.com/apis/credentials`);
+  console.log(`📝 Edit your OAuth 2.0 Client ID and add the redirect URI above`);
+  console.log(`⚠️  Current error is likely due to redirect URI mismatch`);
+  console.log(`🔄 Restart this application after updating Google Console`);
+  
   console.log(`📍 Google OAuth callback URL: ${callbackURL}`);
 
   // Configure Google OAuth strategy
