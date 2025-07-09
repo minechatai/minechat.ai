@@ -19,12 +19,12 @@ export function setupGoogleAuth(app: Express) {
   console.log(`📍 Google OAuth callback URL: ${callbackURL}`);
 
   // Configure Google OAuth strategy
-  passport.use(
-    new GoogleStrategy(
-      {
-        clientID: process.env.GOOGLE_CLIENT_ID!.trim(),
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET!.trim(),
+      new GoogleStrategy({
+        clientID: process.env.GOOGLE_CLIENT_ID.trim(),
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET.trim(),
         callbackURL: callbackURL,
+        passReqToCallback: false,     // ← ADD this line
+        scope: ['profile', 'email']   // ← ADD this line
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
