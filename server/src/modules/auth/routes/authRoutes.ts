@@ -121,5 +121,31 @@ export function setupAuthRoutes(app: Express): void {
     });
   });
 
-  // Profile picture upload endpoint is now handled in main routes.ts file
+  // Profile picture upload endpoint
+  app.post('/api/auth/profile-picture', isAuthenticated, imageUpload.single('profileImage'), async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const file = req.file;
+
+      if (!file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      // Generate the public URL for the uploaded image
+      const profileImageUrl = `/uploads/images/${file.filename}`;
+
+      // Update user with new profile picture URL
+      console.log('Updating user profile picture for user:', userId, 'with URL:', profileImageUrl);
+      await storage.updateUserProfilePicture(userId, profileImageUrl);
+      console.log('Profile picture updated successfully');
+
+      res.json({ 
+        message: "Profile picture uploaded successfully",
+        profileImageUrl: profileImageUrl
+      });
+    } catch (error) {
+      console.error("Error uploading profile picture:", error);
+      res.status(500).json({ message: "Failed to upload profile picture" });
+    }
+  });
 }
