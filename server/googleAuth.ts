@@ -20,12 +20,10 @@ export function setupGoogleAuth(app: Express) {
   console.log(`🚨 GOOGLE OAUTH TROUBLESHOOTING:`);
   console.log(`📍 Current callback URL: ${callbackURL}`);
   console.log(`🔗 Go to: https://console.cloud.google.com/apis/credentials`);
-  console.log(`📝 Ensure these redirect URIs are ALL added:`);
-  console.log(`   ${callbackURL}`);
-  console.log(`   https://449a5e08-99f4-4100-9571-62eeba47fe54-00-3gozoz68wjgp4.spock.replit.dev/auth/callback`);
-  console.log(`⚠️  After adding, wait 5-10 minutes for Google to propagate changes`);
-  console.log(`🔄 If still failing, check: 1) OAuth consent screen setup 2) Client ID is for "Web application" type`);
-  console.log(`💡 Alternative: Use email authentication while waiting for Google OAuth to work`);
+  console.log(`📝 Publishing Status: Check if app is "In Production" or "Testing"`);
+  console.log(`⚠️  If "Testing" - add test users in OAuth consent screen`);
+  console.log(`🔄 If "In Production" - app may need Google verification`);
+  console.log(`💡 Try adding your email as a test user if in Testing mode`);
   
   console.log(`📍 Google OAuth callback URL: ${callbackURL}`);
 
@@ -109,7 +107,8 @@ export function setupGoogleAuth(app: Express) {
       // Successful authentication - redirect to dashboard
       console.log("✅ Google OAuth successful, redirecting to dashboard");
       console.log(`👤 Authenticated user: ${req.user?.claims?.email}`);
-      res.redirect("/");
+      // Add a success parameter to help with debugging
+      res.redirect("/?auth=success");
     }
   );
 
