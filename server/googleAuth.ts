@@ -17,12 +17,15 @@ export function setupGoogleAuth(app: Express) {
   const deploymentDomain = process.env.REPLIT_DOMAINS?.split(',')[0] || '449a5e08-99f4-4100-9571-62eeba47fe54-00-3gozoz68wjgp4.spock.replit.dev';
   const callbackURL = `https://${deploymentDomain}/auth/callback`;
   
-  console.log(`🚨 IMPORTANT: Add this redirect URI to your Google Console:`);
-  console.log(`   ${callbackURL}`);
+  console.log(`🚨 GOOGLE OAUTH TROUBLESHOOTING:`);
+  console.log(`📍 Current callback URL: ${callbackURL}`);
   console.log(`🔗 Go to: https://console.cloud.google.com/apis/credentials`);
-  console.log(`📝 Edit your OAuth 2.0 Client ID and add the redirect URI above`);
-  console.log(`⚠️  Current error is likely due to redirect URI mismatch`);
-  console.log(`🔄 Restart this application after updating Google Console`);
+  console.log(`📝 Ensure these redirect URIs are ALL added:`);
+  console.log(`   ${callbackURL}`);
+  console.log(`   https://449a5e08-99f4-4100-9571-62eeba47fe54-00-3gozoz68wjgp4.spock.replit.dev/auth/callback`);
+  console.log(`⚠️  After adding, wait 5-10 minutes for Google to propagate changes`);
+  console.log(`🔄 If still failing, check: 1) OAuth consent screen setup 2) Client ID is for "Web application" type`);
+  console.log(`💡 Alternative: Use email authentication while waiting for Google OAuth to work`);
   
   console.log(`📍 Google OAuth callback URL: ${callbackURL}`);
 
@@ -83,6 +86,7 @@ export function setupGoogleAuth(app: Express) {
           res.clearCookie('session');
           res.clearCookie('auth');
           console.log("✅ Session cleared, proceeding with Google OAuth");
+          console.log(`🔗 Redirecting to Google OAuth with callback: ${callbackURL}`);
           next();
         });
       });
@@ -99,9 +103,14 @@ export function setupGoogleAuth(app: Express) {
   app.get(
     "/auth/callback",
     passport.authenticate("google", {
-      failureRedirect: "/login",
-      successRedirect: "/",
-    })
+      failureRedirect: "/login?error=google_auth_failed",
+    }),
+    (req, res) => {
+      // Successful authentication - redirect to dashboard
+      console.log("✅ Google OAuth successful, redirecting to dashboard");
+      console.log(`👤 Authenticated user: ${req.user?.claims?.email}`);
+      res.redirect("/");
+    }
   );
 
   // Google logout endpoint with proper session cleanup

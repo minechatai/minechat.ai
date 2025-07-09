@@ -30,6 +30,10 @@ export default function Login() {
 
   const handleGoogleLogin = () => {
     setLoadingProvider('google');
+    // Clear any existing session data before Google OAuth
+    localStorage.removeItem('user');
+    localStorage.removeItem('auth');
+    // Force a fresh Google OAuth flow
     window.location.href = '/api/auth/google';
   };
 
