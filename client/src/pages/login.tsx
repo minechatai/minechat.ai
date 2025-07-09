@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import EmailLoginModal from "@/components/email-login-modal";
 import { Loader2 } from "lucide-react";
@@ -15,6 +15,18 @@ import minechatLogo from "@/assets/minechat-logo.png";
 export default function Login() {
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
+  const [mode, setMode] = useState<'login' | 'signup'>('login');
+
+  useEffect(() => {
+    // Check URL parameters to determine mode
+    const urlParams = new URLSearchParams(window.location.search);
+    const modeParam = urlParams.get('mode');
+    if (modeParam === 'signup') {
+      setMode('signup');
+    } else {
+      setMode('login');
+    }
+  }, []);
 
   const handleGoogleLogin = () => {
     setLoadingProvider('google');
@@ -23,6 +35,7 @@ export default function Login() {
 
   const handleAppleLogin = () => {
     setLoadingProvider('apple');
+    // Use the same endpoint for both login and signup since Replit Auth handles both
     window.location.href = '/api/login';
   };
 

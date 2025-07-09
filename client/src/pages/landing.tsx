@@ -115,13 +115,13 @@ export default function Landing() {
           {/* Buttons */}
           <div className="flex flex-col sm:flex-row justify-center gap-4 mb-8 px-4 lg:px-0">
             <Button
-              onClick={() => window.location.href = '/login'}
+              onClick={() => window.location.href = '/login?mode=login'}
               className="bg-white text-black hover:bg-gray-100 transition-colors font-medium text-base sm:text-lg px-6 sm:px-8 py-3 rounded-full min-w-[140px] sm:min-w-[160px]"
             >
               Login
             </Button>
             <Button
-              onClick={() => window.location.href = '/login'}
+              onClick={() => window.location.href = '/login?mode=signup'}
               className="bg-white text-black hover:bg-gray-100 transition-colors font-medium text-base sm:text-lg px-6 sm:px-8 py-3 rounded-full min-w-[140px] sm:min-w-[160px]"
             >
               Sign up
