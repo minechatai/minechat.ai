@@ -20,10 +20,10 @@ export function setupGoogleAuth(app: Express) {
   console.log(`🚨 GOOGLE OAUTH TROUBLESHOOTING:`);
   console.log(`📍 Current callback URL: ${callbackURL}`);
   console.log(`🔗 Go to: https://console.cloud.google.com/apis/credentials`);
-  console.log(`📝 Publishing Status: Check if app is "In Production" or "Testing"`);
-  console.log(`⚠️  If "Testing" - add test users in OAuth consent screen`);
-  console.log(`🔄 If "In Production" - app may need Google verification`);
-  console.log(`💡 Try adding your email as a test user if in Testing mode`);
+  console.log(`📝 Checking OAuth application configuration...`);
+  console.log(`❌ CRITICAL: Google returning "invalid_client" error - OAuth client not found`);
+  console.log(`🔄 This means the Client ID is incorrect or the OAuth client was deleted`);
+  console.log(`💡 Solution: 1) Verify Client ID in Google Console 2) Check if OAuth client exists 3) Recreate OAuth client if needed`);
   
   console.log(`📍 Google OAuth callback URL: ${callbackURL}`);
 
@@ -34,8 +34,9 @@ export function setupGoogleAuth(app: Express) {
         clientID: process.env.GOOGLE_CLIENT_ID!.trim(),
         clientSecret: process.env.GOOGLE_CLIENT_SECRET!.trim(),
         callbackURL: callbackURL,
+        passReqToCallback: true,
       },
-      async (accessToken, refreshToken, profile, done) => {
+      async (req, accessToken, refreshToken, profile, done) => {
         try {
           // Extract user information from Google profile
           const googleUser = {
@@ -100,6 +101,20 @@ export function setupGoogleAuth(app: Express) {
 
   app.get(
     "/auth/callback",
+    (req, res, next) => {
+      console.log("📥 Google OAuth callback received");
+      console.log("Query params:", req.query);
+      console.log("Headers:", req.headers);
+      
+      // Check for error in callback
+      if (req.query.error) {
+        console.log("❌ Google OAuth callback error:", req.query.error);
+        console.log("Error description:", req.query.error_description);
+        return res.redirect("/login?error=google_oauth_error");
+      }
+      
+      next();
+    },
     passport.authenticate("google", {
       failureRedirect: "/login?error=google_auth_failed",
     }),
