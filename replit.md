@@ -541,10 +541,21 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - Added comprehensive error handling and debugging for upload process
   - Business logo upload endpoint `/api/business/upload-logo` verified working correctly
   - Profile picture and company logo now sync properly in header display
+- July 9, 2025: Authentication System - Login vs Signup Mode Implementation
+  - **File Modified**: `client/src/pages/landing.tsx` - Added URL parameters (?mode=login and ?mode=signup) to distinguish between login and signup flows
+  - **File Modified**: `client/src/pages/login.tsx` - Added useEffect to detect mode parameter from URL and useState for mode tracking
+  - **File Modified**: `client/src/components/email-login-modal.tsx` - Added mode prop, updated interface, conditional title/subtitle display, button text changes, and hidden "Forgot Password" in signup mode
+  - **File Modified**: `server/src/modules/auth/routes/authRoutes.ts` - Enhanced `/api/auth/email` endpoint to handle mode parameter, added signup validation (prevents duplicate emails), and improved user creation logic
+  - **Authentication Flow**: Signup mode now shows "Create Account" title and prevents duplicate email registration, while login mode shows "Login Minechat.ai" and requires existing user authentication
 
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
+
+## Development Tracking Requirements
+- **Modular Development**: Always specify which folder/file was modified, added, or deleted
+- **Change Documentation**: Detail exactly what was modified, added, or deleted within each file
+- **Structure Awareness**: Maintain clear understanding of project folder structure and dependencies
 
 ## UI/UX Preferences
 - **NEVER create new components**: Use existing beautifully designed UI components that match Minechat AI brand
