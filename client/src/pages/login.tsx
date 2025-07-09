@@ -204,6 +204,7 @@ export default function Login() {
       <EmailLoginModal 
         isOpen={isEmailModalOpen} 
         onClose={() => setIsEmailModalOpen(false)} 
+        mode={mode}
       />
     </div>
   );

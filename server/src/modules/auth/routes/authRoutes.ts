@@ -37,25 +37,39 @@ export function setupAuthRoutes(app: Express): void {
   // Mock email authentication endpoint for testing
   app.post('/api/auth/email', async (req, res) => {
     try {
-      const { email, password } = req.body;
+      const { email, password, mode = 'login' } = req.body;
 
       // Log the attempt
-      console.log("Email authentication attempt:", { email, password: "***" });
+      console.log("Email authentication attempt:", { email, password: "***", mode });
 
       // Basic validation
       if (!email || !password) {
         return res.status(400).json({ message: "Email and password are required" });
       }
 
-      // For testing purposes, simulate successful authentication
-      // Try to get existing user first, or create new one
+      // Try to get existing user first
       let existingUser = await storage.getUserByEmail(email);
 
+      // Handle signup mode
+      if (mode === 'signup') {
+        if (existingUser) {
+          return res.status(409).json({ message: "User already exists with this email" });
+        }
+        // Create new user for signup
+        // Continue with user creation logic below
+      } else {
+        // Handle login mode
+        if (!existingUser) {
+          return res.status(401).json({ message: "Invalid email or password" });
+        }
+      }
+
+      // Create user data (either existing or new)
       const mockUser = existingUser || {
         id: "email-" + Date.now(),
         email: email,
-        firstName: "Test",
-        lastName: "User",
+        firstName: mode === 'signup' ? "New" : "Test",
+        lastName: mode === 'signup' ? "User" : "User",
         profileImageUrl: null,
         createdAt: new Date(),
         updatedAt: new Date()
@@ -77,9 +91,10 @@ export function setupAuthRoutes(app: Express): void {
         expires_at: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60),
       };
 
-      // Store user in database only if it doesn't exist
+      // Store user in database
       if (!existingUser) {
         await storage.upsertUser(mockUser);
+        console.log(`${mode === 'signup' ? 'Created new account' : 'Created test account'} for:`, email);
       }
 
       // Set session
@@ -91,7 +106,7 @@ export function setupAuthRoutes(app: Express): void {
 
         res.json({ 
           success: true, 
-          message: "Authentication successful",
+          message: mode === 'signup' ? "Account created successfully" : "Authentication successful",
           user: mockUser
         });
       });

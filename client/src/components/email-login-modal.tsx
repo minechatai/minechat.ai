@@ -22,9 +22,10 @@ type EmailLoginForm = z.infer<typeof emailLoginSchema>;
 interface EmailLoginModalProps {
   isOpen: boolean;
   onClose: () => void;
+  mode?: 'login' | 'signup';
 }
 
-export default function EmailLoginModal({ isOpen, onClose }: EmailLoginModalProps) {
+export default function EmailLoginModal({ isOpen, onClose, mode = 'login' }: EmailLoginModalProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -56,6 +57,7 @@ export default function EmailLoginModal({ isOpen, onClose }: EmailLoginModalProp
         body: JSON.stringify({
           email: data.email,
           password: data.password,
+          mode: mode, // Pass the mode to the backend
         }),
       });
       
@@ -102,10 +104,10 @@ export default function EmailLoginModal({ isOpen, onClose }: EmailLoginModalProp
           {/* Title and subtitle */}
           <div className="text-left">
             <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-              Login Minechat.ai
+              {mode === 'signup' ? 'Create Account' : 'Login Minechat.ai'}
             </h2>
             <p className="text-sm text-gray-500">
-              Minechat.ai Connections start here
+              {mode === 'signup' ? 'Start your Minechat.ai journey' : 'Minechat.ai Connections start here'}
             </p>
           </div>
         </DialogHeader>
@@ -166,20 +168,25 @@ export default function EmailLoginModal({ isOpen, onClose }: EmailLoginModalProp
             )}
           </div>
 
-          {/* Forgot Password Link */}
-          <div className="text-right">
-            <a href="#" className="text-sm text-minechat-red hover:underline">
-              Forgot Password?
-            </a>
-          </div>
+          {/* Forgot Password Link - Only show in login mode */}
+          {mode === 'login' && (
+            <div className="text-right">
+              <a href="#" className="text-sm text-minechat-red hover:underline">
+                Forgot Password?
+              </a>
+            </div>
+          )}
 
-          {/* Sign In Button */}
+          {/* Submit Button */}
           <Button
             type="submit"
             disabled={isLoading}
             className="w-full bg-minechat-red hover:bg-minechat-red/90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-3 h-12 rounded-lg"
           >
-            {isLoading ? "Signing in..." : "Sign in"}
+            {isLoading 
+              ? (mode === 'signup' ? "Creating account..." : "Signing in...") 
+              : (mode === 'signup' ? "Create Account" : "Sign in")
+            }
           </Button>
 
           {/* Terms and Privacy */}

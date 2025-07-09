@@ -1624,7 +1624,7 @@ export default function BusinessInfo() {
                             <FormControl>
                               <Input 
                                 placeholder="Enter price (e.g. 29.99)" 
-                                type="number"
+                                type="text"
                                 step="0.01"
                                 className="bg-white dark:bg-gray-700"
                                 {...field}
