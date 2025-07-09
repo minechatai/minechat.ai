@@ -21,8 +21,8 @@ export function setupGoogleAuth(app: Express) {
   console.log(`🚨 GOOGLE OAUTH TROUBLESHOOTING:`);
   console.log(`📍 Current callback URL: ${callbackURL}`);
   console.log(`🔗 OAuth client exists in Google Console but returns "invalid_client"`);
-  console.log(`📝 Possible causes: 1) Client Secret mismatch 2) Project mismatch 3) API not enabled`);
-  console.log(`💡 Solution: Try regenerating Client Secret in Google Console and updating Replit Secrets`);
+  console.log(`⚠️  CRITICAL: Check for duplicate GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Replit Secrets`);
+  console.log(`💡 Solution: Remove duplicate credentials from Replit Secrets - keep only one set`);
   
   console.log(`📍 Google OAuth callback URL: ${callbackURL}`);
 
