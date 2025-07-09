@@ -63,12 +63,28 @@ export function setupGoogleAuth(app: Express) {
     )
   );
 
-  // Google auth routes
+  // Google auth routes with session clearing middleware
   app.get(
     "/api/auth/google",
+    (req, res, next) => {
+      // Clear any existing session before Google OAuth
+      console.log("🔄 Clearing existing session before Google OAuth");
+      req.logout(() => {
+        req.session.destroy(() => {
+          res.clearCookie('connect.sid');
+          res.clearCookie('session');
+          res.clearCookie('auth');
+          console.log("✅ Session cleared, proceeding with Google OAuth");
+          next();
+        });
+      });
+    },
     passport.authenticate("google", {
       scope: ["profile", "email"],
-      prompt: "select_account", // Force account selection every time
+      prompt: "select_account consent", // Force account selection and consent every time
+      accessType: "offline",
+      approvalPrompt: "force", // Force approval prompt
+      state: Date.now().toString(), // Add unique state parameter to prevent caching
     })
   );
 
