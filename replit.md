@@ -557,6 +557,22 @@ Preferred communication style: Simple, everyday language.
 - **Change Documentation**: Detail exactly what was modified, added, or deleted within each file
 - **Structure Awareness**: Maintain clear understanding of project folder structure and dependencies
 
+## Server Module Structure
+The backend is organized into feature-specific modules, each with dedicated route files:
+- `server/src/modules/ai/routes/aiRoutes.ts` - AI assistant functionality
+- `server/src/modules/aiChatEngine/routes/aiChatEngineRoutes.ts` - AI chat engine operations
+- `server/src/modules/analytics/routes/analyticsRoutes.ts` - Analytics and reporting
+- `server/src/modules/auth/routes/authRoutes.ts` - Authentication and user management
+- `server/src/modules/business/routes/businessRoutes.ts` - Business information management
+- `server/src/modules/channels/routes/channelRoutes.ts` - Communication channel integrations
+- `server/src/modules/conversations/routes/conversationRoutes.ts` - Chat conversation management
+- `server/src/modules/documents/routes/documentRoutes.ts` - Document upload and management
+- `server/src/modules/facebook/routes/facebookRoutes.ts` - Facebook Messenger integration
+- `server/src/modules/products/routes/productRoutes.ts` - Product catalog management
+- `server/src/modules/userProfiles/routes/userProfileRoutes.ts` - User profile management
+
+**Important**: Always check these modular route files first when making backend changes
+
 ## UI/UX Preferences
 - **NEVER create new components**: Use existing beautifully designed UI components that match Minechat AI brand
 - **Existing Login Flows**: Use Login Flow 1, Login Flow 2, and Login Flow 3 components as designed
