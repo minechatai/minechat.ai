@@ -1,11 +1,11 @@
 // server/src/modules/channels/routes/channelRoutes.ts
 
 import { Express } from "express";
+import { isAuthenticated } from "../../../../replitAuth";
+import { storage } from "../../../../storage";
+import { insertChannelSchema } from "@shared/schema";
 
 export function setupChannelRoutes(app: Express) {
-  const { isAuthenticated } = require("../../../middleware/auth");
-  const storage = require("../../../storage");
-  const { insertChannelSchema } = require("../../../validators/schemas");
 
   // Channel routes
   app.get('/api/channels', isAuthenticated, async (req: any, res) => {

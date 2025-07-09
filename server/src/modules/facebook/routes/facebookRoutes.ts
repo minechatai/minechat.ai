@@ -1,10 +1,11 @@
 // server/src/modules/facebook/routes/facebookRoutes.ts
 
 import { Express } from "express";
+import { isAuthenticated } from "../../../../replitAuth";
+import { storage } from "../../../../storage";
+
 
 export function setupFacebookRoutes(app: Express) {
-  const { isAuthenticated } = require("../../../middleware/auth");
-  const storage = require("../../../storage");
 
   // Helper function to send message to Facebook
   async function sendFacebookMessage(accessToken: string, recipientId: string, messageText: string) {

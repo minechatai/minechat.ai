@@ -1,6 +1,6 @@
 import type { Express } from "express";
-import { storage } from "../../../storage";
-import { isAuthenticated } from "../../../replitAuth";
+import { storage } from "../../../../storage";
+import { isAuthenticated } from "../../../../replitAuth";
 import { insertAiAssistantSchema } from "@shared/schema";
 
 export function setupAiRoutes(app: Express): void {

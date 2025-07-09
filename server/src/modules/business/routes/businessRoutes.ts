@@ -1,8 +1,8 @@
 import type { Express } from "express";
-import { storage } from "../../../storage";
-import { isAuthenticated } from "../../../replitAuth";
+import { storage } from "../../../../storage";
+import { isAuthenticated } from "../../../../replitAuth";
 import { insertBusinessSchema } from "@shared/schema";
-const { imageUpload } = require("../../../middleware/multer");
+import { imageUpload } from "../../../middleware/uploadMiddleware";
 
 export function setupBusinessRoutes(app: Express): void {
   // Get business information

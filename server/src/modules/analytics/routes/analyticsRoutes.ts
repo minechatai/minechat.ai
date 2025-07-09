@@ -1,10 +1,10 @@
 // server/src/modules/analytics/routes/analyticsRoutes.ts
 
 import { Express } from "express";
+import { isAuthenticated } from "../../../../replitAuth.js";
+import { storage } from "../../../../storage";
 
 export function setupAnalyticsRoutes(app: Express) {
-  const { isAuthenticated } = require("../../../middleware/auth");
-  const storage = require("../../../storage");
 
   // Helper function for grouping questions by semantic intent
   async function groupQuestionsByIntent(questions: string[]) {

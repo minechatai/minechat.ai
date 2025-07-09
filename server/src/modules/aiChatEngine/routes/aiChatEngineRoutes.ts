@@ -1,10 +1,10 @@
 // server/src/modules/aiChatEngine/routes/aiChatEngineRoutes.ts
 
 import { Express } from "express";
+import { isAuthenticated } from "../../../../replitAuth";
+import { storage } from "../../../../storage";
 
 export function setupAiChatEngineRoutes(app: Express) {
-  const { isAuthenticated } = require("../../../middleware/auth");
-  const storage = require("../../../storage");
 
   // AI Chat endpoint
   app.post('/api/chat', isAuthenticated, async (req: any, res) => {

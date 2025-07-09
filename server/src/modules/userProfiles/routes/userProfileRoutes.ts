@@ -1,11 +1,11 @@
 // server/src/modules/userProfiles/routes/userProfileRoutes.ts
 
 import { Express } from "express";
+import { isAuthenticated } from "../../../../replitAuth";
+import { storage } from "../../../../storage";
+import { imageUpload } from "../../../middleware/uploadMiddleware";
 
 export function setupUserProfileRoutes(app: Express) {
-  const { isAuthenticated } = require("../../../middleware/auth");
-  const storage = require("../../../storage");
-  const { imageUpload } = require("../../../middleware/multer");
 
   // User profile management endpoints
 
