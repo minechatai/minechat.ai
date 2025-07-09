@@ -94,13 +94,17 @@ export default function Account() {
           });
           
           if (logoResponse.ok) {
+            console.log('🔍 Business logo upload successful');
             // Force refresh business data to update header logo immediately
             queryClient.invalidateQueries({ queryKey: ["/api/business"] });
             queryClient.removeQueries({ queryKey: ["/api/business"] });
             queryClient.refetchQueries({ queryKey: ["/api/business"] });
+          } else {
+            const errorText = await logoResponse.text();
+            console.error('🔍 Business logo upload failed:', logoResponse.status, errorText);
           }
         } catch (error) {
-          console.error('Error updating business logo:', error);
+          console.error('🔍 Error updating business logo:', error);
         }
       }
       
