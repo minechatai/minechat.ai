@@ -109,6 +109,17 @@ export function setupGoogleAuth(app: Express) {
       if (req.query.error) {
         console.log("❌ Google OAuth callback error:", req.query.error);
         console.log("Error description:", req.query.error_description);
+        console.log("Full error object:", JSON.stringify(req.query, null, 2));
+        
+        // Log specific error types
+        if (req.query.error === 'access_denied') {
+          console.log("🚫 User denied access - this is expected behavior");
+        } else if (req.query.error === 'invalid_client') {
+          console.log("🚨 Invalid client error - check Google Console credentials");
+        } else if (req.query.error === 'unauthorized_client') {
+          console.log("🚨 Unauthorized client - check OAuth consent screen settings");
+        }
+        
         return res.redirect("/login?error=google_oauth_error");
       }
       

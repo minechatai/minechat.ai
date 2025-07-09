@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./src/storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { setupGoogleAuth } from "./services/googleAuth";
+import { setupGoogleAuth } from "./googleAuth";
 
 // ✅ CORRECTED IMPORTS - Now with proper src/ path
 import { setupAuthRoutes } from "./src/modules/auth/routes/authRoutes";
