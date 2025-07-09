@@ -68,6 +68,7 @@ export function setupGoogleAuth(app: Express) {
     "/api/auth/google",
     passport.authenticate("google", {
       scope: ["profile", "email"],
+      prompt: "select_account", // Force account selection every time
     })
   );
 
@@ -78,4 +79,16 @@ export function setupGoogleAuth(app: Express) {
       successRedirect: "/",
     })
   );
+
+  // Google logout endpoint with proper session cleanup
+  app.get("/api/auth/google/logout", (req, res) => {
+    req.logout(() => {
+      req.session.destroy(() => {
+        res.clearCookie('connect.sid');
+        // Force logout from Google by redirecting to Google's logout URL
+        const googleLogoutUrl = `https://accounts.google.com/logout?continue=https://appengine.google.com/_ah/logout?continue=${encodeURIComponent(req.protocol + '://' + req.get('host') + '/')}`;
+        res.redirect(googleLogoutUrl);
+      });
+    });
+  });
 }

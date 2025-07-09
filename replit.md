@@ -547,6 +547,11 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - **File Modified**: `client/src/components/email-login-modal.tsx` - Added mode prop, updated interface, conditional title/subtitle display, button text changes, and hidden "Forgot Password" in signup mode
   - **File Modified**: `server/src/modules/auth/routes/authRoutes.ts` - Enhanced `/api/auth/email` endpoint to handle mode parameter, added signup validation (prevents duplicate emails), and improved user creation logic
   - **Authentication Flow**: Signup mode now shows "Create Account" title and prevents duplicate email registration, while login mode shows "Login Minechat.ai" and requires existing user authentication
+- July 9, 2025: Google OAuth Re-authentication Fix
+  - **File Modified**: `server/googleAuth.ts` - Added `prompt: "select_account"` parameter to Google OAuth strategy to force account selection every time
+  - **File Modified**: `server/googleAuth.ts` - Added dedicated Google logout endpoint with proper session cleanup and Google account logout
+  - **File Modified**: `server/src/modules/auth/routes/authRoutes.ts` - Enhanced logout endpoints to clear all session cookies (connect.sid, session, auth)
+  - **Issue Fixed**: Google OAuth now properly shows account selection screen after logout instead of auto-logging users back in
 
 # User Preferences
 

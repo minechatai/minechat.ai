@@ -122,6 +122,9 @@ export function setupAuthRoutes(app: Express): void {
     req.logout(() => {
       req.session.destroy(() => {
         res.clearCookie('connect.sid');
+        // Clear all possible session cookies
+        res.clearCookie('session');
+        res.clearCookie('auth');
         res.json({ message: "Logged out successfully" });
       });
     });
@@ -131,6 +134,9 @@ export function setupAuthRoutes(app: Express): void {
     req.logout(() => {
       req.session.destroy(() => {
         res.clearCookie('connect.sid');
+        // Clear all possible session cookies
+        res.clearCookie('session');
+        res.clearCookie('auth');
         res.redirect('/');
       });
     });
