@@ -20,9 +20,10 @@ export function setupGoogleAuth(app: Express) {
   
   console.log(`🚨 GOOGLE OAUTH TROUBLESHOOTING:`);
   console.log(`📍 Current callback URL: ${callbackURL}`);
-  console.log(`🔗 OAuth client exists in Google Console but returns "invalid_client"`);
-  console.log(`⚠️  CRITICAL: Check for duplicate GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Replit Secrets`);
-  console.log(`💡 Solution: Remove duplicate credentials from Replit Secrets - keep only one set`);
+  console.log(`🔗 OAuth client exists, APIs enabled, but "Access blocked: Authorization Error" persists`);
+  console.log(`⚠️  CRITICAL: OAuth consent screen configuration issue`);
+  console.log(`💡 Solution: Publish OAuth consent screen to production OR fix test user configuration`);
+  console.log(`🔗 Go to: https://console.cloud.google.com/apis/credentials/consent`);
   
   console.log(`📍 Google OAuth callback URL: ${callbackURL}`);
 
