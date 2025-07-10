@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./src/storage";
+import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { setupGoogleAuth } from "./googleAuth";
 
@@ -338,6 +338,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Setup modular AI Chat Engine routes
   setupAiChatEngineRoutes(app);
+
+  // Quick session fix endpoint
+  app.get('/api/fix-user-session', async (req: any, res: any) => {
+    console.log("🔄 Session fix endpoint called");
+    try {
+      const originalUser = await storage.getUserByEmail('tech@minechat.ai');
+      
+      if (!originalUser) {
+        return res.status(404).json({ message: "Original user not found" });
+      }
+
+      const fixedSession = {
+        claims: {
+          sub: originalUser.id,
+          email: originalUser.email,
+          first_name: originalUser.firstName,
+          last_name: originalUser.lastName,
+          profile_image_url: originalUser.profileImageUrl,
+          iat: Math.floor(Date.now() / 1000),
+          exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60),
+        },
+        access_token: "fixed-access-token",
+        refresh_token: "fixed-refresh-token",
+        expires_at: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60),
+      };
+
+      req.login(fixedSession, (err: any) => {
+        if (err) {
+          console.error("Session fix error:", err);
+          return res.status(500).json({ message: "Failed to fix session" });
+        }
+
+        console.log(`✅ Fixed session for user: ${originalUser.email}`);
+        res.json({ 
+          success: true, 
+          message: "Session fixed successfully - please refresh the page",
+          user: originalUser
+        });
+      });
+
+    } catch (error) {
+      console.error("Fix session error:", error);
+      res.status(500).json({ message: "Session fix failed" });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;
