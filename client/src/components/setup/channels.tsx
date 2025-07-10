@@ -287,9 +287,10 @@ function FacebookMessengerIntegration() {
   });
 
   // Get available pages after OAuth
-  const { data: facebookPages } = useQuery({
+  const { data: facebookPages, isLoading: pagesLoading } = useQuery({
     queryKey: ["/api/facebook/pages"],
     enabled: showPageSelector,
+    retry: 1,
   });
 
   // Start OAuth flow
@@ -383,12 +384,25 @@ function FacebookMessengerIntegration() {
   // Handle URL parameters for page selection
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get("step") === "select_page") {
+    const step = urlParams.get("step");
+    const error = urlParams.get("error");
+    
+    if (step === "select_page") {
+      console.log("Facebook OAuth completed, showing page selector");
       setShowPageSelector(true);
       // Clean up URL
       window.history.replaceState({}, "", window.location.pathname);
+    } else if (error) {
+      console.error("Facebook OAuth error:", error);
+      toast({
+        title: "Facebook Connection Error",
+        description: `Failed to connect: ${error}`,
+        variant: "destructive",
+      });
+      // Clean up URL
+      window.history.replaceState({}, "", window.location.pathname);
     }
-  }, []);
+  }, [toast]);
 
   if (isLoading) {
     return (
@@ -403,7 +417,49 @@ function FacebookMessengerIntegration() {
   }
 
   // Show page selector if OAuth completed
-  if (showPageSelector && facebookPages?.pages?.length > 0) {
+  if (showPageSelector) {
+    // Show loading state while fetching pages
+    if (pagesLoading) {
+      return (
+        <div className="bg-gray-50 rounded-lg p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+              <FaFacebookMessenger className="w-4 h-4 text-blue-600" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900">Loading Facebook Pages...</h3>
+          </div>
+          <div className="flex items-center gap-2">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <p className="text-sm text-gray-600">Fetching your Facebook pages...</p>
+          </div>
+        </div>
+      );
+    }
+
+    // Show error if no pages found
+    if (!facebookPages?.pages || facebookPages.pages.length === 0) {
+      return (
+        <div className="bg-gray-50 rounded-lg p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+              <X className="w-4 h-4 text-red-600" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900">No Facebook Pages Found</h3>
+          </div>
+          <p className="text-sm text-gray-600 mb-4">
+            We couldn't find any Facebook pages associated with your account. Make sure you have admin access to at least one Facebook page.
+          </p>
+          <Button
+            variant="outline"
+            onClick={() => setShowPageSelector(false)}
+          >
+            Try Again
+          </Button>
+        </div>
+      );
+    }
+
+    // Show page selector with available pages
     return (
       <div className="bg-gray-50 rounded-lg p-6">
         <div className="flex items-center gap-3 mb-4">
