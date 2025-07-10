@@ -3,6 +3,7 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import type { Express } from "express";
 import { storage } from "./storage";
 
+
 export function setupGoogleAuth(app: Express) {
   // Only configure Google OAuth if credentials are available
   if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
@@ -62,9 +63,28 @@ export function setupGoogleAuth(app: Express) {
             access_token: accessToken,
             refresh_token: refreshToken,
             expires_at: Math.floor(Date.now() / 1000) + 3600, // 1 hour from now
-          };
+          };          
+        
+          // 🆕 NEW: Send confirmation email after successful account creation
+          try {
+            const { emailService } = await import("./src/modules/email/services/emailService");
+            const emailSent = await emailService.sendConfirmationEmail(
+              user.email,
+              `${user.firstName} ${user.lastName}`
+            );
+
+            if (emailSent) {
+              console.log(`✅ Confirmation email sent to ${user.email}`);
+            } else {
+              console.log(`⚠️ Failed to send confirmation email to ${user.email}`);
+            }
+          } catch (emailError) {
+            console.error("Error sending confirmation email:", emailError);
+            // Don't fail the login if email fails
+          }
 
           return done(null, sessionUser);
+
         } catch (error) {
           console.error("Google auth error:", error);
           return done(error as Error, undefined);
@@ -100,53 +120,53 @@ export function setupGoogleAuth(app: Express) {
   );
 
   app.get(
-    "/auth/callback",
-    (req, res, next) => {
-      console.log("📥 Google OAuth callback received");
-      console.log("Query params:", req.query);
-      console.log("Headers:", req.headers);
-      
-      // Check for error in callback
-      if (req.query.error) {
-        console.log("❌ Google OAuth callback error:", req.query.error);
-        console.log("Error description:", req.query.error_description);
-        console.log("Full error object:", JSON.stringify(req.query, null, 2));
-        
-        // Log specific error types
-        if (req.query.error === 'access_denied') {
-          console.log("🚫 User denied access - this is expected behavior");
-        } else if (req.query.error === 'invalid_client') {
-          console.log("🚨 Invalid client error - check Google Console credentials");
-        } else if (req.query.error === 'unauthorized_client') {
-          console.log("🚨 Unauthorized client - check OAuth consent screen settings");
-        }
-        
-        return res.redirect("/login?error=google_oauth_error");
-      }
-      
-      next();
-    },
-    passport.authenticate("google", {
-      failureRedirect: "/login?error=google_auth_failed",
-    }),
-    (req, res) => {
-      // Successful authentication - redirect to dashboard
-      console.log("✅ Google OAuth successful, redirecting to dashboard");
-      console.log(`👤 Authenticated user: ${req.user?.claims?.email}`);
-      // Add a success parameter to help with debugging
-      res.redirect("/?auth=success");
-    }
-  );
+      "/auth/callback",
+      (req, res, next) => {
+        console.log("📥 Google OAuth callback received");
+        console.log("Query params:", req.query);
+        console.log("Headers:", req.headers);
 
-  // Google logout endpoint with proper session cleanup
-  app.get("/api/auth/google/logout", (req, res) => {
-    req.logout(() => {
-      req.session.destroy(() => {
-        res.clearCookie('connect.sid');
-        // Force logout from Google by redirecting to Google's logout URL
-        const googleLogoutUrl = `https://accounts.google.com/logout?continue=https://appengine.google.com/_ah/logout?continue=${encodeURIComponent(req.protocol + '://' + req.get('host') + '/')}`;
-        res.redirect(googleLogoutUrl);
+        // Check for error in callback
+        if (req.query.error) {
+          console.log("❌ Google OAuth callback error:", req.query.error);
+          console.log("Error description:", req.query.error_description);
+          console.log("Full error object:", JSON.stringify(req.query, null, 2));
+
+          // Log specific error types
+          if (req.query.error === 'access_denied') {
+            console.log("🚫 User denied access - this is expected behavior");
+          } else if (req.query.error === 'invalid_client') {
+            console.log("🚨 Invalid client error - check Google Console credentials");
+          } else if (req.query.error === 'unauthorized_client') {
+            console.log("🚨 Unauthorized client - check OAuth consent screen settings");
+          }
+
+          return res.redirect("/login?error=google_oauth_error");
+        }
+
+        next();
+      },
+      passport.authenticate("google", {
+        failureRedirect: "/login?error=google_auth_failed",
+      }),
+      (req, res) => {
+        // Successful authentication - redirect to dashboard
+        console.log("✅ Google OAuth successful, redirecting to dashboard");
+        console.log(`👤 Authenticated user: ${req.user?.claims?.email}`);
+        // Add a success parameter to help with debugging
+        res.redirect("/?auth=success&emailSent=true");
+      }
+    );
+
+    // Google logout endpoint with proper session cleanup
+    app.get("/api/auth/google/logout", (req, res) => {
+      req.logout(() => {
+        req.session.destroy(() => {
+          res.clearCookie('connect.sid');
+          // Force logout from Google by redirecting to Google's logout URL
+          const googleLogoutUrl = `https://accounts.google.com/logout?continue=https://appengine.google.com/_ah/logout?continue=${encodeURIComponent(req.protocol + '://' + req.get('host') + '/')}`;
+          res.redirect(googleLogoutUrl);
+        });
       });
     });
-  });
 }
