@@ -56,7 +56,15 @@ export function setupAuthRoutes(app: Express): void {
           return res.status(409).json({ message: "User already exists with this email" });
         }
         // Create new user for signup
-        // Continue with user creation logic below
+        existingUser = {
+          id: "email-" + Date.now(),
+          email: email,
+          firstName: "New",
+          lastName: "User",
+          profileImageUrl: null,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
       } else {
         // Handle login mode
         if (!existingUser) {
@@ -64,25 +72,17 @@ export function setupAuthRoutes(app: Express): void {
         }
       }
 
-      // Create user data (either existing or new)
-      const mockUser = existingUser || {
-        id: "email-" + Date.now(),
-        email: email,
-        firstName: mode === 'signup' ? "New" : "Test",
-        lastName: mode === 'signup' ? "User" : "User",
-        profileImageUrl: null,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
+      // Use existing user data or newly created user
+      const mockUser = existingUser;
 
       // Create a mock session similar to Replit Auth
       const mockSession = {
         claims: {
           sub: mockUser.id,
-          email: email,
-          first_name: "Test",
-          last_name: "User",
-          profile_image_url: null,
+          email: mockUser.email,
+          first_name: mockUser.firstName,
+          last_name: mockUser.lastName,
+          profile_image_url: mockUser.profileImageUrl,
           iat: Math.floor(Date.now() / 1000),
           exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60), // 7 days
         },
@@ -91,10 +91,12 @@ export function setupAuthRoutes(app: Express): void {
         expires_at: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60),
       };
 
-      // Store user in database
-      if (!existingUser) {
+      // Store user in database (only if new user for signup)
+      if (mode === 'signup') {
         await storage.upsertUser(mockUser);
-        console.log(`${mode === 'signup' ? 'Created new account' : 'Created test account'} for:`, email);
+        console.log(`Created new account for:`, email);
+      } else {
+        console.log(`Logging in existing user:`, email);
       }
 
       // Set session
