@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { Globe, MessageCircle, Instagram, Send, MessageSquare, Slack, Hash, MoreHorizontal, ExternalLink, Check, X, Facebook, Loader2 } from "lucide-react";
@@ -45,6 +46,7 @@ const channelIcons = [
 export default function Channels() {
   const [selectedChannel, setSelectedChannel] = useState("Website");
   const { toast } = useToast();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
 
   const { data: channel, isLoading } = useQuery({
     queryKey: ["/api/channels"],
@@ -306,11 +308,24 @@ function FacebookMessengerIntegration() {
       setIsConnecting(false);
       console.error("Facebook OAuth Error:", error);
       
-      toast({
-        title: "Connection Error",
-        description: "Unable to connect to Facebook. Please try again in a moment.",
-        variant: "destructive",
-      });
+      // Check if it's an authentication error
+      if (error.message?.includes("401") || error.message?.includes("Unauthorized")) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to connect your Facebook page.",
+          variant: "destructive",
+        });
+        // Redirect to login page after a brief delay
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 2000);
+      } else {
+        toast({
+          title: "Connection Error",
+          description: "Unable to connect to Facebook. Please try again in a moment.",
+          variant: "destructive",
+        });
+      }
     },
   });
 
@@ -536,13 +551,36 @@ function FacebookMessengerIntegration() {
 
       <div className="flex justify-end">
         <Button
-          onClick={() => startOAuthMutation.mutate()}
-          disabled={startOAuthMutation.isPending || isConnecting}
+          onClick={() => {
+            if (!isAuthenticated) {
+              toast({
+                title: "Authentication Required",
+                description: "Please log in to connect your Facebook page.",
+                variant: "destructive",
+              });
+              setTimeout(() => {
+                window.location.href = '/login';
+              }, 1500);
+              return;
+            }
+            startOAuthMutation.mutate();
+          }}
+          disabled={startOAuthMutation.isPending || isConnecting || authLoading || !isAuthenticated}
         >
           {startOAuthMutation.isPending || isConnecting ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               Connecting...
+            </>
+          ) : authLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Loading...
+            </>
+          ) : !isAuthenticated ? (
+            <>
+              <ExternalLink className="w-4 h-4 mr-2" />
+              Login to Connect Facebook
             </>
           ) : (
             <>
