@@ -508,11 +508,24 @@ You represent ${business?.companyName || "our business"} and customers expect ac
   app.get('/api/facebook/oauth/start', isAuthenticated, async (req: any, res) => {
     try {
       const FACEBOOK_APP_ID = process.env.FACEBOOK_APP_ID;
-      const FACEBOOK_REDIRECT_URI = process.env.FACEBOOK_REDIRECT_URI || `${req.protocol}://${req.get('host')}/api/facebook/oauth/callback`;
       
       if (!FACEBOOK_APP_ID) {
+        console.error("Facebook App ID not configured");
         return res.status(500).json({ message: "Facebook App ID not configured" });
       }
+
+      // Use the current Replit domain for redirect URI
+      const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+        ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+        : `${req.protocol}://${req.get('host')}`;
+      
+      const FACEBOOK_REDIRECT_URI = `${baseUrl}/api/facebook/oauth/callback`;
+      
+      console.log("Facebook OAuth Config:", {
+        appId: FACEBOOK_APP_ID,
+        redirectUri: FACEBOOK_REDIRECT_URI,
+        baseUrl: baseUrl
+      });
 
       const scope = 'pages_manage_metadata,pages_messaging,pages_read_engagement';
       const state = req.user.claims.sub; // Use user ID as state for security
@@ -524,6 +537,7 @@ You represent ${business?.companyName || "our business"} and customers expect ac
         `state=${state}&` +
         `response_type=code`;
 
+      console.log("Generated Facebook Auth URL:", authUrl);
       res.json({ authUrl });
     } catch (error) {
       console.error("Error starting Facebook OAuth:", error);
@@ -536,21 +550,34 @@ You represent ${business?.companyName || "our business"} and customers expect ac
     try {
       const { code, state, error } = req.query;
       
+      console.log("Facebook OAuth callback received:", { code: !!code, state, error });
+      
       if (error) {
+        console.error("Facebook OAuth error:", error);
         return res.redirect(`/setup/channels?error=${encodeURIComponent(error)}`);
       }
 
       if (!code || !state) {
+        console.error("Missing code or state in callback");
         return res.redirect('/setup/channels?error=invalid_callback');
       }
 
       const FACEBOOK_APP_ID = process.env.FACEBOOK_APP_ID;
       const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET;
-      const FACEBOOK_REDIRECT_URI = process.env.FACEBOOK_REDIRECT_URI || `${req.protocol}://${req.get('host')}/api/facebook/oauth/callback`;
       
       if (!FACEBOOK_APP_ID || !FACEBOOK_APP_SECRET) {
+        console.error("Facebook app credentials not configured");
         return res.redirect('/setup/channels?error=app_not_configured');
       }
+
+      // Use the same domain logic as the start endpoint
+      const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+        ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+        : `${req.protocol}://${req.get('host')}`;
+      
+      const FACEBOOK_REDIRECT_URI = `${baseUrl}/api/facebook/oauth/callback`;
+
+      console.log("Exchanging code for access token with redirect URI:", FACEBOOK_REDIRECT_URI);
 
       // Exchange code for access token
       const tokenResponse = await fetch(`https://graph.facebook.com/v18.0/oauth/access_token?` +
@@ -561,7 +588,10 @@ You represent ${business?.companyName || "our business"} and customers expect ac
 
       const tokenData = await tokenResponse.json();
       
+      console.log("Token exchange response:", tokenData.error ? { error: tokenData.error } : { success: true });
+      
       if (tokenData.error) {
+        console.error("Token exchange failed:", tokenData.error);
         return res.redirect(`/setup/channels?error=${encodeURIComponent(tokenData.error.message)}`);
       }
 
@@ -572,7 +602,10 @@ You represent ${business?.companyName || "our business"} and customers expect ac
 
       const pagesData = await pagesResponse.json();
       
+      console.log("Pages fetch response:", pagesData.error ? { error: pagesData.error } : { pagesCount: pagesData.data?.length });
+      
       if (pagesData.error) {
+        console.error("Failed to fetch pages:", pagesData.error);
         return res.redirect(`/setup/channels?error=${encodeURIComponent(pagesData.error.message)}`);
       }
 
@@ -580,6 +613,7 @@ You represent ${business?.companyName || "our business"} and customers expect ac
       req.session.facebookPages = pagesData.data;
       req.session.userId = state;
 
+      console.log("Facebook OAuth successful, redirecting to page selection");
       // Redirect to page selection
       res.redirect('/setup/channels?step=select_page');
     } catch (error) {

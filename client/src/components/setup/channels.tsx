@@ -304,9 +304,15 @@ function FacebookMessengerIntegration() {
     },
     onError: (error: any) => {
       setIsConnecting(false);
+      console.error("Facebook OAuth Error:", error);
+      
+      // Show detailed error information
+      const errorMessage = error.message || "Failed to start Facebook authentication";
+      const configHelp = "Make sure your Facebook App is configured with the correct redirect URI and has Messenger API enabled.";
+      
       toast({
-        title: "Error",
-        description: error.message || "Failed to start Facebook authentication",
+        title: "Facebook Authentication Error",
+        description: `${errorMessage}. ${configHelp}`,
         variant: "destructive",
       });
     },
@@ -528,6 +534,18 @@ function FacebookMessengerIntegration() {
           <li>• Seamless integration with your knowledge base</li>
           <li>• Professional customer support 24/7</li>
         </ul>
+      </div>
+
+      {/* Configuration Help */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <h4 className="font-medium text-blue-900 mb-2">Facebook App Setup Required:</h4>
+        <div className="text-sm text-blue-800 space-y-1">
+          <p>• Create a Facebook App at developers.facebook.com</p>
+          <p>• Add Messenger product to your app</p>
+          <p>• Set redirect URI: <code className="bg-blue-100 px-1 rounded text-xs">https://your-domain.replit.dev/api/facebook/oauth/callback</code></p>
+          <p>• Enable permissions: pages_messaging, pages_manage_metadata</p>
+          <p>• Add your Facebook page to the app</p>
+        </div>
       </div>
 
       <div className="flex justify-end">
