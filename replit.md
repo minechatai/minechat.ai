@@ -579,6 +579,13 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - **Enhancement**: Users now click "Connect Facebook Page" button, authenticate with Facebook, select their page, and system automatically handles tokens and webhook setup
   - **User Experience**: Added clear setup instructions for Facebook App configuration including redirect URI, permissions, and webhook requirements
   - **Security**: OAuth flow uses proper state parameter for CSRF protection and stores page data securely in session before final connection
+- July 10, 2025: Facebook OAuth Architecture Correction - Platform-Level Integration
+  - **File Modified**: `client/src/components/setup/channels.tsx` - Removed all user-facing Facebook App setup instructions and developer configuration guidance
+  - **File Modified**: `server/src/modules/facebook/routes/facebookRoutes.ts` - Updated error messages to be user-friendly without exposing technical configuration details
+  - **Architecture Fix**: Corrected OAuth flow to use platform-level Facebook App credentials instead of requiring users to create individual Facebook Developer apps
+  - **User Experience**: Simplified to true "one-click" experience - users only see "Connect Facebook Page" button with no setup requirements
+  - **Error Handling**: Enhanced error messages to be non-technical and user-friendly ("Connection Error" instead of "Facebook App ID not configured")
+  - **Platform Integration**: OAuth now uses Minechat AI's Facebook App credentials for all user connections, eliminating need for individual app creation
 
 # User Preferences
 

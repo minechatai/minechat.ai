@@ -510,8 +510,8 @@ You represent ${business?.companyName || "our business"} and customers expect ac
       const FACEBOOK_APP_ID = process.env.FACEBOOK_APP_ID;
       
       if (!FACEBOOK_APP_ID) {
-        console.error("Facebook App ID not configured");
-        return res.status(500).json({ message: "Facebook App ID not configured" });
+        console.error("Facebook integration not available - App ID not configured");
+        return res.status(500).json({ message: "Facebook integration temporarily unavailable" });
       }
 
       // Use the current Replit domain for redirect URI
@@ -522,7 +522,7 @@ You represent ${business?.companyName || "our business"} and customers expect ac
       const FACEBOOK_REDIRECT_URI = `${baseUrl}/api/facebook/oauth/callback`;
       
       console.log("Facebook OAuth Config:", {
-        appId: FACEBOOK_APP_ID,
+        appId: FACEBOOK_APP_ID?.substring(0, 8) + "...", // Only show first 8 chars for security
         redirectUri: FACEBOOK_REDIRECT_URI,
         baseUrl: baseUrl
       });
@@ -567,7 +567,7 @@ You represent ${business?.companyName || "our business"} and customers expect ac
       
       if (!FACEBOOK_APP_ID || !FACEBOOK_APP_SECRET) {
         console.error("Facebook app credentials not configured");
-        return res.redirect('/setup/channels?error=app_not_configured');
+        return res.redirect('/setup/channels?error=service_unavailable');
       }
 
       // Use the same domain logic as the start endpoint

@@ -1,0 +1,69 @@
+# URGENT CORRECTION: Fix Facebook OAuth Architecture
+
+## ❌ CURRENT PROBLEM
+The integration is asking END USERS to create Facebook Developer apps. This is WRONG and defeats our "no code, no hassle" goal.
+
+## ✅ CORRECT ARCHITECTURE NEEDED
+
+### **Platform-Level OAuth (What We Want):**
+- **Minechat AI platform** has ONE Facebook Developer app
+- **End users** see only a "Connect Facebook Page" button  
+- **No setup instructions** visible to business owners
+- **All OAuth flows** use Minechat AI's platform credentials
+
+### **NOT Individual User Apps (Current Wrong Approach):**
+- ❌ Don't ask users to create Facebook Developer apps
+- ❌ Don't show setup instructions to end users
+- ❌ Don't make users configure webhooks or permissions
+
+## **SPECIFIC CHANGES REQUIRED:**
+
+### 1. Remove User-Facing Instructions
+**Delete from UI:**
+- "Facebook App Setup Required" section
+- All developer setup instructions
+- Any references to users creating apps
+- Webhook configuration steps
+
+### 2. Keep Only Simple UI
+**Show users ONLY:**
+- "Connect Facebook Page" button
+- Connection status (Connected/Disconnected)
+- Connected page info when successful
+
+### 3. Platform OAuth Architecture
+**Backend should work like this:**
+```
+User clicks "Connect Facebook Page" 
+→ Uses MINECHAT AI's Facebook App credentials
+→ Facebook OAuth popup (using our platform app)
+→ User grants permissions to MINECHAT AI
+→ User selects their business page
+→ Store connection in our database
+→ Show "Connected" status
+```
+
+### 4. Environment Variables (Platform Level)
+```
+FACEBOOK_APP_ID=minechat_ai_app_id
+FACEBOOK_APP_SECRET=minechat_ai_app_secret  
+FACEBOOK_REDIRECT_URI=minechat_callback_url
+```
+
+## **KEY PRINCIPLE:**
+**End users should NEVER see any technical setup.** They should only see a simple "Connect Facebook Page" button that works immediately.
+
+**Think of it like:** 
+- Shopify users don't create their own payment processor apps
+- They just click "Connect Stripe" and it works
+- All technical complexity is handled by the platform
+
+## **USER EXPERIENCE SHOULD BE:**
+1. Business owner clicks "Connect Facebook Page"
+2. Facebook popup asks "Allow Minechat AI to manage your pages?"
+3. User clicks "Allow" and selects their business page
+4. Done! Shows "Connected to [Page Name]"
+
+**No setup, no configuration, no technical steps for end users.**
+
+Fix the architecture to be platform-level OAuth, not individual user OAuth setups!

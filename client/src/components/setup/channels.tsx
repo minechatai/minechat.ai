@@ -306,13 +306,9 @@ function FacebookMessengerIntegration() {
       setIsConnecting(false);
       console.error("Facebook OAuth Error:", error);
       
-      // Show detailed error information
-      const errorMessage = error.message || "Failed to start Facebook authentication";
-      const configHelp = "Make sure your Facebook App is configured with the correct redirect URI and has Messenger API enabled.";
-      
       toast({
-        title: "Facebook Authentication Error",
-        description: `${errorMessage}. ${configHelp}`,
+        title: "Connection Error",
+        description: "Unable to connect to Facebook. Please try again in a moment.",
         variant: "destructive",
       });
     },
@@ -523,30 +519,20 @@ function FacebookMessengerIntegration() {
       </div>
       
       <p className="text-sm text-gray-600 mb-6">
-        Connect your Facebook page to allow your AI assistant to respond to messages on Facebook Messenger automatically.
+        Connect your Facebook page in just one click. Your AI assistant will automatically respond to Facebook Messenger inquiries using your business knowledge.
       </p>
 
       <div className="bg-white rounded-lg p-4 mb-6">
-        <h4 className="font-medium text-gray-900 mb-2">What you'll get:</h4>
+        <h4 className="font-medium text-gray-900 mb-2">What happens next:</h4>
         <ul className="text-sm text-gray-600 space-y-1">
-          <li>• Automatic AI responses to Facebook Messenger inquiries</li>
-          <li>• Real-time conversation tracking in your dashboard</li>
-          <li>• Seamless integration with your knowledge base</li>
-          <li>• Professional customer support 24/7</li>
+          <li>• Click "Connect Facebook Page" below</li>
+          <li>• Allow Minechat AI to manage your Facebook page</li>
+          <li>• Select which business page to connect</li>
+          <li>• Start receiving automatic AI responses immediately</li>
         </ul>
       </div>
 
-      {/* Configuration Help */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-        <h4 className="font-medium text-blue-900 mb-2">Facebook App Setup Required:</h4>
-        <div className="text-sm text-blue-800 space-y-1">
-          <p>• Create a Facebook App at developers.facebook.com</p>
-          <p>• Add Messenger product to your app</p>
-          <p>• Set redirect URI: <code className="bg-blue-100 px-1 rounded text-xs">https://your-domain.replit.dev/api/facebook/oauth/callback</code></p>
-          <p>• Enable permissions: pages_messaging, pages_manage_metadata</p>
-          <p>• Add your Facebook page to the app</p>
-        </div>
-      </div>
+
 
       <div className="flex justify-end">
         <Button
