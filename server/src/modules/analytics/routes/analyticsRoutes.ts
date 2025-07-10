@@ -3,6 +3,8 @@
 import { Express } from "express";
 import { isAuthenticated } from "../../../../replitAuth.js";
 import { storage } from "../../../../storage";
+import * as geoip from 'geoip-lite';
+import * as moment from 'moment-timezone';
 
 export function setupAnalyticsRoutes(app: Express) {
 
@@ -252,6 +254,34 @@ export function setupAnalyticsRoutes(app: Express) {
       console.log("🔍 Messages Received Per Hour Debug - Date Range:", { startDate, endDate });
       console.log("🔍 Messages Received Per Hour Debug - Comparison Period:", comparisonPeriod);
 
+      // Detect user timezone from IP address
+      const clientIP = req.ip || req.connection.remoteAddress || req.socket.remoteAddress || 
+                      (req.connection.socket ? req.connection.socket.remoteAddress : null) ||
+                      req.headers['x-forwarded-for']?.split(',')[0] ||
+                      req.headers['x-real-ip'] ||
+                      '127.0.0.1';
+
+      console.log("🔍 IP Detection - Client IP:", clientIP);
+
+      let userTimezone = 'UTC';
+      let detectedLocation = 'Unknown';
+
+      // Skip IP detection for localhost/development
+      if (clientIP && clientIP !== '127.0.0.1' && clientIP !== '::1' && !clientIP.includes('localhost')) {
+        const geo = geoip.lookup(clientIP);
+        if (geo && geo.timezone) {
+          userTimezone = geo.timezone;
+          detectedLocation = `${geo.city}, ${geo.country}`;
+          console.log("🔍 IP Detection - Location:", detectedLocation);
+          console.log("🔍 IP Detection - Timezone:", userTimezone);
+        }
+      } else {
+        // For development/localhost, assume Philippines timezone
+        userTimezone = 'Asia/Manila';
+        detectedLocation = 'Philippines (Development)';
+        console.log("🔍 IP Detection - Using default timezone for development:", userTimezone);
+      }
+
       // Get inbound customer messages only from legitimate conversations
       const inboundMessages = await storage.getInboundCustomerMessages(userId, startDate, endDate);
 
@@ -272,13 +302,15 @@ export function setupAnalyticsRoutes(app: Express) {
 
         console.log("🔍 Messages Received Per Hour Debug - Days in range:", daysDiff);
 
-        // Count customer messages received by hour
+        // Count customer messages received by hour using user's timezone
         const messagesByHour: { [key: number]: number } = {};
         inboundMessages.forEach((message: any) => {
           if (message.createdAt) {
-            const messageDate = new Date(message.createdAt);
-            const hour = messageDate.getHours();
+            // Convert UTC timestamp to user's local timezone
+            const messageDate = moment.tz(message.createdAt, userTimezone);
+            const hour = messageDate.hour();
             messagesByHour[hour] = (messagesByHour[hour] || 0) + 1;
+            console.log(`🔍 Message at ${message.createdAt} -> Local time: ${messageDate.format('YYYY-MM-DD HH:mm:ss')} (Hour: ${hour})`);
           }
         });
 
@@ -299,7 +331,9 @@ export function setupAnalyticsRoutes(app: Express) {
       res.json({
         hourlyData,
         totalInboundMessages: inboundMessages.length,
-        isToday: startDate === endDate && startDate === new Date().toISOString().split('T')[0]
+        isToday: startDate === endDate && startDate === new Date().toISOString().split('T')[0],
+        userTimezone,
+        detectedLocation
       });
 
     } catch (error) {

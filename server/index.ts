@@ -6,6 +6,9 @@ import session from 'express-session';
 const app = express();
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
+
+// Trust proxy for proper IP detection in Replit environment
+app.set('trust proxy', true);
 // Session middleware - MUST come before authentication routes
 app.use(session({
   secret: process.env.SESSION_SECRET,
