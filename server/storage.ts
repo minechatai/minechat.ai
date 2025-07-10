@@ -766,7 +766,8 @@ export class DatabaseStorage implements IStorage {
         const startPH = new Date(startDate + 'T00:00:00.000');
         const endPH = new Date(endDate + 'T23:59:59.999');
         
-        // Convert to UTC by subtracting 8 hours
+        // Convert PH date to UTC by SUBTRACTING 8 hours from PH time
+        // When it's July 11 00:00 in PH, it's July 10 16:00 in UTC
         const startUTC = new Date(startPH.getTime() - philippinesOffset);
         const endUTC = new Date(endPH.getTime() - philippinesOffset);
         
