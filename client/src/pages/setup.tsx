@@ -140,7 +140,7 @@ export default function Setup() {
 
         {/* AI Testing Panel - only show for AI Assistant and Business */}
         {(currentSection === "ai-assistant" || currentSection === "business") && (
-          <div className="w-full xl:w-auto flex flex-col min-h-0 h-full xl:h-auto">
+          <div className="w-full xl:w-auto flex flex-col min-h-0 h-full xl:h-auto p-4 xl:pl-6">
             <AiTestingPanel />
           </div>
         )}
