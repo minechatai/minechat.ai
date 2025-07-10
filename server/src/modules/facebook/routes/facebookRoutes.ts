@@ -504,6 +504,178 @@ You represent ${business?.companyName || "our business"} and customers expect ac
     }
   });
 
+  // Start Facebook OAuth flow
+  app.get('/api/facebook/oauth/start', isAuthenticated, async (req: any, res) => {
+    try {
+      const FACEBOOK_APP_ID = process.env.FACEBOOK_APP_ID;
+      const FACEBOOK_REDIRECT_URI = process.env.FACEBOOK_REDIRECT_URI || `${req.protocol}://${req.get('host')}/api/facebook/oauth/callback`;
+      
+      if (!FACEBOOK_APP_ID) {
+        return res.status(500).json({ message: "Facebook App ID not configured" });
+      }
+
+      const scope = 'pages_manage_metadata,pages_messaging,pages_read_engagement';
+      const state = req.user.claims.sub; // Use user ID as state for security
+      
+      const authUrl = `https://www.facebook.com/v18.0/dialog/oauth?` +
+        `client_id=${FACEBOOK_APP_ID}&` +
+        `redirect_uri=${encodeURIComponent(FACEBOOK_REDIRECT_URI)}&` +
+        `scope=${scope}&` +
+        `state=${state}&` +
+        `response_type=code`;
+
+      res.json({ authUrl });
+    } catch (error) {
+      console.error("Error starting Facebook OAuth:", error);
+      res.status(500).json({ message: "Failed to start Facebook authentication" });
+    }
+  });
+
+  // Handle Facebook OAuth callback
+  app.get('/api/facebook/oauth/callback', async (req: any, res) => {
+    try {
+      const { code, state, error } = req.query;
+      
+      if (error) {
+        return res.redirect(`/setup/channels?error=${encodeURIComponent(error)}`);
+      }
+
+      if (!code || !state) {
+        return res.redirect('/setup/channels?error=invalid_callback');
+      }
+
+      const FACEBOOK_APP_ID = process.env.FACEBOOK_APP_ID;
+      const FACEBOOK_APP_SECRET = process.env.FACEBOOK_APP_SECRET;
+      const FACEBOOK_REDIRECT_URI = process.env.FACEBOOK_REDIRECT_URI || `${req.protocol}://${req.get('host')}/api/facebook/oauth/callback`;
+      
+      if (!FACEBOOK_APP_ID || !FACEBOOK_APP_SECRET) {
+        return res.redirect('/setup/channels?error=app_not_configured');
+      }
+
+      // Exchange code for access token
+      const tokenResponse = await fetch(`https://graph.facebook.com/v18.0/oauth/access_token?` +
+        `client_id=${FACEBOOK_APP_ID}&` +
+        `client_secret=${FACEBOOK_APP_SECRET}&` +
+        `redirect_uri=${encodeURIComponent(FACEBOOK_REDIRECT_URI)}&` +
+        `code=${code}`);
+
+      const tokenData = await tokenResponse.json();
+      
+      if (tokenData.error) {
+        return res.redirect(`/setup/channels?error=${encodeURIComponent(tokenData.error.message)}`);
+      }
+
+      // Get user's Facebook pages
+      const pagesResponse = await fetch(`https://graph.facebook.com/v18.0/me/accounts?` +
+        `access_token=${tokenData.access_token}&` +
+        `fields=id,name,access_token,picture`);
+
+      const pagesData = await pagesResponse.json();
+      
+      if (pagesData.error) {
+        return res.redirect(`/setup/channels?error=${encodeURIComponent(pagesData.error.message)}`);
+      }
+
+      // Store pages data in session for selection
+      req.session.facebookPages = pagesData.data;
+      req.session.userId = state;
+
+      // Redirect to page selection
+      res.redirect('/setup/channels?step=select_page');
+    } catch (error) {
+      console.error("Error in Facebook OAuth callback:", error);
+      res.redirect('/setup/channels?error=callback_failed');
+    }
+  });
+
+  // Get available Facebook pages from session
+  app.get('/api/facebook/pages', isAuthenticated, async (req: any, res) => {
+    try {
+      const pages = req.session.facebookPages || [];
+      res.json({ pages });
+    } catch (error) {
+      console.error("Error fetching Facebook pages:", error);
+      res.status(500).json({ message: "Failed to fetch Facebook pages" });
+    }
+  });
+
+  // Connect to a specific Facebook page
+  app.post('/api/facebook/connect-page', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { pageId } = req.body;
+      
+      if (!pageId) {
+        return res.status(400).json({ message: "Page ID is required" });
+      }
+
+      const pages = req.session.facebookPages || [];
+      const selectedPage = pages.find((page: any) => page.id === pageId);
+      
+      if (!selectedPage) {
+        return res.status(404).json({ message: "Selected page not found" });
+      }
+
+      // Save Facebook connection to database
+      await storage.upsertFacebookConnection(userId, {
+        facebookPageId: selectedPage.id,
+        facebookPageName: selectedPage.name,
+        facebookPagePictureUrl: selectedPage.picture?.data?.url || null,
+        accessToken: selectedPage.access_token,
+        isConnected: true,
+      });
+
+      // Set up webhook subscription for the page
+      try {
+        const webhookResponse = await fetch(`https://graph.facebook.com/v18.0/${selectedPage.id}/subscribed_apps`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            subscribed_fields: 'messages',
+            access_token: selectedPage.access_token
+          })
+        });
+
+        const webhookData = await webhookResponse.json();
+        console.log('Webhook subscription result:', webhookData);
+      } catch (webhookError) {
+        console.error('Error setting up webhook:', webhookError);
+        // Don't fail the connection if webhook setup fails
+      }
+
+      // Clear session data
+      delete req.session.facebookPages;
+      delete req.session.userId;
+
+      res.json({ 
+        message: "Facebook page connected successfully",
+        page: {
+          id: selectedPage.id,
+          name: selectedPage.name,
+          picture: selectedPage.picture?.data?.url
+        }
+      });
+    } catch (error) {
+      console.error("Error connecting Facebook page:", error);
+      res.status(500).json({ message: "Failed to connect Facebook page" });
+    }
+  });
+
+  // Disconnect Facebook page
+  app.post('/api/facebook/disconnect', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      await storage.disconnectFacebook(userId);
+      res.json({ message: "Facebook page disconnected successfully" });
+    } catch (error) {
+      console.error("Error disconnecting Facebook:", error);
+      res.status(500).json({ message: "Failed to disconnect Facebook page" });
+    }
+  });
+
+  // Legacy connect endpoint for backwards compatibility
   app.post('/api/facebook/connect', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;

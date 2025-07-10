@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -11,7 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import { Globe, MessageCircle, Instagram, Send, MessageSquare, Slack, Hash, MoreHorizontal } from "lucide-react";
+import { Globe, MessageCircle, Instagram, Send, MessageSquare, Slack, Hash, MoreHorizontal, ExternalLink, Check, X, Facebook, Loader2 } from "lucide-react";
 import { FaFacebookMessenger, FaTelegram, FaWhatsapp, FaViber, FaDiscord } from "react-icons/fa";
 
 const channelSchema = z.object({
@@ -256,36 +256,7 @@ export default function Channels() {
 
         {/* Facebook Messenger Settings */}
         {selectedChannel === "Messenger" && (
-          <div className="bg-gray-50 rounded-lg p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Facebook Messenger Integration</h3>
-            <form onSubmit={facebookForm.handleSubmit(onFacebookSubmit)} className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-gray-900">Facebook Page ID</label>
-                <Input 
-                  placeholder="Enter your Facebook Page ID"
-                  className="mt-1"
-                  {...facebookForm.register("pageId")}
-                />
-              </div>
-              
-              <div>
-                <label className="text-sm font-medium text-gray-900">Facebook Access Token</label>
-                <Textarea 
-                  placeholder="Enter your Facebook Page Access Token"
-                  className="mt-1 h-20 font-mono text-sm resize-none"
-                  rows={3}
-                  {...facebookForm.register("facebookAccessToken")}
-                />
-              </div>
-
-              <div className="flex justify-end space-x-3 pt-4">
-                <Button type="button" variant="outline">Cancel</Button>
-                <Button type="submit" disabled={facebookMutation.isPending}>
-                  {facebookMutation.isPending ? "Saving..." : "Save Changes"}
-                </Button>
-              </div>
-            </form>
-          </div>
+          <FacebookMessengerIntegration />
         )}
 
         {/* Other channels placeholder */}
@@ -297,5 +268,286 @@ export default function Channels() {
         )}
       </CardContent>
     </Card>
+  );
+}
+
+// Facebook Messenger Integration Component
+function FacebookMessengerIntegration() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [selectedPageId, setSelectedPageId] = useState<string>("");
+  const [showPageSelector, setShowPageSelector] = useState(false);
+
+  // Check connection status
+  const { data: facebookConnection, isLoading } = useQuery({
+    queryKey: ["/api/facebook-connection"],
+  });
+
+  // Get available pages after OAuth
+  const { data: facebookPages } = useQuery({
+    queryKey: ["/api/facebook/pages"],
+    enabled: showPageSelector,
+  });
+
+  // Start OAuth flow
+  const startOAuthMutation = useMutation({
+    mutationFn: async () => {
+      setIsConnecting(true);
+      const response = await apiRequest("/api/facebook/oauth/start");
+      return response;
+    },
+    onSuccess: (data) => {
+      if (data.authUrl) {
+        window.location.href = data.authUrl;
+      }
+    },
+    onError: (error: any) => {
+      setIsConnecting(false);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to start Facebook authentication",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Connect to specific page
+  const connectPageMutation = useMutation({
+    mutationFn: async (pageId: string) => {
+      const response = await apiRequest("/api/facebook/connect-page", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pageId }),
+      });
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/facebook-connection"] });
+      setShowPageSelector(false);
+      toast({
+        title: "Success",
+        description: "Facebook page connected successfully!",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to connect Facebook page",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Disconnect Facebook
+  const disconnectMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest("/api/facebook/disconnect", {
+        method: "POST",
+      });
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/facebook-connection"] });
+      toast({
+        title: "Success",
+        description: "Facebook page disconnected successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to disconnect Facebook page",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Handle URL parameters for page selection
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get("step") === "select_page") {
+      setShowPageSelector(true);
+      // Clean up URL
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="bg-gray-50 rounded-lg p-6">
+        <div className="animate-pulse">
+          <div className="h-6 bg-gray-200 rounded w-48 mb-4"></div>
+          <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
+          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show page selector if OAuth completed
+  if (showPageSelector && facebookPages?.pages?.length > 0) {
+    return (
+      <div className="bg-gray-50 rounded-lg p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+            <FaFacebookMessenger className="w-4 h-4 text-blue-600" />
+          </div>
+          <h3 className="text-lg font-medium text-gray-900">Select Facebook Page</h3>
+        </div>
+        
+        <p className="text-sm text-gray-600 mb-6">
+          Choose which Facebook page you want to connect to your AI assistant:
+        </p>
+
+        <div className="space-y-3 mb-6">
+          {facebookPages.pages.map((page: any) => (
+            <div
+              key={page.id}
+              onClick={() => setSelectedPageId(page.id)}
+              className={`p-4 rounded-lg border cursor-pointer transition-all ${
+                selectedPageId === page.id
+                  ? "border-blue-500 bg-blue-50"
+                  : "border-gray-200 hover:border-gray-300"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <img
+                  src={page.picture?.data?.url || "/default-page-avatar.png"}
+                  alt={page.name}
+                  className="w-10 h-10 rounded-full"
+                />
+                <div>
+                  <h4 className="font-medium text-gray-900">{page.name}</h4>
+                  <p className="text-sm text-gray-500">Page ID: {page.id}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex justify-end space-x-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setShowPageSelector(false)}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={() => connectPageMutation.mutate(selectedPageId)}
+            disabled={!selectedPageId || connectPageMutation.isPending}
+          >
+            {connectPageMutation.isPending ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Connecting...
+              </>
+            ) : (
+              "Connect Page"
+            )}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show connected status
+  if (facebookConnection?.isConnected) {
+    return (
+      <div className="bg-gray-50 rounded-lg p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+            <Check className="w-4 h-4 text-green-600" />
+          </div>
+          <h3 className="text-lg font-medium text-gray-900">Facebook Messenger Connected</h3>
+        </div>
+        
+        <div className="bg-white rounded-lg p-4 mb-4">
+          <div className="flex items-center gap-3">
+            <img
+              src={facebookConnection.facebookPagePictureUrl || "/default-page-avatar.png"}
+              alt={facebookConnection.facebookPageName}
+              className="w-10 h-10 rounded-full"
+            />
+            <div>
+              <h4 className="font-medium text-gray-900">{facebookConnection.facebookPageName}</h4>
+              <p className="text-sm text-gray-500">Page ID: {facebookConnection.facebookPageId}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+          <div className="flex items-center gap-2">
+            <Check className="w-4 h-4 text-green-600" />
+            <p className="text-sm text-green-800">
+              Your AI assistant is now responding to messages on Facebook Messenger
+            </p>
+          </div>
+        </div>
+
+        <div className="flex justify-end">
+          <Button
+            variant="outline"
+            onClick={() => disconnectMutation.mutate()}
+            disabled={disconnectMutation.isPending}
+          >
+            {disconnectMutation.isPending ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Disconnecting...
+              </>
+            ) : (
+              "Disconnect"
+            )}
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show connect button
+  return (
+    <div className="bg-gray-50 rounded-lg p-6">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+          <FaFacebookMessenger className="w-4 h-4 text-blue-600" />
+        </div>
+        <h3 className="text-lg font-medium text-gray-900">Facebook Messenger Integration</h3>
+      </div>
+      
+      <p className="text-sm text-gray-600 mb-6">
+        Connect your Facebook page to allow your AI assistant to respond to messages on Facebook Messenger automatically.
+      </p>
+
+      <div className="bg-white rounded-lg p-4 mb-6">
+        <h4 className="font-medium text-gray-900 mb-2">What you'll get:</h4>
+        <ul className="text-sm text-gray-600 space-y-1">
+          <li>• Automatic AI responses to Facebook Messenger inquiries</li>
+          <li>• Real-time conversation tracking in your dashboard</li>
+          <li>• Seamless integration with your knowledge base</li>
+          <li>• Professional customer support 24/7</li>
+        </ul>
+      </div>
+
+      <div className="flex justify-end">
+        <Button
+          onClick={() => startOAuthMutation.mutate()}
+          disabled={startOAuthMutation.isPending || isConnecting}
+        >
+          {startOAuthMutation.isPending || isConnecting ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Connecting...
+            </>
+          ) : (
+            <>
+              <ExternalLink className="w-4 h-4 mr-2" />
+              Connect Facebook Page
+            </>
+          )}
+        </Button>
+      </div>
+    </div>
   );
 }

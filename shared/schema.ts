@@ -172,6 +172,7 @@ export const facebookConnections = pgTable("facebook_connections", {
   userId: varchar("user_id").notNull().references(() => users.id),
   facebookPageId: varchar("facebook_page_id").notNull(),
   facebookPageName: varchar("facebook_page_name"),
+  facebookPagePictureUrl: varchar("facebook_page_picture_url", { length: 500 }),
   accessToken: text("access_token").notNull(),
   isConnected: boolean("is_connected").default(true),
   createdAt: timestamp("created_at").defaultNow(),

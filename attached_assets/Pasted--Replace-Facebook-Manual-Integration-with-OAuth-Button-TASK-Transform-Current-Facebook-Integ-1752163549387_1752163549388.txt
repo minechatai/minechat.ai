@@ -1,0 +1,53 @@
+# Replace Facebook Manual Integration with OAuth Button
+
+## TASK: Transform Current Facebook Integration
+**Current:** Users manually enter Facebook Page ID and Access Token  
+**New:** Single "Connect Facebook Page" button with OAuth popup
+
+## SPECIFIC CHANGES NEEDED:
+
+### 1. Update the UI (Frontend)
+- Replace the two input fields (Page ID & Access Token) with one large blue button: "Connect Facebook Page"
+- Add connection status display: show connected page name and profile picture when connected
+- Add "Disconnect" button when a page is connected
+
+### 2. Add OAuth Flow (Backend)
+- Create `/api/facebook/oauth/start` endpoint that redirects to Facebook OAuth
+- Create `/api/facebook/oauth/callback` endpoint to handle Facebook's response
+- Use these Facebook permissions: `pages_manage_metadata,pages_messaging,pages_read_engagement`
+- After OAuth: fetch user's Facebook pages, let them select which page to connect
+
+### 3. Database Updates
+Add these columns to store Facebook connection:
+```sql
+facebook_page_id VARCHAR(255)
+facebook_page_name VARCHAR(255) 
+facebook_access_token TEXT
+facebook_page_picture_url VARCHAR(500)
+```
+
+### 4. Environment Variables Needed
+```
+FACEBOOK_APP_ID=your_app_id
+FACEBOOK_APP_SECRET=your_app_secret
+FACEBOOK_REDIRECT_URI=your_callback_url
+```
+
+## KEY REQUIREMENTS:
+- ✅ No manual data entry - everything automatic through OAuth
+- ✅ Works on mobile (responsive button and popup)
+- ✅ Clear error messages if connection fails
+- ✅ Show loading states during connection process
+- ✅ Secure token storage (encrypt access tokens)
+
+## FACEBOOK OAUTH FLOW:
+1. User clicks "Connect Facebook Page" button
+2. Popup opens to Facebook OAuth (permissions request)
+3. User logs in and grants permissions
+4. Callback receives OAuth code
+5. Exchange code for access token
+6. Fetch user's Facebook pages
+7. User selects which page to connect
+8. Store page details and show "Connected" status
+
+Make this user-friendly for non-technical business owners - hide all technical complexity!
