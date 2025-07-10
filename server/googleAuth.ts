@@ -49,6 +49,9 @@ export function setupGoogleAuth(app: Express) {
           };
 
           // Upsert user in database
+          // 🔍 FIRST: Check if user already exists
+          const existingUser = await storage.getUserByEmail(googleUser.email);
+          const isNewUser = !existingUser; // true if no existing user found
           const user = await storage.upsertUser(googleUser);
           
           // Create session data
@@ -65,22 +68,26 @@ export function setupGoogleAuth(app: Express) {
             expires_at: Math.floor(Date.now() / 1000) + 3600, // 1 hour from now
           };          
         
-          // 🆕 NEW: Send confirmation email after successful account creation
-          try {
-            const { emailService } = await import("./src/modules/email/services/emailService");
-            const emailSent = await emailService.sendConfirmationEmail(
-              user.email,
-              `${user.firstName} ${user.lastName}`
-            );
+          // ✅ ONLY send welcome email for NEW users
+          if (isNewUser) {
+            try {
+              const { emailService } = await import("./src/modules/email/services/emailService");
+              const emailSent = await emailService.sendConfirmationEmail(
+                user.email,
+                `${user.firstName} ${user.lastName}`
+              );
 
-            if (emailSent) {
-              console.log(`✅ Confirmation email sent to ${user.email}`);
-            } else {
-              console.log(`⚠️ Failed to send confirmation email to ${user.email}`);
+              if (emailSent) {
+                console.log(`✅ Welcome email sent to NEW user: ${user.email}`);
+              } else {
+                console.log(`⚠️ Failed to send welcome email to NEW user: ${user.email}`);
+              }
+            } catch (emailError) {
+              console.error("Error sending welcome email:", emailError);
+              // Don't fail the login if email fails
             }
-          } catch (emailError) {
-            console.error("Error sending confirmation email:", emailError);
-            // Don't fail the login if email fails
+          } else {
+            console.log(`🔄 Existing user logged in: ${user.email} (no welcome email sent)`);
           }
 
           return done(null, sessionUser);

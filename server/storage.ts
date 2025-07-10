@@ -748,7 +748,10 @@ export class DatabaseStorage implements IStorage {
         .where(
           and(
             eq(conversations.userId, userId),
-            eq(messages.senderType, "customer"), // Only inbound customer messages
+            or(
+              eq(messages.senderType, "customer"), // Traditional customer messages
+              eq(messages.senderType, "user")      // Facebook/social media customer messages
+            ),
             // Exclude test conversations
             sql`${conversations.source} != 'test'`
           )
@@ -776,7 +779,10 @@ export class DatabaseStorage implements IStorage {
           .where(
             and(
               eq(conversations.userId, userId),
-              eq(messages.senderType, "customer"), // Only inbound customer messages
+              or(
+                eq(messages.senderType, "customer"), // Traditional customer messages
+                eq(messages.senderType, "user")      // Facebook/social media customer messages
+              ),
               sql`${conversations.source} != 'test'`,
               sql`${messages.createdAt} >= ${startUTC}`,
               sql`${messages.createdAt} <= ${endUTC}`
@@ -804,7 +810,10 @@ export class DatabaseStorage implements IStorage {
         .where(
           and(
             eq(conversations.userId, userId),
-            eq(messages.senderType, "customer"),
+            or(
+              eq(messages.senderType, "customer"), // Traditional customer messages
+              eq(messages.senderType, "user")      // Facebook/social media customer messages
+            ),
             or(
               eq(messages.readByAdmin, false),
               sql`messages.read_by_admin IS NULL`
@@ -829,7 +838,10 @@ export class DatabaseStorage implements IStorage {
         .where(
           and(
             eq(messages.conversationId, conversationId),
-            eq(messages.senderType, "customer")
+            or(
+              eq(messages.senderType, "customer"), // Traditional customer messages
+              eq(messages.senderType, "user")      // Facebook/social media customer messages
+            )
           )
         );
     } catch (error) {
@@ -855,7 +867,10 @@ export class DatabaseStorage implements IStorage {
           .where(
             and(
               sql`messages.conversation_id IN (${sql.join(conversationIds, sql`, `)})`,
-              eq(messages.senderType, "customer")
+              or(
+                eq(messages.senderType, "customer"), // Traditional customer messages
+                eq(messages.senderType, "user")      // Facebook/social media customer messages
+              )
             )
           );
       }
