@@ -3,8 +3,8 @@
 import { Express } from "express";
 import { isAuthenticated } from "../../../../replitAuth.js";
 import { storage } from "../../../../storage";
-import * as geoip from 'geoip-lite';
-import * as moment from 'moment-timezone';
+import geoip from 'geoip-lite';
+import moment from 'moment-timezone';
 
 export function setupAnalyticsRoutes(app: Express) {
 

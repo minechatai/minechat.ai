@@ -593,6 +593,14 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - **Error Handling**: Improved error detection for 401 Unauthorized responses with automatic redirect to login page
   - **User Experience**: Button now shows loading states, disabled states, and appropriate text based on authentication status
   - **Testing Verified**: Facebook OAuth successfully launches Facebook authorization dialog asking users to allow "Minechat AI" platform access to their pages
+- July 10, 2025: IP-Based Timezone Detection Implementation for Analytics
+  - **File Modified**: `server/src/modules/analytics/routes/analyticsRoutes.ts` - Added geoip-lite and moment-timezone imports for IP-based location detection
+  - **File Modified**: `server/src/modules/analytics/routes/analyticsRoutes.ts` - Implemented automatic timezone detection using client IP address with fallback to Asia/Manila for development
+  - **File Modified**: `server/storage.ts` - Enhanced storage functions to include both 'customer' and 'user' sender types for comprehensive message analytics
+  - **File Modified**: `server/index.ts` - Added Express.js proxy trust configuration (`app.set('trust proxy', true)`) for accurate IP detection in Replit environment
+  - **Analytics Enhancement**: Messages now converted from UTC to user's local timezone before hourly analysis, ensuring accurate time display
+  - **User Experience**: Analytics widgets now display messages at correct local times (e.g., UTC 18:28 displays as 2:28 AM in Asia/Manila timezone)
+  - **Database Fix**: Fixed critical bug where Facebook messages (sender_type 'user') weren't included in analytics alongside traditional messages (sender_type 'customer')
 
 # User Preferences
 

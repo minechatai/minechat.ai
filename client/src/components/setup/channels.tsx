@@ -277,6 +277,7 @@ export default function Channels() {
 function FacebookMessengerIntegration() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [isConnecting, setIsConnecting] = useState(false);
   const [selectedPageId, setSelectedPageId] = useState<string>("");
   const [showPageSelector, setShowPageSelector] = useState(false);
