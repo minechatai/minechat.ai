@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Camera } from "lucide-react";
 
 export default function CreateUserProfile() {
@@ -81,11 +81,14 @@ export default function CreateUserProfile() {
         position: userData.position || ''
       };
       
-      // For now, we'll handle profile images separately if needed
-      // The main user profile creation should work without images
-      return await apiRequest('POST', '/api/user-profiles', profileData);
+      const response = await apiRequest('POST', '/api/user-profiles', profileData);
+      return response.json();
     },
     onSuccess: () => {
+      // Invalidate and refetch user profiles to update the list
+      queryClient.invalidateQueries({ queryKey: ['/api/user-profiles'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/user-profiles/active'] });
+      
       toast({
         title: "Success",
         description: "User profile created successfully",

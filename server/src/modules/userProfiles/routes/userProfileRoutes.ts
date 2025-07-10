@@ -95,6 +95,52 @@ export function setupUserProfileRoutes(app: Express) {
   });
 
   // Create a new user profile
+  app.post('/api/user-profiles', isAuthenticated, async (req: any, res) => {
+    try {
+      const businessOwnerId = req.user.claims.sub;
+      const { name, email, password, position } = req.body;
+
+      // Validate required fields
+      if (!name || !email || !password) {
+        return res.status(400).json({ message: "Name, email, and password are required" });
+      }
+
+      console.log(`Creating user profile for business owner ${businessOwnerId}:`, {
+        name,
+        email,
+        position
+      });
+
+      // Check if this is the first profile for this business owner
+      const existingProfiles = await storage.getUserProfiles(businessOwnerId);
+      const isFirstProfile = existingProfiles.length === 0;
+
+      // Create user profile in database
+      const newProfile = await storage.createUserProfile(businessOwnerId, {
+        name,
+        email,
+        position: position || null,
+        profileImageUrl: null,
+        isActive: isFirstProfile, // First profile is automatically active
+      });
+
+      // If this is the first profile, ensure it's active
+      if (isFirstProfile) {
+        await storage.setActiveUserProfile(businessOwnerId, newProfile.id);
+      }
+
+      res.json({
+        message: "User profile created successfully",
+        user: newProfile
+      });
+
+    } catch (error) {
+      console.error("Error creating user profile:", error);
+      res.status(500).json({ message: "Failed to create user profile" });
+    }
+  });
+
+  // Create a new user profile with image upload (alternative endpoint)
   app.post('/api/users/create', isAuthenticated, imageUpload.single('profileImage'), async (req: any, res) => {
     try {
       const businessOwnerId = req.user.claims.sub;
@@ -118,14 +164,23 @@ export function setupUserProfileRoutes(app: Express) {
         profileImageUrl = `/uploads/images/${req.file.filename}`;
       }
 
+      // Check if this is the first profile for this business owner
+      const existingProfiles = await storage.getUserProfiles(businessOwnerId);
+      const isFirstProfile = existingProfiles.length === 0;
+
       // Create user profile in database
       const newProfile = await storage.createUserProfile(businessOwnerId, {
         name,
         email,
         position: position || null,
         profileImageUrl,
-        isActive: false, // New profiles start as inactive
+        isActive: isFirstProfile, // First profile is automatically active
       });
+
+      // If this is the first profile, ensure it's active
+      if (isFirstProfile) {
+        await storage.setActiveUserProfile(businessOwnerId, newProfile.id);
+      }
 
       res.json({
         message: "User profile created successfully",
