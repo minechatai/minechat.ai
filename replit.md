@@ -562,6 +562,14 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - **File Modified**: `client/src/pages/login.tsx` - Enhanced Google OAuth button with better session clearing
   - **Solution**: OAuth consent screen needs to be published to production OR test users need to be added manually
   - **Alternative**: Email authentication system works perfectly as alternative login method
+- July 10, 2025: User Profile Creation Bug Fix and AI Testing Panel Visual Enhancement
+  - **File Modified**: `server/src/modules/userProfiles/routes/userProfileRoutes.ts` - Added missing `/api/user-profiles` POST endpoint that frontend was calling
+  - **File Modified**: `server/src/modules/userProfiles/routes/userProfileRoutes.ts` - Fixed automatic profile activation for first user profile created
+  - **File Modified**: `client/src/pages/create-user-profile.tsx` - Enhanced mutation with proper cache invalidation and response handling
+  - **File Modified**: `client/src/components/setup/ai-testing-panel.tsx` - Added visual border separation with standard 1px border thickness
+  - **File Modified**: `client/src/pages/setup.tsx` - Added padding around AI Testing panel for better visual separation
+  - **Issue Fixed**: User profiles were being created but not activated, causing "No active user profile found" errors
+  - **Enhancement**: AI Testing panel now has clear visual separation from main content with consistent border styling
 
 # User Preferences
 
