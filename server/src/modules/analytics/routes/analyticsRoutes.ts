@@ -8,44 +8,7 @@ import moment from 'moment-timezone';
 
 export function setupAnalyticsRoutes(app: Express) {
 
-  // Helper function for grouping questions by semantic intent
-  async function groupQuestionsByIntent(questions: string[]) {
-    // Simple grouping by keywords for now - can be enhanced with AI later
-    const groups: { [key: string]: { question: string; count: number; examples: string[] } } = {};
 
-    questions.forEach(question => {
-      const lowerQuestion = question.toLowerCase();
-      let category = "general";
-
-      // Categorize questions by common patterns
-      if (lowerQuestion.includes("price") || lowerQuestion.includes("cost") || lowerQuestion.includes("how much")) {
-        category = "pricing";
-      } else if (lowerQuestion.includes("product") || lowerQuestion.includes("service") || lowerQuestion.includes("sell")) {
-        category = "products";
-      } else if (lowerQuestion.includes("contact") || lowerQuestion.includes("phone") || lowerQuestion.includes("email")) {
-        category = "contact";
-      } else if (lowerQuestion.includes("hours") || lowerQuestion.includes("open") || lowerQuestion.includes("available")) {
-        category = "availability";
-      } else if (lowerQuestion.includes("payment") || lowerQuestion.includes("pay") || lowerQuestion.includes("card")) {
-        category = "payment";
-      }
-
-      if (!groups[category]) {
-        groups[category] = {
-          question: question,
-          count: 0,
-          examples: []
-        };
-      }
-
-      groups[category].count++;
-      if (groups[category].examples.length < 3) {
-        groups[category].examples.push(question);
-      }
-    });
-
-    return Object.values(groups);
-  }
 
   // Analytics routes
   app.get('/api/analytics', isAuthenticated, async (req: any, res) => {
@@ -383,22 +346,27 @@ export function setupAnalyticsRoutes(app: Express) {
 
       console.log("🔍 FAQ Analysis Debug - Actual customer questions:", actualQuestions);
 
-      // Group questions by semantic intent using AI analysis
-      const questionGroups = await groupQuestionsByIntent(actualQuestions);
+      // Count each unique question exactly as asked
+      const questionCounts: { [key: string]: number } = {};
+      actualQuestions.forEach(question => {
+        const trimmedQuestion = question.trim();
+        questionCounts[trimmedQuestion] = (questionCounts[trimmedQuestion] || 0) + 1;
+      });
 
-      console.log("🔍 FAQ Analysis Debug - Question groups by semantic intent:", questionGroups);
-
-      // Get top 5 and mark if already in FAQ
-      const topQuestions = questionGroups
-        .sort((a: any, b: any) => b.count - a.count)
-        .slice(0, 5)
-        .map((group: any) => ({
-          ...group,
+      // Convert to array and sort by count
+      const topQuestions = Object.entries(questionCounts)
+        .map(([question, count]) => ({
+          question,
+          count,
           isInFaq: existingQuestions.some((existing: any) => 
-            group.question.toLowerCase().includes(existing) || 
-            existing.includes(group.question.toLowerCase())
+            question.toLowerCase().includes(existing) || 
+            existing.includes(question.toLowerCase())
           )
-        }));
+        }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+
+      console.log("🔍 FAQ Analysis Debug - Top questions with counts:", topQuestions);
 
       res.json(topQuestions);
     } catch (error) {
