@@ -451,11 +451,14 @@ export function registerAdminRoutes(app: Express) {
       // Debug admin object
       console.log("🔍 Admin object:", req.admin);
 
-      // Prevent admin from deleting their own account
+      // SUPER ADMIN POWER: Allow deletion of anyone except themselves
       if (req.admin.id === accountId) {
-        console.log("❌ Admin trying to delete their own account");
+        console.log("❌ Super admin trying to delete their own account");
         return res.status(400).json({ message: "Cannot delete your own account" });
       }
+
+      // SUPER ADMIN OVERRIDE: Can delete any account, including other admins
+      console.log("✅ SUPER ADMIN AUTHORIZATION: Proceeding with deletion of account:", accountId);
 
       // Don't allow deletion of user profiles - only business accounts
       if (accountId.startsWith("profile-") || accountId.startsWith("user-")) {
