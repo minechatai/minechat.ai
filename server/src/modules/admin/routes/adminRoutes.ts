@@ -229,7 +229,11 @@ export function registerAdminRoutes(app: Express) {
       url: req.url,
       params: req.params,
       adminId: req.admin?.id,
-      targetUserId: req.params.userId
+      targetUserId: req.params.userId,
+      currentSession: {
+        isImpersonating: req.session?.isImpersonating,
+        impersonatingUserId: req.session?.impersonatingUserId
+      }
     });
 
     try {
