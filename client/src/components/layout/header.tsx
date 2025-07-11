@@ -7,7 +7,7 @@ import { useActiveProfile } from "@/hooks/useActiveProfile";
 import { useQuery } from "@tanstack/react-query";
 
 export default function Header() {
-  const { user, isImpersonating } = useAuth();
+  const { user, isImpersonating, originalUser } = useAuth();
   const { activeProfile } = useActiveProfile();
 
   // Get unread message count
@@ -16,9 +16,16 @@ export default function Header() {
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
-  const displayName = user?.firstName && user?.lastName 
-    ? `${user.firstName} ${user.lastName}` 
-    : user?.email || 'User';
+  // When impersonating, show the impersonated user's name
+  // When not impersonating, show admin name or active profile name
+  const displayName = isImpersonating 
+    ? (user?.firstName && user?.lastName 
+        ? `${user.firstName} ${user.lastName}` 
+        : user?.email || 'User')
+    : (activeProfile?.name || 
+       (originalUser?.firstName && originalUser?.lastName 
+         ? `${originalUser.firstName} ${originalUser.lastName}` 
+         : originalUser?.email || 'User'));
 
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-4">

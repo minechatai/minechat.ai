@@ -268,6 +268,17 @@ export function registerAdminRoutes(app: Express) {
       req.session.impersonatingUserId = targetUserId;
       req.session.isImpersonating = true;
       req.session.originalAdminId = adminId; // Keep for reference
+      
+      // Ensure the admin user info is preserved
+      if (!req.session.originalAdminUser && req.admin) {
+        req.session.originalAdminUser = {
+          id: req.admin.id,
+          email: req.admin.email,
+          firstName: req.admin.firstName,
+          lastName: req.admin.lastName,
+          role: req.admin.role
+        };
+      }
 
       console.log("✅ Impersonation session set:", {
         adminId,
@@ -323,6 +334,7 @@ export function registerAdminRoutes(app: Express) {
       delete req.session.impersonatingUserId;
       delete req.session.isImpersonating;
       delete req.session.originalAdminId;
+      delete req.session.originalAdminUser;
 
       // Log the action
       try {
@@ -379,14 +391,21 @@ export function registerAdminRoutes(app: Express) {
         const viewedUser = await storage.getUser(req.session.impersonatingUserId);
         const business = await storage.getBusiness(req.session.impersonatingUserId);
 
+        console.log("👁️ View status - viewed user:", {
+          id: viewedUser?.id,
+          email: viewedUser?.email,
+          firstName: viewedUser?.firstName,
+          lastName: viewedUser?.lastName
+        });
+
         res.json({
           isViewing: true,
           viewedUser: {
             id: viewedUser?.id,
             email: viewedUser?.email,
-            firstName: viewedUser?.firstName,
-            lastName: viewedUser?.lastName,
-            profileImageUrl: viewedUser?.profileImageUrl,
+            firstName: viewedUser?.firstName || viewedUser?.first_name,
+            lastName: viewedUser?.lastName || viewedUser?.last_name,
+            profileImageUrl: viewedUser?.profileImageUrl || viewedUser?.profile_image_url,
             name: viewedUser?.firstName && viewedUser?.lastName 
               ? `${viewedUser.firstName} ${viewedUser.lastName}`.trim()
               : viewedUser?.email || viewedUser?.id

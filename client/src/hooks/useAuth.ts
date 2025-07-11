@@ -39,9 +39,9 @@ export function useAuth() {
     ? {
         id: viewStatus.viewedUser.id,
         email: viewStatus.viewedUser.email,
-        firstName: viewStatus.viewedUser.name.split(' ')[0] || viewStatus.viewedUser.email,
-        lastName: viewStatus.viewedUser.name.split(' ').slice(1).join(' ') || '',
-        profileImageUrl: undefined,
+        firstName: viewStatus.viewedUser.firstName || viewStatus.viewedUser.name?.split(' ')[0] || viewStatus.viewedUser.email,
+        lastName: viewStatus.viewedUser.lastName || viewStatus.viewedUser.name?.split(' ').slice(1).join(' ') || '',
+        profileImageUrl: viewStatus.viewedUser.profileImageUrl,
         role: 'user', // Impersonated users are treated as regular users
       }
     : user;

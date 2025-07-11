@@ -1,8 +1,9 @@
-import { useMutation } from "@tanstack/react-query";
-import { ArrowLeft, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 interface SwitchBackBannerProps {
   userName: string;
@@ -10,6 +11,12 @@ interface SwitchBackBannerProps {
 
 export default function SwitchBackBanner({ userName }: SwitchBackBannerProps) {
   const { toast } = useToast();
+
+  // Get the current view status to show who we're viewing as
+  const { data: viewStatus } = useQuery({
+    queryKey: ['/api/admin/view-status'],
+    refetchInterval: 5000,
+  });
 
   const stopViewingMutation = useMutation({
     mutationFn: async () => {
