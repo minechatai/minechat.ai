@@ -41,7 +41,7 @@ import {
   type InsertAdminSession,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, or, sql } from "drizzle-orm";
+import { eq, desc, and, or, sql, not, like, count, ilike, asc, gte, lte, inArray } from "drizzle-orm";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
@@ -1076,9 +1076,14 @@ export class DatabaseStorage implements IStorage {
   // Account operations (Admin perspective - same as user operations but with account terminology)
   async getAllAccounts(page: number = 1, limit: number = 50): Promise<{ accounts: User[]; totalPages: number; currentPage: number; totalAccounts: number }> {
     const offset = (page - 1) * limit;
-    const [countResult] = await db.select({ count: sql<number>`count(*)` }).from(users);
+    
+    // Only get real business accounts (exclude User Profiles that have IDs starting with "profile-")
+    const [countResult] = await db.select({ count: sql<number>`count(*)` }).from(users)
+      .where(not(like(users.id, 'profile-%')));
+    
     const accountResults = await db.select()
       .from(users)
+      .where(not(like(users.id, 'profile-%')))
       .limit(limit)
       .offset(offset)
       .orderBy(desc(users.createdAt));
@@ -1103,11 +1108,14 @@ export class DatabaseStorage implements IStorage {
         .select()
         .from(users)
         .where(
-          or(
-            sql`${users.email} ILIKE ${searchPattern}`,
-            sql`${users.firstName} ILIKE ${searchPattern}`,
-            sql`${users.lastName} ILIKE ${searchPattern}`,
-            sql`${users.id} ILIKE ${searchPattern}`
+          and(
+            not(like(users.id, 'profile-%')),
+            or(
+              sql`${users.email} ILIKE ${searchPattern}`,
+              sql`${users.firstName} ILIKE ${searchPattern}`,
+              sql`${users.lastName} ILIKE ${searchPattern}`,
+              sql`${users.id} ILIKE ${searchPattern}`
+            )
           )
         )
         .orderBy(desc(users.createdAt))
@@ -1117,11 +1125,14 @@ export class DatabaseStorage implements IStorage {
         .select({ count: sql<number>`count(*)` })
         .from(users)
         .where(
-          or(
-            sql`${users.email} ILIKE ${searchPattern}`,
-            sql`${users.firstName} ILIKE ${searchPattern}`,
-            sql`${users.lastName} ILIKE ${searchPattern}`,
-            sql`${users.id} ILIKE ${searchPattern}`
+          and(
+            not(like(users.id, 'profile-%')),
+            or(
+              sql`${users.email} ILIKE ${searchPattern}`,
+              sql`${users.firstName} ILIKE ${searchPattern}`,
+              sql`${users.lastName} ILIKE ${searchPattern}`,
+              sql`${users.id} ILIKE ${searchPattern}`
+            )
           )
         )
     ]);

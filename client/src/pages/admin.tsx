@@ -140,7 +140,7 @@ export default function AdminPage() {
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="accounts">Account Management</TabsTrigger>
+            <TabsTrigger value="accounts">Accounts</TabsTrigger>
             <TabsTrigger value="logs">Activity Logs</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
@@ -202,7 +202,7 @@ export default function AdminPage() {
           <TabsContent value="accounts" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Account Management</CardTitle>
+                <CardTitle>Accounts Management</CardTitle>
                 <div className="flex gap-4 mt-4">
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -222,7 +222,7 @@ export default function AdminPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Account Owner</TableHead>
+                        <TableHead>Account Name</TableHead>
                         <TableHead>Company</TableHead>
                         <TableHead>Email</TableHead>
                         <TableHead>Role</TableHead>
