@@ -96,7 +96,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             </div>
           )}
 
-          <div className={`flex min-h-screen ${viewStatus?.isViewing ? 'pt-[56px]' : ''}`}>
+          <div className="flex min-h-screen">
             <main className="flex-1">
               {children}
             </main>
