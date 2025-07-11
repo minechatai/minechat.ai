@@ -24,6 +24,8 @@ export async function fixUserSession(): Promise<void> {
 
 // Auto-fix session if user is logged in as test user
 export function autoFixSessionIfNeeded() {
+   return; // DISABLED - CAUSES AUTH BUG WITH GOOGLE OAUTH USERS
+  
   // Check if current user is the test user
   if (window.location.href.includes("dashboard") || window.location.href.includes("setup")) {
     fetch("/api/auth/user")

@@ -113,7 +113,14 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
+    console.log("🔍 getUserByEmail called with:", email);
     const [user] = await db.select().from(users).where(eq(users.email, email));
+    console.log("🔍 getUserByEmail result:", user ? {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName
+    } : "NO USER FOUND");
     return user;
   }
 
