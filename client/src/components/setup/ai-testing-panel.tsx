@@ -89,7 +89,7 @@ export default function AiTestingPanel() {
   };
 
   return (
-    <div className="w-full bg-white border border-gray-300 rounded-lg shadow-sm flex flex-col h-full">
+    <div className="w-full xl:w-96 2xl:w-[32rem] bg-white border border-gray-300 rounded-lg shadow-sm flex flex-col h-full max-h-[100dvh] xl:max-h-[calc(100vh-2rem)]">
       {/* Header */}
       <div className="p-4 border-b border-gray-200 flex-shrink-0">
         <h3 className="text-lg font-semibold text-gray-900">AI Testing</h3>

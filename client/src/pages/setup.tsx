@@ -108,7 +108,7 @@ export default function Setup() {
     <MainLayout title="Setup">
       <div className="flex flex-col xl:flex-row h-full min-h-screen xl:min-h-0">
         {/* Main Content */}
-        <div className="flex-1 p-4 sm:p-6 overflow-y-auto min-h-0" style={{ marginRight: (currentSection === "ai-assistant" || currentSection === "business") ? '340px' : '0' }}>
+        <div className="flex-1 p-4 sm:p-6 overflow-y-auto min-h-0" style={{ marginRight: (currentSection === "ai-assistant" || currentSection === "business") ? '400px' : '0' }}>
           <div className="max-w-none sm:max-w-4xl">
             {/* Page Title with Breadcrumb */}
             <div className="mb-6">
@@ -140,7 +140,7 @@ export default function Setup() {
 
         {/* AI Testing Panel - Fixed Position - only show for AI Assistant and Business */}
         {(currentSection === "ai-assistant" || currentSection === "business") && (
-          <div className="fixed top-[73px] right-4 w-80 h-[calc(100vh-73px-56px)] z-40 flex flex-col">
+          <div className="fixed top-[73px] right-0 w-full xl:w-96 2xl:w-[32rem] h-[calc(100vh-73px)] z-40 flex flex-col min-h-0 p-4 xl:pl-6">
             <AiTestingPanel />
           </div>
         )}
