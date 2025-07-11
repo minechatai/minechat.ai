@@ -1,0 +1,102 @@
+Build Admin Management System - Project Overview
+🎯 BIG PICTURE UNDERSTANDING
+Current Situation: We have a working customer-facing SaaS platform (Minechat AI) where users can create accounts, set up their businesses, and use AI chat assistants. However, we have ZERO admin tools to manage these users.
+Critical Problem: When users experience issues, we cannot:
+
+View their account details
+Troubleshoot their problems
+Fix broken integrations
+Provide customer support
+Monitor platform health
+
+What We're Building: A comprehensive admin management system that allows our team to manage all user accounts, troubleshoot issues, and provide customer support.
+🏗️ PROJECT ARCHITECTURE
+New Admin System Will Include:
+
+Super Admin Dashboard - Overview of all users and system health
+User Management Interface - Search, view, and manage individual accounts
+Support Tools - Troubleshoot and fix user issues
+System Analytics - Platform-wide metrics and monitoring
+Admin Authentication - Secure access control for admin team
+
+Database Changes Needed:
+
+Add admin user roles and permissions
+Create admin session management
+Add admin activity logging
+
+Frontend Changes Needed:
+
+New admin-only routes and pages
+Admin navigation and layout
+Admin-specific components
+
+📋 TASK BREAKDOWN (In Order)
+We will implement this step-by-step. You will receive ONE task at a time to ensure quality and avoid mistakes.
+Phase 1: Foundation
+Task 1: Set up admin authentication system and admin user roles
+Task 2: Create admin layout and navigation structure
+Task 3: Build super admin dashboard with system overview
+Phase 2: User Management
+Task 4: Create user list page with search and filtering
+Task 5: Build individual user detail page (view account info)
+Task 6: Add user management actions (edit, disable, reset)
+Phase 3: Support Tools
+Task 7: Implement user impersonation feature (login as user)
+Task 8: Add troubleshooting tools (reset integrations, fix connections)
+Task 9: Create admin activity logging and audit trail
+Phase 4: Analytics & Monitoring
+Task 10: Build system-wide analytics dashboard
+Task 11: Add error monitoring and alerting system
+Task 12: Create export tools for user data and reports
+🔐 SECURITY REQUIREMENTS
+Admin Access Control:
+
+Only designated admin users can access admin features
+Admin routes must be completely separate from user routes
+All admin actions must be logged for audit trail
+Secure admin session management
+
+User Privacy Protection:
+
+Admin can view user data for support purposes only
+No unauthorized access to sensitive user information
+Clear separation between admin and user data
+
+🎨 DESIGN PRINCIPLES
+Admin Interface Should Be:
+
+Clean and professional (suitable for internal team use)
+Fast and efficient (admin users are power users)
+Information-dense (lots of data in organized layout)
+Action-oriented (quick access to common support tasks)
+
+⚠️ CRITICAL GUIDELINES
+IMPORTANT: We will give you ONE task at a time. Please:
+
+Wait for each specific task before starting implementation
+Ask clarifying questions if anything is unclear
+Focus only on the current task - don't jump ahead
+Ensure each task is complete before moving to the next
+Keep existing user functionality intact - don't break current features
+
+🎯 SUCCESS CRITERIA
+When completed, our admin team will be able to:
+✅ View all user accounts and their status
+✅ Search and filter users quickly
+✅ View detailed user information and settings
+✅ Troubleshoot user problems effectively
+✅ Fix broken integrations and connections
+✅ Monitor overall platform health
+✅ Provide excellent customer support
+🚀 READY TO START
+Confirm you understand:
+
+The big picture of building an admin management system
+Why this is critical for supporting our users
+That we'll tackle this one task at a time
+The importance of not breaking existing functionality
+The security and privacy requirements
+
+Reply "Ready for Task 1" when you understand the full scope and are ready to receive the first specific task.
+This admin system is essential for our SaaS platform's success - it's what allows us to provide professional customer support and maintain a reliable service.

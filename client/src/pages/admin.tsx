@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Shield, Users, Activity, Settings } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import MainLayout from "@/components/layout/main-layout";
+import { Link } from "wouter";
 
 interface User {
   id: string;
@@ -232,7 +233,12 @@ export default function AdminPage() {
                         <TableRow key={user.id}>
                           <TableCell>
                             <div>
-                              <div className="font-medium">{user.firstName} {user.lastName}</div>
+                              <Link 
+                                href={`/admin/users/${user.id}`}
+                                className="font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                              >
+                                {user.firstName} {user.lastName}
+                              </Link>
                               <div className="text-sm text-gray-500">{user.id}</div>
                             </div>
                           </TableCell>

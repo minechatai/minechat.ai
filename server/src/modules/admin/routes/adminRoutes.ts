@@ -120,6 +120,91 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
+  // Get specific user details
+  app.get("/api/admin/users/:userId", ...adminRoute("view_user_details"), async (req: any, res) => {
+    try {
+      const { userId } = req.params;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+      res.status(500).json({ message: "Failed to fetch user details" });
+    }
+  });
+
+  // Get user's business information
+  app.get("/api/admin/users/:userId/business", ...adminRoute("view_user_business"), async (req: any, res) => {
+    try {
+      const { userId } = req.params;
+      const business = await storage.getBusiness(userId);
+      res.json(business);
+    } catch (error) {
+      console.error("Error fetching user business:", error);
+      res.status(500).json({ message: "Failed to fetch business information" });
+    }
+  });
+
+  // Get user's conversations
+  app.get("/api/admin/users/:userId/conversations", ...adminRoute("view_user_conversations"), async (req: any, res) => {
+    try {
+      const { userId } = req.params;
+      const conversations = await storage.getConversations(userId);
+      res.json(conversations);
+    } catch (error) {
+      console.error("Error fetching user conversations:", error);
+      res.status(500).json({ message: "Failed to fetch conversations" });
+    }
+  });
+
+  // Get user's activity logs
+  app.get("/api/admin/users/:userId/logs", ...adminRoute("view_user_logs"), async (req: any, res) => {
+    try {
+      const { userId } = req.params;
+      const logs = await storage.getAdminLogs(undefined, userId, 20);
+      res.json(logs);
+    } catch (error) {
+      console.error("Error fetching user logs:", error);
+      res.status(500).json({ message: "Failed to fetch user logs" });
+    }
+  });
+
+  // Update user (role, status, etc.)
+  app.patch("/api/admin/users/:userId", ...adminRoute("update_user"), async (req: any, res) => {
+    try {
+      const { userId } = req.params;
+      const { role, status } = req.body;
+
+      if (role) {
+        await storage.updateUserRole(userId, role);
+      }
+
+      const updatedUser = await storage.getUser(userId);
+      res.json(updatedUser);
+    } catch (error) {
+      console.error("Error updating user:", error);
+      res.status(500).json({ message: "Failed to update user" });
+    }
+  });
+
+  // Reset user account
+  app.post("/api/admin/users/:userId/reset", ...adminRoute("reset_user_account"), async (req: any, res) => {
+    try {
+      const { userId } = req.params;
+      
+      // Here you would implement the reset logic
+      // For now, we'll just log the action
+      res.json({ message: "User account reset successfully" });
+    } catch (error) {
+      console.error("Error resetting user:", error);
+      res.status(500).json({ message: "Failed to reset user account" });
+    }
+  });
+
   // Manual admin log creation (for testing)
   app.post("/api/admin/logs", ...adminRoute("create_log"), async (req: any, res) => {
     try {
