@@ -395,7 +395,8 @@ export function registerAdminRoutes(app: Express) {
           id: viewedUser?.id,
           email: viewedUser?.email,
           firstName: viewedUser?.firstName,
-          lastName: viewedUser?.lastName
+          lastName: viewedUser?.lastName,
+          businessName: business?.companyName
         });
 
         res.json({

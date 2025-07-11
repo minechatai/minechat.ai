@@ -10,35 +10,68 @@ export default function Header() {
   const { user, isImpersonating, originalUser } = useAuth();
   const { activeProfile } = useActiveProfile();
 
+  // Get business info for the current user (whether impersonated or not)
+  const { data: business } = useQuery({
+    queryKey: ["/api/business"],
+    enabled: !!user,
+  });
+
   // Get unread message count
   const { data: unreadCount } = useQuery({
     queryKey: ["/api/conversations/unread-count"],
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
-  // When impersonating, show the impersonated user's name
-  // When not impersonating, show admin name or active profile name
-  const displayName = isImpersonating 
-    ? (user?.firstName && user?.lastName 
+  // Determine what to display in the header
+  const getDisplayInfo = () => {
+    if (isImpersonating) {
+      // When viewing as user, show business name or user name
+      const businessName = business?.companyName;
+      const userName = user?.firstName && user?.lastName 
         ? `${user.firstName} ${user.lastName}` 
-        : user?.email || 'User')
-    : (activeProfile?.name || 
-       (originalUser?.firstName && originalUser?.lastName 
-         ? `${originalUser.firstName} ${originalUser.lastName}` 
-         : originalUser?.email || 'User'));
+        : user?.email || 'User';
+      
+      return {
+        title: businessName || userName,
+        isBusinessName: !!businessName,
+        logo: business?.logoUrl
+      };
+    } else {
+      // When not impersonating, show active profile or admin name
+      return {
+        title: activeProfile?.name || 
+               (originalUser?.firstName && originalUser?.lastName 
+                 ? `${originalUser.firstName} ${originalUser.lastName}` 
+                 : originalUser?.email || 'User'),
+        isBusinessName: false,
+        logo: null
+      };
+    }
+  };
+
+  const displayInfo = getDisplayInfo();
 
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
+          {/* Show business logo if available */}
+          {displayInfo.logo && (
+            <img 
+              src={displayInfo.logo} 
+              alt="Business Logo" 
+              className="w-8 h-8 rounded object-cover"
+            />
+          )}
+
           <h1 className="text-xl font-semibold text-gray-900">
-            {activeProfile?.name || displayName}
+            {displayInfo.title}
           </h1>
 
           {/* Show viewing indicator if admin is viewing as user */}
           {isImpersonating && (
             <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-              Viewing as {displayName}
+              Viewing as {displayInfo.isBusinessName ? 'Business' : 'User'}
             </Badge>
           )}
         </div>
