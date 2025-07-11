@@ -69,7 +69,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         <div className="flex-1 flex flex-col min-h-screen">
           <div className={viewStatus?.isViewing ? 'pt-[56px]' : ''}>
             <Header />
-          </div></div>
+          </div>
 
           {/* God Mode Admin Banner */}
           {viewStatus?.isViewing && (
