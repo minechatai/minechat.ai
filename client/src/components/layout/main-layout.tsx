@@ -3,7 +3,11 @@ import { useAuth } from "@/hooks/useAuth";
 import Header from "./header";
 import Sidebar from "./sidebar";
 import SwitchBackBanner from "./switch-back-banner";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -11,12 +15,37 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
   const { user, isLoading } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Get the current view status to show the switch back banner
   const { data: viewStatus } = useQuery({
     queryKey: ['/api/admin/view-status'],
     refetchInterval: 5000,
     retry: false,
+  });
+
+  // Stop viewing mutation
+  const stopViewingMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('POST', '/api/admin/stop-viewing');
+      return response;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Returned to admin view",
+      });
+      // Redirect to admin panel
+      window.location.href = "/admin";
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to return to admin view",
+        variant: "destructive",
+      });
+    },
   });
 
   if (isLoading) {

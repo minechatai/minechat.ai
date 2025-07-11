@@ -23,25 +23,49 @@ const imageUpload = multer({
 
 export function setupAuthRoutes(app: Express): void {
   // Get current user info
-  app.get("/api/auth/user", isAuthenticated, async (req: any, res) => {
+  app.get('/api/auth/user', async (req: any, res) => {
     try {
-      const userId = req.effectiveUserId || req.user.claims.sub;
-      
       console.log("🔍 User auth request:", {
-        effectiveUserId: req.effectiveUserId,
+        effectiveUserId: req.user?.claims?.sub || req.user?.id,
         originalUserId: req.user?.claims?.sub,
         isImpersonating: req.session?.isImpersonating,
         impersonatingUserId: req.session?.impersonatingUserId,
-        finalUserId: userId,
+        finalUserId: req.session?.isImpersonating ? req.session.impersonatingUserId : (req.user?.claims?.sub || req.user?.id),
         sessionId: req.session?.id,
-        sessionKeys: Object.keys(req.session || {})
+        sessionKeys: Object.keys(req.session || {}),
+        userStructure: req.user
       });
-      
-      const user = await storage.getUser(userId);
 
+      // Determine which user ID to use
+      let userId;
+
+      if (req.session?.isImpersonating && req.session?.impersonatingUserId) {
+        // When impersonating, use the impersonated user ID
+        userId = req.session.impersonatingUserId;
+        console.log("🎭 Using impersonated user ID:", userId);
+      } else if (req.user?.claims?.sub) {
+        // Normal authenticated user via Passport (Google OAuth)
+        userId = req.user.claims.sub;
+        console.log("🔑 Using OAuth user ID:", userId);
+      } else if (req.user?.id) {
+        // Fallback to direct user ID
+        userId = req.user.id;
+        console.log("👤 Using direct user ID:", userId);
+      } else {
+        console.log("❌ No user ID found in any location");
+        return res.status(401).json({ message: 'Not authenticated' });
+      }
+
+      if (!userId) {
+        console.log("❌ User ID is null or undefined");
+        return res.status(401).json({ message: 'Not authenticated' });
+      }
+
+      // Get user data from database
+      const user = await storage.getUser(userId);
       if (!user) {
-        console.log("❌ User not found for ID:", userId);
-        return res.status(404).json({ message: "User not found" });
+        console.log("❌ User not found in database:", userId);
+        return res.status(404).json({ message: 'User not found' });
       }
 
       console.log("✅ Returning user data:", {
@@ -51,10 +75,18 @@ export function setupAuthRoutes(app: Express): void {
         lastName: user.lastName
       });
 
-      res.json(user);
+      res.json({
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profileImageUrl: user.profileImageUrl,
+        role: user.role,
+        status: user.status
+      });
     } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
+      console.error('Error fetching user:', error);
+      res.status(500).json({ message: 'Failed to fetch user data' });
     }
   });
 
