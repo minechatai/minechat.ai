@@ -73,29 +73,59 @@ export default function CreateUserProfile() {
   // Create user profile mutation
   const createUserMutation = useMutation({
     mutationFn: async (userData: any) => {
-      // Use apiRequest for consistency with authentication
-      const profileData = {
-        name: userData.name,
-        email: userData.email,
-        password: userData.password,
-        position: userData.position || ''
-      };
+      console.log('Creating user profile with data:', userData);
       
-      const response = await fetch("/api/user-profiles", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(profileData),
-      });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to create user profile');
+      // If there's a profile image, use the endpoint that supports file upload
+      if (userData.profileImage) {
+        const formData = new FormData();
+        formData.append('name', userData.name);
+        formData.append('email', userData.email);
+        formData.append('password', userData.password);
+        formData.append('position', userData.position || '');
+        
+        // Convert base64 image to file
+        const response = await fetch(userData.profileImage);
+        const blob = await response.blob();
+        const file = new File([blob], 'profile-image.jpg', { type: 'image/jpeg' });
+        formData.append('profileImage', file);
+        
+        const uploadResponse = await fetch("/api/users/create", {
+          method: "POST",
+          credentials: "include",
+          body: formData,
+        });
+        
+        if (!uploadResponse.ok) {
+          const error = await uploadResponse.json();
+          throw new Error(error.message || 'Failed to create user profile with image');
+        }
+        
+        return uploadResponse.json();
+      } else {
+        // No profile image, use regular JSON endpoint
+        const profileData = {
+          name: userData.name,
+          email: userData.email,
+          password: userData.password,
+          position: userData.position || ''
+        };
+        
+        const response = await fetch("/api/user-profiles", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(profileData),
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to create user profile');
+        }
+        
+        return response.json();
       }
-      
-      return response.json();
     },
     onSuccess: () => {
       // Invalidate and refetch user profiles to update the list
@@ -144,7 +174,7 @@ export default function CreateUserProfile() {
     // Create user profile
     createUserMutation.mutate({
       ...formData,
-      profileImage
+      profileImage: profileImage // This will be the base64 data URL from FileReader
     });
   };
 
