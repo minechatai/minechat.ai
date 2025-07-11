@@ -12,7 +12,7 @@ export const isAdmin: RequestHandler = async (req: any, res, next) => {
 
     const userId = req.user.claims.sub;
     const user = await storage.getUser(userId);
-    
+
     if (!user) {
       return res.status(401).json({ message: "User not found" });
     }
@@ -39,53 +39,48 @@ export const isAdmin: RequestHandler = async (req: any, res, next) => {
 };
 
 // Super admin only middleware
-export const isSuperAdmin: RequestHandler = async (req: any, res, next) => {
+export const isSuperAdmin = async (req: any, res: any, next: any) => {
   try {
-    console.log("🔒 isSuperAdmin middleware - checking authentication");
-    console.log("🍪 Session ID:", req.sessionID);
-    console.log("🔍 Request authenticated:", req.isAuthenticated());
-    console.log("👤 User object:", req.user);
-    
-    // Check if user is authenticated first
-    if (!req.isAuthenticated() || !req.user?.claims?.sub) {
-      console.log("❌ User not authenticated or no claims");
-      console.log("❌ req.isAuthenticated():", req.isAuthenticated());
-      console.log("❌ req.user:", req.user);
+    console.log("🔍 Super admin check:", {
+      hasUser: !!req.user,
+      hasClaims: !!req.user?.claims,
+      userId: req.user?.claims?.sub,
+      hasSession: !!req.session
+    });
+
+    // First check if user is authenticated
+    const userId = req.user?.claims?.sub;
+    if (!userId) {
+      console.log("❌ No user ID found in request");
       return res.status(401).json({ message: "Authentication required" });
     }
 
-    const userId = req.user.claims.sub;
-    console.log("👤 User ID:", userId);
-    
+    // Get user from database
     const user = await storage.getUser(userId);
-    console.log("📝 User from database:", user);
-    
     if (!user) {
-      console.log("❌ User not found in database");
-      return res.status(401).json({ message: "User not found" });
+      console.log("❌ User not found in database:", userId);
+      return res.status(404).json({ message: "User not found" });
     }
 
-    // Check if user has super admin role
+    console.log("🔍 User found:", {
+      id: user.id,
+      email: user.email,
+      role: user.role
+    });
+
+    // Check if user is super admin
     if (user.role !== "super_admin") {
-      console.log("❌ User role is not super_admin:", user.role);
+      console.log("❌ User is not super admin:", user.role);
       return res.status(403).json({ message: "Super admin access required" });
     }
 
-    console.log("✅ Super admin access granted");
-    
-    // Add admin info to request
-    req.admin = {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-      firstName: user.firstName,
-      lastName: user.lastName,
-    };
-
+    // Attach admin info to request
+    req.admin = user;
+    console.log("✅ Super admin check passed");
     next();
   } catch (error) {
-    console.error("Super admin auth error:", error);
-    res.status(500).json({ message: "Authentication error" });
+    console.error("❌ Super admin check error:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -142,7 +137,7 @@ export class AdminSessionManager {
 
   static async validateSession(sessionToken: string): Promise<{ adminId: string; role: string } | null> {
     const session = await storage.getAdminSession(sessionToken);
-    
+
     if (!session || !session.isActive || session.expiresAt < new Date()) {
       return null;
     }

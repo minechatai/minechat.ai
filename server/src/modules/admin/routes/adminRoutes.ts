@@ -3,6 +3,7 @@ import { storage } from "../../../../storage";
 import { isAdmin, isSuperAdmin, adminRoute } from "../../../../adminAuth";
 import { insertAdminLogSchema } from "@shared/schema";
 import { z } from "zod";
+import { isAuthenticated } from "../../../../googleAuth";
 
 // Admin account management routes
 export function registerAdminRoutes(app: Express) {
@@ -203,7 +204,19 @@ export function registerAdminRoutes(app: Express) {
   app.post('/api/admin/switch-to-account/:userId', isSuperAdmin, async (req: any, res) => {
     try {
       const targetUserId = req.params.userId;
-      const adminId = req.user.claims.sub;
+      const adminId = req.admin?.id || req.user?.claims?.sub;
+
+      console.log("🔄 Switch to account request:", {
+        targetUserId,
+        adminId,
+        hasAdmin: !!req.admin,
+        hasUser: !!req.user,
+        hasSession: !!req.session
+      });
+
+      if (!adminId) {
+        return res.status(401).json({ message: "Admin authentication required" });
+      }
 
       // Verify target user exists
       const targetUser = await storage.getUser(targetUserId);
@@ -217,7 +230,9 @@ export function registerAdminRoutes(app: Express) {
       req.session.switchedToUserId = targetUserId;
 
       // Update session to target user
-      req.user.claims.sub = targetUserId;
+      if (req.user && req.user.claims) {
+        req.user.claims.sub = targetUserId;
+      }
 
       // Log the action
       await storage.createAdminLog({
@@ -228,18 +243,27 @@ export function registerAdminRoutes(app: Express) {
         ipAddress: req.ip || 'unknown'
       });
 
+      console.log("✅ Account switch successful:", {
+        adminId,
+        targetUserId,
+        targetEmail: targetUser.email
+      });
+
       res.json({ 
         success: true, 
         message: `Switched to account: ${targetUser.email || targetUser.id}`,
         switchedUser: {
           id: targetUser.id,
           email: targetUser.email,
-          name: targetUser.name
+          name: targetUser.name || `${targetUser.firstName} ${targetUser.lastName}`.trim()
         }
       });
     } catch (error) {
-      console.error("Error switching to account:", error);
-      res.status(500).json({ message: "Failed to switch to account" });
+      console.error("❌ Error switching to account:", error);
+      res.status(500).json({ 
+        message: "Failed to switch to account", 
+        error: error.message 
+      });
     }
   });
 
