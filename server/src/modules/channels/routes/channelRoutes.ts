@@ -10,7 +10,7 @@ export function setupChannelRoutes(app: Express) {
   // Channel routes
   app.get('/api/channels', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.effectiveUserId || req.user.claims.sub;
       const channel = await storage.getChannel(userId);
       res.json(channel);
     } catch (error) {
@@ -21,7 +21,7 @@ export function setupChannelRoutes(app: Express) {
 
   app.post('/api/channels', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.effectiveUserId || req.user.claims.sub;
       const validatedData = insertChannelSchema.parse(req.body);
 
       // Generate embed code for website widget

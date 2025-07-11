@@ -503,7 +503,7 @@ You represent ${business?.companyName || "our business"} and customers expect ac
   // Facebook integration routes
   app.get('/api/facebook-connection', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.effectiveUserId || req.user.claims.sub;
       const connection = await storage.getFacebookConnection(userId);
       res.json(connection || { isConnected: false });
     } catch (error) {
@@ -644,7 +644,7 @@ You represent ${business?.companyName || "our business"} and customers expect ac
   // Connect to a specific Facebook page
   app.post('/api/facebook/connect-page', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.effectiveUserId || req.user.claims.sub;
       const { pageId } = req.body;
       
       if (!pageId) {
@@ -708,7 +708,7 @@ You represent ${business?.companyName || "our business"} and customers expect ac
   // Disconnect Facebook page
   app.post('/api/facebook/disconnect', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.effectiveUserId || req.user.claims.sub;
       await storage.disconnectFacebook(userId);
       res.json({ message: "Facebook page disconnected successfully" });
     } catch (error) {
@@ -720,7 +720,7 @@ You represent ${business?.companyName || "our business"} and customers expect ac
   // Legacy connect endpoint for backwards compatibility
   app.post('/api/facebook/connect', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.effectiveUserId || req.user.claims.sub;
 
       // For demo purposes, simulate Facebook OAuth flow
       // In production, this would redirect to Facebook's OAuth URL
@@ -737,7 +737,7 @@ You represent ${business?.companyName || "our business"} and customers expect ac
 
   app.get('/api/facebook/callback', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.effectiveUserId || req.user.claims.sub;
       const { code } = req.query;
 
       if (!code) {
@@ -763,7 +763,7 @@ You represent ${business?.companyName || "our business"} and customers expect ac
 
   app.post('/api/facebook/connect-real', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.effectiveUserId || req.user.claims.sub;
       const { pageId, accessToken } = req.body;
 
       console.log('Facebook connect request:', { userId, pageId: pageId ? 'PROVIDED' : 'MISSING', accessToken: accessToken ? 'PROVIDED' : 'MISSING' });
@@ -798,7 +798,7 @@ You represent ${business?.companyName || "our business"} and customers expect ac
 
   app.delete('/api/facebook/disconnect', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.effectiveUserId || req.user.claims.sub;
       await storage.disconnectFacebook(userId);
       res.json({ message: "Facebook Messenger disconnected successfully" });
     } catch (error) {
