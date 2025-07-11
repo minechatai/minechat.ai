@@ -62,12 +62,12 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* God Mode Admin Banner */}
+      {/* God Mode Admin Banner - Bottom Footer Style */}
       {viewStatus?.isViewing && (
-        <div className="fixed top-0 left-0 right-0 bg-blue-600 text-white px-4 py-3 flex items-center justify-between shadow-lg z-50">
+        <div className="fixed bottom-0 left-64 right-0 bg-[#1e40af] text-white px-6 py-3 flex items-center justify-between shadow-lg z-50" style={{ height: '56px' }}>
           <div className="flex items-center space-x-2">
             <div className="text-sm font-medium">
-              🚀 God Mode Admin: Currently viewing as {viewStatus.viewedUser?.firstName} {viewStatus.viewedUser?.lastName} ({viewStatus.viewedUser?.email})
+              🔧 God Mode Admin: Currently viewing user account
             </div>
           </div>
           <Button
@@ -83,21 +83,23 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 Returning...
               </>
             ) : (
-              "Return to Admin"
+              <>
+                ← Return to Admin
+              </>
             )}
           </Button>
         </div>
       )}
 
       <div className="flex">
-        <div className={viewStatus?.isViewing ? 'pt-[56px]' : ''}>
+        <div>
           <Sidebar />
         </div>
         <div className="flex-1 flex flex-col min-h-screen" style={{ marginLeft: '16rem' }}>
-          <div className={viewStatus?.isViewing ? 'pt-[56px]' : ''}>
+          <div>
             <Header />
           </div>
-          <main className="flex-1">
+          <main className="flex-1" style={{ paddingBottom: viewStatus?.isViewing ? '56px' : '0' }}>
             {children}
           </main>
         </div>
