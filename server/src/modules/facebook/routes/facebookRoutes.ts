@@ -107,14 +107,14 @@ export function setupFacebookRoutes(app: Express) {
 
       console.log(`Received Facebook message from ${senderId} to page ${recipientId}: ${messageText}`);
 
-      console.log("🔍 Debug senderId:", senderId, typeof senderId, senderId.length);
-      console.log("🔍 Debug recipientId:", recipientId, typeof recipientId);  
-      console.log("🔍 Debug connection.userId:", connection.userId, typeof connection.userId);
-      console.log("🔍 About to call getConversationByFacebookSender with:", connection.userId, senderId);
-
       // Find the Facebook connection for this page
       const facebookConnections = await storage.getAllFacebookConnections();
       const connection = facebookConnections.find(conn => conn.facebookPageId === recipientId);
+
+      console.log("🔍 Debug senderId:", senderId, typeof senderId, senderId.length);
+      console.log("🔍 Debug recipientId:", recipientId, typeof recipientId);  
+      console.log("🔍 Debug connection.userId:", connection?.userId, typeof connection?.userId);
+      console.log("🔍 About to call getConversationByFacebookSender with:", connection?.userId, senderId);
 
       if (!connection || !connection.isConnected) {
         console.log("No active Facebook connection found for page:", recipientId);
@@ -805,6 +805,15 @@ You represent ${business?.companyName || "our business"} and customers expect ac
       console.error("Error disconnecting Facebook:", error);
       res.status(500).json({ message: "Failed to disconnect Facebook" });
     }
+  });
+
+  // Test endpoint for webhook debugging
+  app.get("/api/facebook/webhook/test", (req, res) => {
+    res.json({ 
+      message: "Facebook webhook is accessible",
+      timestamp: new Date().toISOString(),
+      status: "active"
+    });
   });
 
   // Facebook webhook endpoints for receiving messages
