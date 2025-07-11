@@ -42,32 +42,14 @@ export function SwitchBackBanner() {
     },
   });
 
+  // Return just the button data for use in admin user detail page
   if (!viewStatus?.isViewing) {
     return null;
   }
 
-  return (
-    <div className="fixed top-0 left-0 right-0 z-50 bg-blue-600 text-white py-2 px-4 flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        <User className="w-4 h-4" />
-        <span className="text-sm font-medium">
-          Admin View: Viewing as "{viewStatus.businessName}"
-        </span>
-        <span className="text-xs bg-blue-500 px-2 py-1 rounded">
-          User: {viewStatus.viewedUser?.name}
-        </span>
-      </div>
-      
-      <Button
-        onClick={() => stopViewingMutation.mutate()}
-        variant="outline"
-        size="sm"
-        className="bg-white text-blue-600 hover:bg-gray-100 border-white"
-        disabled={stopViewingMutation.isPending}
-      >
-        <ArrowLeft className="w-4 h-4 mr-1" />
-        {stopViewingMutation.isPending ? "Returning..." : "Return to Admin"}
-      </Button>
-    </div>
-  );
+  return {
+    viewStatus,
+    stopViewingMutation,
+    isViewing: viewStatus.isViewing
+  };
 }

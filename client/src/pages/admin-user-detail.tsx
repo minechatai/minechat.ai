@@ -1,25 +1,152 @@
-import { useParams, useLocation } from "wouter";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, User, Mail, Calendar, Shield, Edit, Ban, RotateCcw, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useParams, useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { ArrowLeft, User, Building, MessageSquare, Activity, Trash2, Shield } from "lucide-react";
 import MainLayout from "@/components/layout/main-layout";
 import { format } from "date-fns";
-import { useState } from "react";
+
+interface Account {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  profileImageUrl?: string;
+  role: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Business {
+  id: string;
+  userId: string;
+  companyName: string;
+  industry: string;
+  website: string;
+  phone: string;
+  address: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Conversation {
+  id: string;
+  userId: string;
+  userProfileId: string;
+  recipientId: string;
+  recipientName: string;
+  platform: string;
+  lastMessage: string;
+  lastMessageAt: string;
+  status: string;
+  createdAt: string;
+}
+
+// Component to handle View as User / Return to Admin button
+function AdminViewButton({ accountId }: { accountId: string }) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  // Check if currently viewing as user
+  const { data: viewStatus } = useQuery({
+    queryKey: ['/api/admin/view-status'],
+    refetchInterval: 5000,
+  });
+
+  // View as user mutation
+  const viewAsUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      console.log("👁️ Starting view as user for:", userId);
+      const response = await apiRequest("POST", `/api/admin/view-as-user/${userId}`);
+      return response;
+    },
+    onSuccess: (data) => {
+      console.log("✅ View successful, redirecting to dashboard");
+      toast({
+        title: "Success",
+        description: data.message || "Now viewing as user",
+      });
+      setTimeout(() => {
+        window.location.href = "/dashboard";
+      }, 500);
+    },
+    onError: (error: any) => {
+      console.error("❌ View mutation error:", error);
+      toast({
+        title: "View Failed",
+        description: error.message || "Unable to view as this user. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Stop viewing mutation
+  const stopViewingMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('POST', '/api/admin/stop-viewing');
+      return response;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Returned to admin view",
+      });
+      // Redirect to admin panel
+      window.location.href = "/admin";
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to return to admin view",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // If currently viewing as user, show "Return to Admin" button
+  if (viewStatus?.isViewing) {
+    return (
+      <Button
+        onClick={() => stopViewingMutation.mutate()}
+        variant="outline"
+        className="w-full"
+        disabled={stopViewingMutation.isPending}
+      >
+        <ArrowLeft className="w-4 h-4 mr-2" />
+        {stopViewingMutation.isPending ? "Returning..." : "Return to Admin"}
+      </Button>
+    );
+  }
+
+  // Otherwise, show "View as User" button
+  return (
+    <Button
+      onClick={() => viewAsUserMutation.mutate(accountId)}
+      variant="default"
+      className="w-full"
+      disabled={viewAsUserMutation.isPending}
+    >
+      {viewAsUserMutation.isPending ? "Starting View..." : "View as User"}
+    </Button>
+  );
+}
 
 export default function AdminAccountDetail() {
   const { accountId } = useParams<{ accountId: string }>();
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   // State for dialog management
   const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
   const [isDisableDialogOpen, setIsDisableDialogOpen] = useState(false);
@@ -416,14 +543,7 @@ export default function AdminAccountDetail() {
                   </h3>
                   <div className="space-y-2">
                     {/* View as User Button */}
-                    <Button
-                      onClick={() => viewAsUserMutation.mutate(account.id)}
-                      variant="default"
-                      className="w-full"
-                      disabled={viewAsUserMutation.isPending}
-                    >
-                      {viewAsUserMutation.isPending ? "Starting View..." : "View as User"}
-                    </Button>
+                    <AdminViewButton accountId={account.id} />
 
                     {/* Edit Role Dialog */}
                     <Dialog open={isRoleDialogOpen} onOpenChange={setIsRoleDialogOpen}>

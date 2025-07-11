@@ -1,7 +1,6 @@
 import { useState } from "react";
 import Sidebar from "./sidebar";
 import Header from "./header";
-import { SwitchBackBanner } from "./switch-back-banner";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -14,9 +13,6 @@ export default function MainLayout({ children, title }: MainLayoutProps) {
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Switch Back Banner - Fixed positioning */}
-      <SwitchBackBanner />
-      
       {/* Sidebar */}
       <Sidebar 
         isOpen={sidebarOpen} 
