@@ -1,0 +1,48 @@
+# Add Super Admin Account Switching Feature
+
+## GOAL:
+Allow super admins to "switch into" any user account to see their exact view for troubleshooting purposes.
+
+## CURRENT SITUATION:
+- Admin panel shows list of all user accounts
+- Super admin can only view user data from admin perspective
+- Cannot see what users actually experience in their dashboard
+
+## WHAT TO BUILD:
+
+### 1. Add "Switch to Account" Button
+- Add button/link in the Account Management table for each user
+- Button text: "Login as User" or "Switch to Account"
+- Only visible to super admins (not regular admins)
+
+### 2. Account Switching Functionality
+**When super admin clicks "Switch to Account":**
+- Session switches to that user's account
+- Interface completely changes to show that user's view
+- Header updates to show user's business name and logo (e.g., "Miner" instead of "Bhriella's Farm")
+- All data becomes that user's data:
+  - Dashboard shows their analytics
+  - Setup shows their business configuration
+  - Channels shows their integrations
+  - Chat shows their conversations
+
+### 3. Switch Back Feature
+- Add "Return to Admin" button/banner when in switched mode
+- Clearly indicate current mode (e.g., "Viewing as: Miner Account")
+- One-click return to admin dashboard
+
+## TECHNICAL REQUIREMENTS:
+- **Session Management:** Temporarily store original admin session
+- **User Profile Switching:** Change active userProfile in session
+- **UI Updates:** Dynamic header/business name display
+- **Security:** Only super admins can access this feature
+- **Navigation:** All existing user features should work normally
+
+## USER EXPERIENCE:
+1. Super admin clicks "Login as User" for account #104183046721441373353
+2. Interface switches to show "Miner" business view
+3. Super admin sees exactly what Miner sees (their dashboard, data, setup)
+4. Super admin can troubleshoot issues by experiencing the user's exact interface
+5. Super admin clicks "Return to Admin" to switch back
+
+**Purpose:** Enable customer support by letting super admins experience the platform exactly as users do.
