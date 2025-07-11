@@ -381,6 +381,30 @@ export default function AdminAccountDetail() {
                     Account Management
                   </h3>
                   <div className="space-y-2">
+                    {/* Login as User Button */}
+                    <Button
+                      onClick={() => {
+                        // Implement switch to account functionality
+                        fetch(`/api/admin/switch-to-account/${account.id}`, {
+                          method: 'POST',
+                          credentials: 'include'
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                          if (data.success) {
+                            window.location.href = '/dashboard';
+                          }
+                        })
+                        .catch(error => {
+                          console.error('Error switching to account:', error);
+                        });
+                      }}
+                      variant="default"
+                      className="w-full"
+                    >
+                      Login as User
+                    </Button>
+
                     {/* Edit Role Dialog */}
                     <Dialog open={isRoleDialogOpen} onOpenChange={setIsRoleDialogOpen}>
                       <DialogTrigger asChild>

@@ -120,11 +120,13 @@ export default function AdminPage() {
   });
 
   const handleSwitchToAccount = async (userId: string) => {
+    setSelectedAccount(userId);
     setIsSwitching(true);
     try {
       await switchToAccountMutation.mutateAsync(userId);
     } finally {
       setIsSwitching(false);
+      setSelectedAccount(null);
     }
   };
 
@@ -288,21 +290,35 @@ export default function AdminPage() {
                           </TableCell>
                           <TableCell>{new Date(account.createdAt).toLocaleDateString()}</TableCell>
                           <TableCell>
-                            {adminCheck.adminInfo.role === "super_admin" && (
-                              <Select
-                                value={account.role || "user"}
-                                onValueChange={(role) => updateRoleMutation.mutate({ accountId: account.id, role })}
-                              >
-                                <SelectTrigger className="w-32">
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="user">User</SelectItem>
-                                  <SelectItem value="admin">Admin</SelectItem>
-                                  <SelectItem value="super_admin">Super Admin</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            )}
+                            <div className="flex items-center gap-2">
+                              {adminCheck.adminInfo.role === "super_admin" && (
+                                <>
+                                  <Select
+                                    value={account.role || "user"}
+                                    onValueChange={(role) => updateRoleMutation.mutate({ accountId: account.id, role })}
+                                  >
+                                    <SelectTrigger className="w-32">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="user">User</SelectItem>
+                                      <SelectItem value="admin">Admin</SelectItem>
+                                      <SelectItem value="super_admin">Super Admin</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  
+                                  <Button
+                                    onClick={() => handleSwitchToAccount(account.id)}
+                                    disabled={isSwitching || switchToAccountMutation.isPending}
+                                    variant="outline"
+                                    size="sm"
+                                    className="ml-2"
+                                  >
+                                    {isSwitching && selectedAccount === account.id ? "Switching..." : "Login as User"}
+                                  </Button>
+                                </>
+                              )}
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
