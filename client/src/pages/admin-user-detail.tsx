@@ -378,7 +378,7 @@ export default function AdminAccountDetail() {
 
                 <div className="pt-4">
                   <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                    Admin Actions
+                    Account Management
                   </h3>
                   <div className="space-y-2">
                     {/* Edit Role Dialog */}

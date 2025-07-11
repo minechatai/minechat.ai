@@ -227,7 +227,7 @@ export default function AdminPage() {
                         <TableHead>Email</TableHead>
                         <TableHead>Role</TableHead>
                         <TableHead>Created</TableHead>
-                        <TableHead>Actions</TableHead>
+                        <TableHead>Management</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
