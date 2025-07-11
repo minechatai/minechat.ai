@@ -403,9 +403,9 @@ export default function Dashboard() {
 
   return (
     <MainLayout title="Dashboard">
-      <div className="p-4 flex flex-col min-h-full">
+      <div className="flex flex-col min-h-full">
         {/* Page Title with Date Controls */}
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-6 px-6 pt-6">
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Dashboard</h1>
           
           {/* Date Range Selector aligned with title */}
@@ -475,12 +475,12 @@ export default function Dashboard() {
         </div>
 
         {/* Metrics Cards - Reduced margin */}
-        <div className="mb-4">
+        <div className="mb-4 px-6">
           <MetricsCards data={metricsData} />
         </div>
 
         {/* Charts - Flex to fill remaining space */}
-        <div className="flex-1 min-h-0">
+        <div className="flex-1 min-h-0 px-6 pb-6">
           <Charts 
             messagesData={messagesData}
             hourlyData={chartHourlyData}
