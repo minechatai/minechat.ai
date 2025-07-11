@@ -101,11 +101,16 @@ export function setupFacebookRoutes(app: Express) {
   // Helper function to handle Facebook messages
   async function handleFacebookMessage(webhookEvent: any) {
     try {
-      const senderId = webhookEvent.sender.id;
-      const recipientId = webhookEvent.recipient.id; // This is the page ID
+      const senderId = String(webhookEvent.sender.id);
+      const recipientId = String(webhookEvent.recipient.id); // This is the page ID
       const messageText = webhookEvent.message.text;
 
       console.log(`Received Facebook message from ${senderId} to page ${recipientId}: ${messageText}`);
+
+      console.log("🔍 Debug senderId:", senderId, typeof senderId, senderId.length);
+      console.log("🔍 Debug recipientId:", recipientId, typeof recipientId);  
+      console.log("🔍 Debug connection.userId:", connection.userId, typeof connection.userId);
+      console.log("🔍 About to call getConversationByFacebookSender with:", connection.userId, senderId);
 
       // Find the Facebook connection for this page
       const facebookConnections = await storage.getAllFacebookConnections();
@@ -166,7 +171,7 @@ export function setupFacebookRoutes(app: Express) {
 
       // Generate AI response using the same logic as the chat endpoint
       let aiMessage = "";
-
+      console.log("🔥 Starting AI response generation...");
       try {
         console.log("🔑 Checking OpenAI API key:", process.env.OPENAI_API_KEY ? "EXISTS" : "MISSING");
         if (process.env.OPENAI_API_KEY) {
@@ -272,6 +277,7 @@ CONVERSATION CONTEXT:
 
 You represent ${business?.companyName || "our business"} and customers expect accurate, specific information from our knowledge base.`;
 
+          console.log("🔥 About to call OpenAI API...");
           console.log("=== FACEBOOK AI DEBUG ===");
           // Build conversation history for context
           const conversationMessages = [];
@@ -312,6 +318,8 @@ You represent ${business?.companyName || "our business"} and customers expect ac
               temperature: 0.3
             })
           });
+
+          console.log("🔥 OpenAI API call completed, response:", response.ok);
 
           if (response.ok) {
             const data = await response.json();

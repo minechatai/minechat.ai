@@ -357,11 +357,7 @@ function FacebookMessengerIntegration() {
   // Connect to specific page
   const connectPageMutation = useMutation({
     mutationFn: async (pageId: string) => {
-      const response = await apiRequest("/api/facebook/connect-page", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pageId }),
-      });
+      const response = await apiRequest("POST", "/api/facebook/connect-page", { pageId });
       return response;
     },
     onSuccess: () => {
