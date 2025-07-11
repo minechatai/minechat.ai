@@ -143,9 +143,10 @@ export default function AdminAccountDetail() {
   const deleteAccountMutation = useMutation({
     mutationFn: async () => {
       console.log("🗑️ Deleting account:", accountId);
-      return await apiRequest(`/api/admin/accounts/${accountId}/delete`, {
-        method: "DELETE",
-      });
+      return await apiRequest(
+        "DELETE",
+        `/api/admin/accounts/${accountId}/delete`
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/accounts"] });

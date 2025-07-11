@@ -42,10 +42,15 @@ export const isAdmin: RequestHandler = async (req: any, res, next) => {
 export const isSuperAdmin: RequestHandler = async (req: any, res, next) => {
   try {
     console.log("🔒 isSuperAdmin middleware - checking authentication");
+    console.log("🍪 Session ID:", req.sessionID);
+    console.log("🔍 Request authenticated:", req.isAuthenticated());
+    console.log("👤 User object:", req.user);
     
     // Check if user is authenticated first
     if (!req.isAuthenticated() || !req.user?.claims?.sub) {
       console.log("❌ User not authenticated or no claims");
+      console.log("❌ req.isAuthenticated():", req.isAuthenticated());
+      console.log("❌ req.user:", req.user);
       return res.status(401).json({ message: "Authentication required" });
     }
 
