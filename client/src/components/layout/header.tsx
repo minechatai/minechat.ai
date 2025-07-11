@@ -37,15 +37,23 @@ export default function Header() {
         logo: business?.logoUrl
       };
     } else {
-      // When not impersonating, show active profile or admin name
-      return {
-        title: activeProfile?.name || 
-               (originalUser?.firstName && originalUser?.lastName 
-                 ? `${originalUser.firstName} ${originalUser.lastName}` 
-                 : originalUser?.email || 'User'),
-        isBusinessName: false,
-        logo: null
-      };
+      // When not impersonating, show business name and logo if available, otherwise show user/profile info
+      if (business?.companyName) {
+        return {
+          title: business.companyName,
+          isBusinessName: true,
+          logo: business.logoUrl
+        };
+      } else {
+        return {
+          title: activeProfile?.name || 
+                 (originalUser?.firstName && originalUser?.lastName 
+                   ? `${originalUser.firstName} ${originalUser.lastName}` 
+                   : originalUser?.email || 'User'),
+          isBusinessName: false,
+          logo: null
+        };
+      }
     }
   };
 
