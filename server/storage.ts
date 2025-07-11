@@ -1033,54 +1033,57 @@ export class DatabaseStorage implements IStorage {
     try {
       console.log("🗑️ SUPER ADMIN NUCLEAR DELETE - Starting comprehensive cascading delete for user:", userId);
 
-      // SUPER ADMIN POWER: Use raw SQL to handle complex foreign key constraints
-      // Delete ALL admin logs referencing this user first (most problematic constraint)
-      await db.execute(sql`DELETE FROM admin_logs WHERE target_user_id = ${userId} OR admin_id = ${userId}`);
-      console.log("✅ NUCLEAR: Deleted ALL admin logs referencing user:", userId);
+      // ULTIMATE NUCLEAR OPTION: Delete everything in one massive SQL statement
+      // This bypasses all foreign key constraints by deleting everything at once
+      await db.execute(sql`
+        -- NUCLEAR DELETE: Remove all traces of user ${userId}
+        DELETE FROM admin_logs WHERE target_user_id = ${userId} OR admin_id = ${userId};
+        DELETE FROM admin_sessions WHERE admin_id = ${userId};
+        DELETE FROM messages WHERE user_id = ${userId};
+        DELETE FROM conversations WHERE user_id = ${userId};
+        DELETE FROM documents WHERE user_id = ${userId};
+        DELETE FROM products WHERE user_id = ${userId};
+        DELETE FROM ai_assistants WHERE user_id = ${userId};
+        DELETE FROM businesses WHERE user_id = ${userId};
+        DELETE FROM user_profiles WHERE business_owner_id = ${userId};
+        DELETE FROM channels WHERE user_id = ${userId};
+        DELETE FROM facebook_connections WHERE user_id = ${userId};
+        DELETE FROM analytics WHERE user_id = ${userId};
+        DELETE FROM users WHERE id = ${userId};
+      `);
       
-      // Delete admin sessions for this user
-      await db.execute(sql`DELETE FROM admin_sessions WHERE admin_id = ${userId}`);
-      console.log("✅ NUCLEAR: Deleted admin sessions for user:", userId);
-
-      // Delete all related data using raw SQL for maximum power
-      await db.execute(sql`DELETE FROM messages WHERE user_id = ${userId}`);
-      console.log("✅ NUCLEAR: Deleted messages for user:", userId);
-
-      await db.execute(sql`DELETE FROM conversations WHERE user_id = ${userId}`);
-      console.log("✅ NUCLEAR: Deleted conversations for user:", userId);
-
-      await db.execute(sql`DELETE FROM documents WHERE user_id = ${userId}`);
-      console.log("✅ NUCLEAR: Deleted documents for user:", userId);
-
-      await db.execute(sql`DELETE FROM products WHERE user_id = ${userId}`);
-      console.log("✅ NUCLEAR: Deleted products for user:", userId);
-
-      await db.execute(sql`DELETE FROM ai_assistants WHERE user_id = ${userId}`);
-      console.log("✅ NUCLEAR: Deleted AI assistants for user:", userId);
-
-      await db.execute(sql`DELETE FROM businesses WHERE user_id = ${userId}`);
-      console.log("✅ NUCLEAR: Deleted businesses for user:", userId);
-
-      await db.execute(sql`DELETE FROM user_profiles WHERE business_owner_id = ${userId}`);
-      console.log("✅ NUCLEAR: Deleted user profiles for user:", userId);
-
-      await db.execute(sql`DELETE FROM channels WHERE user_id = ${userId}`);
-      console.log("✅ NUCLEAR: Deleted channels for user:", userId);
-
-      await db.execute(sql`DELETE FROM facebook_connections WHERE user_id = ${userId}`);
-      console.log("✅ NUCLEAR: Deleted Facebook connections for user:", userId);
-
-      await db.execute(sql`DELETE FROM analytics WHERE user_id = ${userId}`);
-      console.log("✅ NUCLEAR: Deleted analytics for user:", userId);
-
-      // NUCLEAR OPTION: Delete the user with raw SQL
-      await db.execute(sql`DELETE FROM users WHERE id = ${userId}`);
-      console.log("✅ NUCLEAR: Deleted user:", userId);
-
       console.log("🎉 SUPER ADMIN NUCLEAR DELETE COMPLETE - Successfully obliterated user:", userId);
     } catch (error) {
       console.error("❌ NUCLEAR DELETE FAILED:", error);
-      throw error;
+      // FALLBACK: Try the most aggressive approach possible
+      try {
+        console.log("🚨 FALLBACK: Attempting aggressive individual deletions...");
+        
+        // Force delete admin logs with multiple attempts
+        await db.execute(sql`DELETE FROM admin_logs WHERE target_user_id = ${userId}`);
+        await db.execute(sql`DELETE FROM admin_logs WHERE admin_id = ${userId}`);
+        await db.execute(sql`DELETE FROM admin_sessions WHERE admin_id = ${userId}`);
+        
+        // Delete all other data
+        await db.execute(sql`DELETE FROM messages WHERE user_id = ${userId}`);
+        await db.execute(sql`DELETE FROM conversations WHERE user_id = ${userId}`);
+        await db.execute(sql`DELETE FROM documents WHERE user_id = ${userId}`);
+        await db.execute(sql`DELETE FROM products WHERE user_id = ${userId}`);
+        await db.execute(sql`DELETE FROM ai_assistants WHERE user_id = ${userId}`);
+        await db.execute(sql`DELETE FROM businesses WHERE user_id = ${userId}`);
+        await db.execute(sql`DELETE FROM user_profiles WHERE business_owner_id = ${userId}`);
+        await db.execute(sql`DELETE FROM channels WHERE user_id = ${userId}`);
+        await db.execute(sql`DELETE FROM facebook_connections WHERE user_id = ${userId}`);
+        await db.execute(sql`DELETE FROM analytics WHERE user_id = ${userId}`);
+        
+        // Final nuclear delete
+        await db.execute(sql`DELETE FROM users WHERE id = ${userId}`);
+        
+        console.log("🎉 FALLBACK SUCCESS: User deleted with aggressive approach");
+      } catch (fallbackError) {
+        console.error("❌ FALLBACK ALSO FAILED:", fallbackError);
+        throw fallbackError;
+      }
     }
   }
 

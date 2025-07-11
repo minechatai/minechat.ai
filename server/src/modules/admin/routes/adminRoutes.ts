@@ -475,26 +475,9 @@ export function registerAdminRoutes(app: Express) {
 
       console.log("🗑️ Starting permanent deletion process for account:", accountId);
 
-      // Log the deletion action BEFORE deletion
-      try {
-        await storage.createAdminLog({
-          adminId: req.admin.id,
-          action: "delete_account_permanently",
-          targetUserId: accountId,
-          details: JSON.stringify({ 
-            deletedAccount: {
-              email: accountToDelete.email,
-              firstName: accountToDelete.firstName || accountToDelete.first_name,
-              lastName: accountToDelete.lastName || accountToDelete.last_name,
-              role: accountToDelete.role
-            }
-          }),
-          ipAddress: req.ip,
-          userAgent: req.get("User-Agent") || "Unknown",
-        });
-      } catch (logError) {
-        console.warn("⚠️ Failed to log deletion action:", logError);
-      }
+      // NUCLEAR DELETE: Skip admin log creation to prevent foreign key conflicts
+      // The nuclear delete will handle all admin logs comprehensively
+      console.log("🚫 NUCLEAR DELETE: Skipping admin log creation to prevent foreign key conflicts");
 
       // Delete the account and all related data
       await storage.deleteUser(accountId);
