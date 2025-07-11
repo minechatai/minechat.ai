@@ -263,10 +263,10 @@ export default function Sidebar({ isOpen = false, isCollapsed = false, onClose, 
           })}
         </nav>
 
-        {/* User section */}
-        <div className="flex-shrink-0 px-3 py-2 border-t border-gray-200 dark:border-gray-700">
+        {/* User section - positioned at absolute bottom */}
+        <div className="mt-auto flex-shrink-0 px-3 pb-3 border-t border-gray-200 dark:border-gray-700">
           {isCollapsed ? (
-            <div className="relative group">
+            <div className="relative group pt-2">
               <button
                 onClick={handleLogout}
                 className="flex items-center justify-center w-8 h-8 rounded-lg transition-colors text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white"
@@ -280,14 +280,16 @@ export default function Sidebar({ isOpen = false, isCollapsed = false, onClose, 
               </div>
             </div>
           ) : (
-            <Button
-              variant="ghost"
-              onClick={handleLogout}
-              className="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white h-8 px-2 text-sm"
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign out
-            </Button>
+            <div className="pt-2">
+              <Button
+                variant="ghost"
+                onClick={handleLogout}
+                className="w-full justify-start text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white h-8 px-2 text-sm"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign out
+              </Button>
+            </div>
           )}
         </div>
       </div>
