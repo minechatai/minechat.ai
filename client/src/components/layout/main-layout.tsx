@@ -99,7 +99,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
           <div>
             <Header />
           </div>
-          <main className="flex-1" style={{ paddingBottom: viewStatus?.isViewing ? '56px' : '0' }}>
+          <main className="flex-1" style={{ paddingTop: '73px', paddingBottom: viewStatus?.isViewing ? '56px' : '0' }}>
             {children}
           </main>
         </div>

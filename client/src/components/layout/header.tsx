@@ -63,7 +63,7 @@ export default function Header() {
   const headerHeight = false ? '73px' : '73px';
 
   return (
-    <header className="bg-white border-b border-gray-200 px-6 flex items-center" style={{ height: headerHeight }}>
+    <header className="fixed top-0 left-64 right-0 bg-white border-b border-gray-200 px-6 flex items-center z-50" style={{ height: headerHeight }}>
       <div className="flex items-center justify-between w-full">
         <div className="flex items-center space-x-4">
           {/* Show business logo if available */}

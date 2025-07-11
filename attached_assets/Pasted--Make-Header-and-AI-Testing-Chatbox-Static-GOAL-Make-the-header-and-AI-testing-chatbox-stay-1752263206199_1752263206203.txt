@@ -1,0 +1,71 @@
+# Make Header and AI Testing Chatbox Static
+
+## GOAL:
+Make the header and AI testing chatbox stay fixed in position - they should never scroll away when users browse content.
+
+## REQUIRED CHANGES:
+
+### 1. Static Header
+- **Header should be fixed at top** - never scrolls away
+- **Always visible** - regardless of page content length
+- **Maintains current styling** - just add fixed positioning
+- **Proper z-index** - stays above all content
+
+### 2. Static AI Testing Chatbox  
+- **Chatbox stays in fixed position** - doesn't move when scrolling
+- **Always accessible** - users can test AI anytime
+- **Maintains current functionality** - just add fixed positioning
+- **Proper layering** - appears above content but below header
+
+### 3. Content Area Adjustments
+- **Main content starts below header** - proper top margin/padding
+- **Content scrolls normally** - but header and chatbox stay put
+- **No overlap issues** - content doesn't hide behind fixed elements
+
+## CSS REQUIREMENTS:
+
+### Header Styling:
+```css
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  /* Keep existing styles for background, height, etc. */
+}
+```
+
+### Chatbox Styling:
+```css
+.ai-chatbox {
+  position: fixed;
+  /* Keep current positioning (bottom-right, etc.) */
+  z-index: 90;
+  /* Keep existing styles for size, appearance, etc. */
+}
+```
+
+### Content Area:
+```css
+.main-content {
+  margin-top: [header-height]; /* Push content below fixed header */
+  /* Keep existing styles */
+}
+```
+
+## FUNCTIONALITY REQUIREMENTS:
+✅ **Header always visible** - users never lose navigation  
+✅ **Chatbox always accessible** - can test AI from any page  
+✅ **Content scrolls normally** - everything else works the same  
+✅ **No layout breaking** - maintain current responsive design  
+✅ **Proper spacing** - content doesn't hide behind fixed elements  
+
+## SUCCESS CRITERIA:
+- Header stays at top when scrolling through dashboard
+- AI chatbox stays in position when scrolling  
+- Main content starts properly below header
+- All existing functionality preserved
+- Clean, professional fixed positioning
+
+**Make these elements static while preserving all current styling and functionality!**
