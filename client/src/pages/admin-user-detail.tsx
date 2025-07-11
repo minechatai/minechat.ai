@@ -98,8 +98,14 @@ function AdminViewButton({ accountId }: { accountId: string }) {
         title: "Success",
         description: "Now viewing as user",
       });
-      // Redirect to user dashboard instead of staying on admin panel
-      window.location.href = "/dashboard";
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/view-status'] });
+      
+      // Use React Router navigation instead of window.location to preserve session
+      setTimeout(() => {
+        window.location.href = "/dashboard";
+      }, 100);
     },
     onError: (error: any) => {
       console.error("❌ View mutation error:", error);

@@ -287,7 +287,17 @@ export function registerAdminRoutes(app: Express) {
       console.log("✅ Impersonation session set:", {
         adminId,
         impersonatingUserId: targetUserId,
-        targetEmail: targetUser.email
+        targetEmail: targetUser.email,
+        sessionId: req.session.id
+      });
+
+      // Force session save to ensure persistence
+      req.session.save((err: any) => {
+        if (err) {
+          console.error("❌ Session save error:", err);
+        } else {
+          console.log("✅ Session saved successfully for impersonation");
+        }
       });
 
       // Log the action

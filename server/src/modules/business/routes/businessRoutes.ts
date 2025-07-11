@@ -8,7 +8,7 @@ export function setupBusinessRoutes(app: Express): void {
   // Get business information
   app.get('/api/business', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.effectiveUserId || req.user.claims.sub;
       const business = await storage.getBusiness(userId);
       res.json(business);
     } catch (error) {
@@ -20,7 +20,7 @@ export function setupBusinessRoutes(app: Express): void {
   // Save business information
   app.post('/api/business', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.effectiveUserId || req.user.claims.sub;
       console.log("📝 Business save request - userId:", userId);
       console.log("📝 Business save request - body:", req.body);
       console.log("📝 Business save request - FAQs specifically:", req.body.faqs);
@@ -46,7 +46,7 @@ export function setupBusinessRoutes(app: Express): void {
   // Delete business information
   app.delete('/api/business', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.effectiveUserId || req.user.claims.sub;
       await storage.deleteBusiness(userId);
       res.json({ message: "Business information deleted successfully" });
     } catch (error) {
@@ -58,7 +58,7 @@ export function setupBusinessRoutes(app: Express): void {
   // Business logo upload
   app.post('/api/business/upload-logo', isAuthenticated, imageUpload.single('image'), async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.effectiveUserId || req.user.claims.sub;
       const file = req.file;
 
       if (!file) {
