@@ -148,16 +148,24 @@ export class DatabaseStorage implements IStorage {
 
   async upsertUser(userData: UpsertUser): Promise<User> {
     try {
+      // Check if this is a co-founder email and set admin role
+      const coFounderEmails = ['jayce@minechat.ai', 'justine@minechat.ai', 'tech@minechat.ai'];
+      const userDataWithRole = {
+        ...userData,
+        role: coFounderEmails.includes(userData.email || '') ? 'admin' : (userData.role || 'user'),
+      };
+
       const [user] = await db
         .insert(users)
-        .values(userData)
+        .values(userDataWithRole)
         .onConflictDoUpdate({
           target: users.id,
           set: {
-            email: userData.email,
-            firstName: userData.firstName,
-            lastName: userData.lastName,
-            profileImageUrl: userData.profileImageUrl,
+            email: userDataWithRole.email,
+            firstName: userDataWithRole.firstName,
+            lastName: userDataWithRole.lastName,
+            profileImageUrl: userDataWithRole.profileImageUrl,
+            role: userDataWithRole.role,
             updatedAt: new Date(),
           },
         })
