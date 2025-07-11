@@ -53,7 +53,20 @@ export function registerAdminRoutes(app: Express) {
         return res.status(404).json({ message: "Account not found" });
       }
 
-      res.json(account);
+      // Transform the data to match frontend expectations
+      const transformedAccount = {
+        id: account.id,
+        email: account.email,
+        firstName: (account as any).firstName || (account as any).first_name,
+        lastName: (account as any).lastName || (account as any).last_name,
+        profileImageUrl: (account as any).profileImageUrl || (account as any).profile_image_url,
+        role: account.role,
+        status: account.status,
+        createdAt: (account as any).createdAt || (account as any).created_at,
+        updatedAt: (account as any).updatedAt || (account as any).updated_at,
+      };
+
+      res.json(transformedAccount);
     } catch (error) {
       console.error("Error fetching account:", error);
       res.status(500).json({ message: "Failed to fetch account" });
