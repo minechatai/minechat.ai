@@ -156,6 +156,49 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
+  // Delete user permanently
+  app.delete("/api/admin/users/:userId/delete", ...adminRoute("delete_user"), async (req: any, res) => {
+    try {
+      const { userId } = req.params;
+      const adminId = req.admin.id;
+      
+      // Get user info for logging before deletion
+      const userToDelete = await storage.getUserById(userId);
+      if (!userToDelete) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Prevent admin from deleting themselves
+      if (req.admin.id === userId) {
+        return res.status(400).json({ message: "Cannot delete your own account" });
+      }
+      
+      // Log the deletion action
+      await storage.createAdminLog({
+        adminId,
+        action: `Deleted user account permanently`,
+        targetUserId: userId,
+        details: { 
+          deletedUser: {
+            email: userToDelete.email,
+            firstName: userToDelete.firstName,
+            lastName: userToDelete.lastName,
+            role: userToDelete.role
+          }
+        },
+        ipAddress: req.ip,
+      });
+      
+      // Delete the user and all related data
+      await storage.deleteUser(userId);
+      
+      res.json({ message: "User deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      res.status(500).json({ message: "Failed to delete user" });
+    }
+  });
+
   // Update user (role, status, etc.)
   app.patch("/api/admin/users/:userId", ...adminRoute("update_user"), async (req: any, res) => {
     try {

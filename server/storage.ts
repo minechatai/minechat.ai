@@ -132,6 +132,7 @@ export interface IStorage {
   getAllUsers(page?: number, limit?: number): Promise<{ users: User[]; total: number }>;
   updateUserRole(userId: string, role: string): Promise<User>;
   updateUserStatus(userId: string, status: string): Promise<User>;
+  deleteUser(userId: string): Promise<void>;
   searchUsers(query: string, page?: number, limit?: number): Promise<{ users: User[]; total: number }>;
 }
 
@@ -1013,6 +1014,21 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
     return user;
+  }
+
+  async deleteUser(userId: string): Promise<void> {
+    // Delete all related data first (cascading delete)
+    await db.delete(businesses).where(eq(businesses.userId, userId));
+    await db.delete(aiAssistants).where(eq(aiAssistants.userId, userId));
+    await db.delete(products).where(eq(products.userId, userId));
+    await db.delete(userProfiles).where(eq(userProfiles.businessOwnerId, userId));
+    await db.delete(conversations).where(eq(conversations.userId, userId));
+    await db.delete(facebookConnections).where(eq(facebookConnections.userId, userId));
+    await db.delete(analytics).where(eq(analytics.userId, userId));
+    await db.delete(adminLogs).where(eq(adminLogs.targetUserId, userId));
+    
+    // Finally delete the user
+    await db.delete(users).where(eq(users.id, userId));
   }
 
   async searchUsers(query: string, page: number = 1, limit: number = 50): Promise<{ users: User[]; total: number }> {

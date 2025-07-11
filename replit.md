@@ -630,6 +630,15 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - **Enhanced API**: Added PATCH endpoint for updating user roles and status with proper validation
   - **Cleaned Code**: Removed duplicate route definitions and improved endpoint organization
   - **Verification**: Admin user detail pages now load completely with business info, conversations, and activity logs
+- July 11, 2025: Permanent User Account Deletion Implementation - Complete
+  - **File Modified**: `client/src/pages/admin-user-detail.tsx` - Added delete account button with comprehensive confirmation dialog
+  - **File Modified**: `server/storage.ts` - Added `deleteUser` method to IStorage interface and DatabaseStorage implementation
+  - **File Modified**: `server/src/modules/admin/routes/adminRoutes.ts` - Added DELETE endpoint `/api/admin/users/:userId/delete`
+  - **Cascading Delete**: Complete removal of user and all associated data (business, AI assistant, products, conversations, analytics, etc.)
+  - **Security Features**: Prevents admin from deleting their own account, requires super admin privileges
+  - **Activity Logging**: Records deletion action with deleted user details in admin logs
+  - **UI Enhancement**: Red warning dialog with comprehensive data deletion list and "Delete Forever" confirmation
+  - **Navigation**: Automatically redirects to admin dashboard after successful deletion
 
 # User Preferences
 

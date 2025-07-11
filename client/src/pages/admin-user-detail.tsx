@@ -1,6 +1,6 @@
 import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, User, Mail, Calendar, Shield, Edit, Ban, RotateCcw } from "lucide-react";
+import { ArrowLeft, User, Mail, Calendar, Shield, Edit, Ban, RotateCcw, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +24,7 @@ export default function AdminUserDetail() {
   const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
   const [isDisableDialogOpen, setIsDisableDialogOpen] = useState(false);
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState("");
 
   // Fetch user details
@@ -122,6 +123,32 @@ export default function AdminUserDetail() {
       toast({
         title: "Error",
         description: error.message || "Failed to reset user account",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete user account mutation
+  const deleteUserMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest(`/api/admin/users/${userId}/delete`, {
+        method: "DELETE",
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      toast({
+        title: "Success",
+        description: "User account deleted permanently",
+      });
+      setIsDeleteDialogOpen(false);
+      // Navigate back to admin dashboard
+      navigate("/admin");
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete user account",
         variant: "destructive",
       });
     },
@@ -460,6 +487,66 @@ export default function AdminUserDetail() {
                             variant="destructive"
                           >
                             {resetUserMutation.isPending ? "Resetting..." : "Reset Account"}
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+
+                    {/* Delete Account Dialog */}
+                    <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="w-full"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Delete Account
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Delete User Account</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            This will permanently delete the account for {user?.firstName} {user?.lastName} ({user?.email}) and all associated data, including:
+                          </p>
+                          <ul className="text-sm text-gray-600 dark:text-gray-400 list-disc list-inside space-y-1">
+                            <li>User profile and account information</li>
+                            <li>Business information and settings</li>
+                            <li>AI assistant configuration</li>
+                            <li>Product catalog</li>
+                            <li>Chat conversations and messages</li>
+                            <li>Analytics data</li>
+                            <li>File uploads and documents</li>
+                            <li>User profiles and team members</li>
+                          </ul>
+                          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                            <p className="text-sm font-medium text-red-800 dark:text-red-200">
+                              ⚠️ WARNING: This action cannot be undone!
+                            </p>
+                            <p className="text-sm text-red-700 dark:text-red-300 mt-1">
+                              The user account and all data will be permanently removed from the database.
+                            </p>
+                          </div>
+                          <p className="text-sm text-red-600 dark:text-red-400 font-medium">
+                            Do you still wish to proceed?
+                          </p>
+                        </div>
+                        <DialogFooter>
+                          <Button
+                            variant="outline"
+                            onClick={() => setIsDeleteDialogOpen(false)}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            onClick={() => deleteUserMutation.mutate()}
+                            disabled={deleteUserMutation.isPending}
+                            variant="destructive"
+                          >
+                            {deleteUserMutation.isPending ? "Deleting..." : "Delete Forever"}
                           </Button>
                         </DialogFooter>
                       </DialogContent>
