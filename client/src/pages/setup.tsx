@@ -140,7 +140,7 @@ export default function Setup() {
 
         {/* AI Testing Panel - Fixed Position - only show for AI Assistant and Business */}
         {(currentSection === "ai-assistant" || currentSection === "business") && (
-          <div className="fixed top-[73px] right-0 w-full xl:w-96 2xl:w-[32rem] h-[calc(100vh-73px)] z-40 flex flex-col min-h-0 p-4 xl:pl-6">
+          <div className="fixed top-[73px] right-8 w-full xl:w-96 2xl:w-[32rem] h-[calc(100vh-73px)] z-40 flex flex-col min-h-0 p-4 xl:pl-6">
             <AiTestingPanel />
           </div>
         )}
