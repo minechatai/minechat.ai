@@ -202,12 +202,12 @@ export default function AdminPage() {
           <TabsContent value="accounts" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Accounts Management</CardTitle>
+                <CardTitle>Account Management</CardTitle>
                 <div className="flex gap-4 mt-4">
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                     <Input
-                      placeholder="Search accounts..."
+                      placeholder="Search business accounts..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="pl-10"
@@ -222,7 +222,7 @@ export default function AdminPage() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Account Name</TableHead>
+                        <TableHead>Account Owner</TableHead>
                         <TableHead>Company</TableHead>
                         <TableHead>Email</TableHead>
                         <TableHead>Role</TableHead>
