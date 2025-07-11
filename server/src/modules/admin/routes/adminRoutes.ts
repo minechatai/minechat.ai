@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { storage } from "../../../../storage";
 import { isAdmin, isSuperAdmin, adminRoute } from "../../../../adminAuth";
+import { isAuthenticated } from "../../../../replitAuth";
 import { insertAdminLogSchema } from "@shared/schema";
 import { z } from "zod";
 // Authentication middleware is handled by adminRoute wrapper
@@ -221,7 +222,7 @@ export function registerAdminRoutes(app: Express) {
   });
 
   // Account switching for super admins
-  app.post('/api/admin/switch-to-account/:userId', isSuperAdmin, async (req: any, res) => {
+  app.post('/api/admin/switch-to-account/:userId', ...adminRoute("switch_to_account", true), async (req: any, res) => {
     console.log("🔄 Switch to account endpoint HIT - Route matched successfully");
     console.log("🔄 Request details:", {
       method: req.method,
@@ -342,6 +343,30 @@ export function registerAdminRoutes(app: Express) {
       console.error("Error switching back to admin:", error);
       res.status(500).json({ message: "Failed to switch back to admin" });
     }
+  });
+
+  // Debug endpoint to check session structure
+  app.get('/api/admin/debug-session', async (req: any, res) => {
+    console.log("🔍 Debug session structure:", {
+      hasUser: !!req.user,
+      hasClaims: !!req.user?.claims,
+      userId: req.user?.claims?.sub,
+      hasSession: !!req.session,
+      isAuthenticated: req.isAuthenticated(),
+      userStructure: req.user,
+      sessionKeys: Object.keys(req.session || {}),
+      passportUser: req.session?.passport?.user
+    });
+    
+    res.json({
+      hasUser: !!req.user,
+      hasClaims: !!req.user?.claims,
+      userId: req.user?.claims?.sub,
+      hasSession: !!req.session,
+      isAuthenticated: req.isAuthenticated(),
+      sessionKeys: Object.keys(req.session || {}),
+      passportExists: !!req.session?.passport
+    });
   });
 
   // Get current switch status

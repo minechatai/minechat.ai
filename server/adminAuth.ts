@@ -1,5 +1,6 @@
 import type { Express, RequestHandler } from "express";
 import { storage } from "./storage";
+import { isAuthenticated } from "./replitAuth";
 import crypto from "crypto";
 
 // Admin authentication middleware
@@ -41,46 +42,41 @@ export const isAdmin: RequestHandler = async (req: any, res, next) => {
 // Super admin only middleware
 export const isSuperAdmin = async (req: any, res: any, next: any) => {
   try {
-    console.log("🔍 Super admin check:", {
-      hasUser: !!req.user,
-      hasClaims: !!req.user?.claims,
-      userId: req.user?.claims?.sub,
-      hasSession: !!req.session
-    });
+    // First ensure user is authenticated using the same pattern as isAdmin
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
 
-    // First check if user is authenticated
+    // Get user ID from authenticated session
     const userId = req.user?.claims?.sub;
     if (!userId) {
-      console.log("❌ No user ID found in request");
       return res.status(401).json({ message: "Authentication required" });
     }
 
     // Get user from database
     const user = await storage.getUser(userId);
     if (!user) {
-      console.log("❌ User not found in database:", userId);
-      return res.status(404).json({ message: "User not found" });
+      return res.status(401).json({ message: "User not found" });
     }
-
-    console.log("🔍 User found:", {
-      id: user.id,
-      email: user.email,
-      role: user.role
-    });
 
     // Check if user is super admin
     if (user.role !== "super_admin") {
-      console.log("❌ User is not super admin:", user.role);
       return res.status(403).json({ message: "Super admin access required" });
     }
 
     // Attach admin info to request
-    req.admin = user;
-    console.log("✅ Super admin check passed");
+    req.admin = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      firstName: user.firstName,
+      lastName: user.lastName,
+    };
+
     next();
   } catch (error) {
-    console.error("❌ Super admin check error:", error);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Super admin auth error:", error);
+    res.status(500).json({ message: "Authentication error" });
   }
 };
 
