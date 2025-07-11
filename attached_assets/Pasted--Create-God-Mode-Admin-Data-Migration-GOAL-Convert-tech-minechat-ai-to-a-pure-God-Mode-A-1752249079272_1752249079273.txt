@@ -1,0 +1,75 @@
+# Create God Mode Admin - Data Migration
+
+## GOAL:
+Convert tech@minechat.ai to a pure "God Mode Admin" and migrate all user data to aiminechat@gmail.com to fix the admin/user conflict.
+
+## THE PROBLEM:
+- tech@minechat.ai is BOTH admin AND regular user (has business data)
+- This prevents "View as User" functionality from working
+- Need clean separation between admin powers and user accounts
+
+## MIGRATION PLAN:
+
+### 1. Create New Company Testing Account
+- **Create new user:** aiminechat@gmail.com
+- **Set role:** Regular user (not admin)
+- **Purpose:** Company internal testing account
+
+### 2. Data Migration (Preserve All Testing Data)
+**Transfer FROM tech@minechat.ai TO aiminechat@gmail.com:**
+- ✅ userProfiles (business profiles)
+- ✅ businesses (Bhriella's Farm data)
+- ✅ conversations (all chat history)
+- ✅ messages (conversation data)
+- ✅ documents (uploaded files)
+- ✅ products (product catalog)
+- ✅ facebookConnections (social media integrations)
+- ✅ notifications (system notifications)
+
+### 3. Convert tech@minechat.ai to God Mode Admin
+**Remove from tech@minechat.ai:**
+- ❌ All userProfiles (moved to aiminechat@gmail.com)
+- ❌ All business data (moved to aiminechat@gmail.com)
+- ❌ Regular user functionality
+
+**Keep for tech@minechat.ai:**
+- ✅ Admin role and permissions
+- ✅ Admin activity logs
+- ✅ Pure administrative access only
+
+### 4. UI Updates - Developer Treat! 🎉
+**In the Admin Dashboard, show:**
+- **User role:** "God Mode Admin" (instead of just "admin")
+- **Special badge/indicator:** Make it visually distinct
+- **Admin Settings page:** Display "God Mode Admin" prominently
+- **Navigation:** Clear indication of God Mode powers
+
+## TECHNICAL REQUIREMENTS:
+
+### Database Updates:
+```sql
+-- Create new user account
+INSERT INTO users (email, ...) VALUES ('aiminechat@gmail.com', ...);
+
+-- Update foreign keys to transfer data ownership
+UPDATE userProfiles SET userId = (new_user_id) WHERE userId = (tech_user_id);
+UPDATE businesses SET ... -- cascade will handle related data
+
+-- Update tech@minechat.ai role
+UPDATE users SET role = 'god_admin' WHERE email = 'tech@minechat.ai';
+```
+
+### New God Mode Features:
+- **No user profile creation** - God Mode Admin cannot create businesses
+- **Pure admin interface** - Only admin functions available
+- **"View as User" capability** - Can switch to any user account
+- **Unlimited access** - All system management powers
+
+## SUCCESS CRITERIA:
+✅ **aiminechat@gmail.com** has all Bhriella's Farm data and can use platform normally  
+✅ **tech@minechat.ai** shows "God Mode Admin" and has zero user data  
+✅ **God Mode Admin** can view/switch to any user account without conflicts  
+✅ **All testing data preserved** and accessible under aiminechat@gmail.com  
+✅ **Developers see "God Mode Admin"** as a fun UI element  
+
+**Note:** This migration fixes the architectural conflict and enables clean "View as User" functionality!

@@ -19,7 +19,7 @@ export const isAdmin: RequestHandler = async (req: any, res, next) => {
     }
 
     // Check if user has admin role
-    if (user.role !== "admin" && user.role !== "super_admin") {
+    if (user.role !== "admin" && user.role !== "super_admin" && user.role !== "god_admin") {
       return res.status(403).json({ message: "Admin access required" });
     }
 
@@ -59,8 +59,8 @@ export const isSuperAdmin = async (req: any, res: any, next: any) => {
       return res.status(401).json({ message: "User not found" });
     }
 
-    // Check if user is super admin
-    if (user.role !== "super_admin") {
+    // Check if user is super admin or god admin
+    if (user.role !== "super_admin" && user.role !== "god_admin") {
       return res.status(403).json({ message: "Super admin access required" });
     }
 

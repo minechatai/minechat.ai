@@ -163,10 +163,22 @@ export default function AdminPage() {
     <MainLayout>
       <div className="p-6">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Welcome, {adminCheck.adminInfo.firstName} {adminCheck.adminInfo.lastName} ({adminCheck.adminInfo.role})
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
+              <p className="text-gray-600 dark:text-gray-400 mt-2">
+                Welcome, {adminCheck.adminInfo.firstName} {adminCheck.adminInfo.lastName}
+              </p>
+            </div>
+            <div className="flex items-center space-x-3">
+              <Badge 
+                variant={adminCheck.adminInfo.role === 'god_admin' ? 'default' : 'secondary'} 
+                className={`text-sm ${adminCheck.adminInfo.role === 'god_admin' ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold px-3 py-1' : ''}`}
+              >
+                {adminCheck.adminInfo.role === 'god_admin' ? '🚀 God Mode Admin' : `Role: ${adminCheck.adminInfo.role}`}
+              </Badge>
+            </div>
+          </div>
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
@@ -219,8 +231,11 @@ export default function AdminPage() {
                   {adminStats?.roleStats && Object.entries(adminStats.roleStats).map(([role, count]) => (
                     <div key={role} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Badge variant={role === "super_admin" ? "default" : role === "admin" ? "secondary" : "outline"}>
-                          {role.replace("_", " ")}
+                        <Badge 
+                          variant={role === "god_admin" ? "default" : role === "super_admin" ? "default" : role === "admin" ? "secondary" : "outline"}
+                          className={role === "god_admin" ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold" : ""}
+                        >
+                          {role === "god_admin" ? "🚀 God Mode Admin" : role.replace("_", " ")}
                         </Badge>
                       </div>
                       <span className="font-semibold">{count}</span>

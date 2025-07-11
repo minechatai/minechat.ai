@@ -297,27 +297,50 @@ function FacebookMessengerIntegration() {
   // Start OAuth flow
   const startOAuthMutation = useMutation({
     mutationFn: async () => {
+      console.log("🔥 MUTATION STARTED - setIsConnecting(true)");
       setIsConnecting(true);
-      const response = await apiRequest("/api/facebook/oauth/start");
-      return response;
+
+      console.log("🔥 About to call fetch directly to /api/facebook/oauth/start");
+      try {
+        const response = await fetch("/api/facebook/oauth/start", {
+          method: "GET",
+          credentials: "include",
+        });
+
+        console.log("🔥 Fetch response status:", response.status);
+        console.log("🔥 Fetch response ok:", response.ok);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("🔥 Fetch response not ok:", errorText);
+          throw new Error(`${response.status}: ${errorText}`);
+        }
+
+        const data = await response.json();
+        console.log("🔥 Fetch successful - Response data:", data);
+        return data;
+      } catch (error) {
+        console.error("🔥 Fetch request failed:", error);
+        throw error;
+      }
     },
     onSuccess: (data) => {
+      console.log("🔥 MUTATION onSuccess called with data:", data);
       if (data.authUrl) {
+        console.log("🔥 Redirecting to Facebook OAuth URL:", data.authUrl);
         window.location.href = data.authUrl;
       }
     },
     onError: (error: any) => {
+      console.error("🔥 MUTATION onError called with:", error);
       setIsConnecting(false);
-      console.error("Facebook OAuth Error:", error);
-      
-      // Check if it's an authentication error
+
       if (error.message?.includes("401") || error.message?.includes("Unauthorized")) {
         toast({
           title: "Authentication Required",
           description: "Please log in to connect your Facebook page.",
           variant: "destructive",
         });
-        // Redirect to login page after a brief delay
         setTimeout(() => {
           window.location.href = '/login';
         }, 2000);
