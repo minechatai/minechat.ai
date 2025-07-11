@@ -11,9 +11,9 @@ export function setupUserProfileRoutes(app: Express) {
 
   // Get the active user profile (MUST be before other parameterized routes)
   app.get('/api/user-profiles/active', isAuthenticated, async (req: any, res) => {
-    console.log("=== ACTIVE PROFILE ENDPOINT CALLED ===");
     try {
-      const businessOwnerId = req.user.claims.sub;
+      console.log("=== ACTIVE PROFILE ENDPOINT CALLED ===");
+      const businessOwnerId = storage.getEffectiveUserId(req);
       console.log(`Getting profiles for business owner: ${businessOwnerId}`);
       const profiles = await storage.getUserProfiles(businessOwnerId);
       console.log(`Retrieved ${profiles.length} profiles`);

@@ -25,7 +25,7 @@ export function setupConversationRoutes(app: Express): void {
   // Get all conversations for a user
   app.get('/api/conversations', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = storage.getEffectiveUserId(req);
       const conversations = await storage.getConversations(userId);
       res.json(conversations);
     } catch (error) {
@@ -49,10 +49,10 @@ export function setupConversationRoutes(app: Express): void {
   // Messages endpoint that frontend expects
   app.get('/api/messages/:conversationId', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = storage.getEffectiveUserId(req);
       const conversationId = parseInt(req.params.conversationId);
 
-      console.log("Messages API Debug:", { userId, conversationId });
+      console.log("Messages API Debug:", { userId, conversationId, isImpersonating: req.session?.isImpersonating });
 
       // Verify conversation belongs to user
       const conversation = await storage.getConversation(conversationId);
@@ -74,7 +74,7 @@ export function setupConversationRoutes(app: Express): void {
   // Update conversation mode endpoint
   app.patch('/api/conversations/:id/mode', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = storage.getEffectiveUserId(req);
       const conversationId = parseInt(req.params.id);
       const { mode } = req.body;
 
@@ -97,7 +97,7 @@ export function setupConversationRoutes(app: Express): void {
   // Send message endpoint
   app.post('/api/messages', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = storage.getEffectiveUserId(req);
       const { conversationId, content, senderType } = req.body;
 
       // Verify conversation belongs to user
@@ -167,7 +167,7 @@ export function setupConversationRoutes(app: Express): void {
   // File upload endpoint for messages
   app.post('/api/messages/file', isAuthenticated, generalUpload.single('file'), async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = storage.getEffectiveUserId(req);
       const { conversationId, senderType } = req.body;
 
       if (!req.file) {
