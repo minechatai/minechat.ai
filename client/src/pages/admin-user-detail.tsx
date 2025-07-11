@@ -216,24 +216,24 @@ export default function AdminUserDetail() {
           <CardHeader>
             <div className="flex items-center space-x-4">
               <Avatar className="w-16 h-16">
-                <AvatarImage src={user.profileImageUrl} alt={user.firstName} />
+                <AvatarImage src={user?.profileImageUrl} alt={user?.firstName} />
                 <AvatarFallback>
-                  {getInitials(user.firstName, user.lastName, user.email)}
+                  {getInitials(user?.firstName, user?.lastName, user?.email)}
                 </AvatarFallback>
               </Avatar>
               <div>
                 <CardTitle className="text-xl">
-                  {user.firstName && user.lastName
+                  {user?.firstName && user?.lastName
                     ? `${user.firstName} ${user.lastName}`
-                    : user.email}
+                    : user?.email}
                 </CardTitle>
                 <div className="flex items-center space-x-2 mt-2">
-                  <Badge className={getRoleBadgeColor(user.role)}>
+                  <Badge className={getRoleBadgeColor(user?.role || "user")}>
                     <Shield className="w-3 h-3 mr-1" />
-                    {user.role.replace("_", " ").toUpperCase()}
+                    {(user?.role || "user").replace("_", " ").toUpperCase()}
                   </Badge>
                   <Badge variant="outline">
-                    {user.status || "Active"}
+                    {user?.status || "Active"}
                   </Badge>
                 </div>
               </div>
@@ -250,13 +250,13 @@ export default function AdminUserDetail() {
                     <div className="flex items-center space-x-2">
                       <Mail className="w-4 h-4 text-gray-500" />
                       <span className="text-sm text-gray-600 dark:text-gray-400">
-                        {user.email}
+                        {user?.email}
                       </span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Calendar className="w-4 h-4 text-gray-500" />
                       <span className="text-sm text-gray-600 dark:text-gray-400">
-                        Joined {format(new Date(user.createdAt), "PPP")}
+                        Joined {user?.createdAt ? format(new Date(user.createdAt), "PPP") : "Unknown"}
                       </span>
                     </div>
                   </div>
@@ -297,12 +297,12 @@ export default function AdminUserDetail() {
                     </div>
                     <div className="text-sm">
                       <span className="font-medium">Last Active:</span>{" "}
-                      {user.updatedAt ? format(new Date(user.updatedAt), "PPp") : "Never"}
+                      {user?.updatedAt ? format(new Date(user.updatedAt), "PPp") : "Never"}
                     </div>
                     <div className="text-sm">
                       <span className="font-medium">Account Status:</span>{" "}
                       <Badge variant="outline" className="ml-1">
-                        {user.status || "Active"}
+                        {user?.status || "Active"}
                       </Badge>
                     </div>
                   </div>
@@ -318,7 +318,7 @@ export default function AdminUserDetail() {
                       <DialogTrigger asChild>
                         <Button
                           onClick={() => {
-                            setSelectedRole(user.role);
+                            setSelectedRole(user?.role || "user");
                             setIsRoleDialogOpen(true);
                           }}
                           variant="outline"
@@ -335,7 +335,7 @@ export default function AdminUserDetail() {
                         </DialogHeader>
                         <div className="space-y-4">
                           <p className="text-sm text-gray-600 dark:text-gray-400">
-                            Update the role for {user.firstName} {user.lastName} ({user.email})
+                            Update the role for {user?.firstName} {user?.lastName} ({user?.email})
                           </p>
                           <Select value={selectedRole} onValueChange={setSelectedRole}>
                             <SelectTrigger>
@@ -374,18 +374,18 @@ export default function AdminUserDetail() {
                           className="w-full"
                         >
                           <Ban className="w-4 h-4 mr-2" />
-                          {user.status === "disabled" ? "Enable Account" : "Disable Account"}
+                          {user?.status === "disabled" ? "Enable Account" : "Disable Account"}
                         </Button>
                       </DialogTrigger>
                       <DialogContent>
                         <DialogHeader>
                           <DialogTitle>
-                            {user.status === "disabled" ? "Enable Account" : "Disable Account"}
+                            {user?.status === "disabled" ? "Enable Account" : "Disable Account"}
                           </DialogTitle>
                         </DialogHeader>
                         <div className="space-y-4">
                           <p className="text-sm text-gray-600 dark:text-gray-400">
-                            Are you sure you want to {user.status === "disabled" ? "enable" : "disable"} the account for {user.firstName} {user.lastName} ({user.email})?
+                            Are you sure you want to {user?.status === "disabled" ? "enable" : "disable"} the account for {user?.firstName} {user?.lastName} ({user?.email})?
                           </p>
                           <p className="text-sm text-red-600 dark:text-red-400">
                             Do you still wish to proceed?
@@ -401,15 +401,15 @@ export default function AdminUserDetail() {
                           <Button
                             onClick={() => 
                               toggleUserStatusMutation.mutate(
-                                user.status === "disabled" ? "active" : "disabled"
+                                user?.status === "disabled" ? "active" : "disabled"
                               )
                             }
                             disabled={toggleUserStatusMutation.isPending}
-                            variant={user.status === "disabled" ? "default" : "destructive"}
+                            variant={user?.status === "disabled" ? "default" : "destructive"}
                           >
                             {toggleUserStatusMutation.isPending 
                               ? "Updating..." 
-                              : user.status === "disabled" ? "Enable" : "Disable"
+                              : user?.status === "disabled" ? "Enable" : "Disable"
                             }
                           </Button>
                         </DialogFooter>
@@ -434,7 +434,7 @@ export default function AdminUserDetail() {
                         </DialogHeader>
                         <div className="space-y-4">
                           <p className="text-sm text-gray-600 dark:text-gray-400">
-                            This will reset all data for {user.firstName} {user.lastName} ({user.email}), including:
+                            This will reset all data for {user?.firstName} {user?.lastName} ({user?.email}), including:
                           </p>
                           <ul className="text-sm text-gray-600 dark:text-gray-400 list-disc list-inside space-y-1">
                             <li>Business information and settings</li>
