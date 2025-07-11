@@ -61,7 +61,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
   }
 
   return (
-    <div className="h-screen bg-gray-50 overflow-hidden">
+    <div className="min-h-screen bg-gray-50">
       {/* God Mode Admin Banner */}
       {viewStatus?.isViewing && (
         <div className="fixed top-0 left-0 right-0 bg-blue-600 text-white px-4 py-3 flex items-center justify-between shadow-lg z-50">
@@ -89,14 +89,15 @@ export default function MainLayout({ children }: MainLayoutProps) {
         </div>
       )}
 
-      <div className="flex h-full">
-        {/* Fixed Sidebar */}
-        <Sidebar />
-        
-        {/* Main Content Area */}
-        <div className={`flex-1 flex flex-col h-full ml-64 ${viewStatus?.isViewing ? 'pt-[56px]' : ''}`}>
-          <Header />
-          <main className="flex-1 overflow-y-auto">
+      <div className="flex">
+        <div className={viewStatus?.isViewing ? 'pt-[56px]' : ''}>
+          <Sidebar />
+        </div>
+        <div className="flex-1 flex flex-col min-h-screen">
+          <div className={viewStatus?.isViewing ? 'pt-[56px]' : ''}>
+            <Header />
+          </div>
+          <main className="flex-1">
             {children}
           </main>
         </div>
