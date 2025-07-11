@@ -25,8 +25,10 @@ export function registerAdminRoutes(app: Express) {
         // Exclude user profiles (IDs starting with "profile-") and test accounts
         return !account.id.startsWith("profile-") && 
                !account.id.startsWith("user-") &&
+               !account.id.startsWith("temp-") &&
                account.email && 
-               account.email.length > 0;
+               account.email.length > 0 &&
+               account.email !== "test@example.com";
       });
 
       // Transform users to accounts with business info
@@ -239,27 +241,31 @@ export function registerAdminRoutes(app: Express) {
       console.log("🗑️ Starting permanent deletion process for account:", accountId);
       
       // Log the deletion action BEFORE deletion
-      await storage.createAdminLog({
-        adminId: req.admin.id,
-        action: "delete_account_permanently",
-        targetUserId: accountId,
-        details: { 
-          deletedAccount: {
-            email: accountToDelete.email,
-            firstName: accountToDelete.firstName || accountToDelete.first_name,
-            lastName: accountToDelete.lastName || accountToDelete.last_name,
-            role: accountToDelete.role
-          }
-        },
-        ipAddress: req.ip,
-        userAgent: req.get("User-Agent") || "Unknown",
-      });
+      try {
+        await storage.createAdminLog({
+          adminId: req.admin.id,
+          action: "delete_account_permanently",
+          targetUserId: accountId,
+          details: { 
+            deletedAccount: {
+              email: accountToDelete.email,
+              firstName: accountToDelete.firstName || accountToDelete.first_name,
+              lastName: accountToDelete.lastName || accountToDelete.last_name,
+              role: accountToDelete.role
+            }
+          },
+          ipAddress: req.ip,
+          userAgent: req.get("User-Agent") || "Unknown",
+        });
+      } catch (logError) {
+        console.warn("⚠️ Failed to log deletion action:", logError);
+      }
 
       // Delete the account and all related data
       await storage.deleteUser(accountId);
       
       console.log("✅ Account deleted successfully:", accountId);
-      res.json({ message: "Account deleted permanently" });
+      res.json({ message: "Account deleted permanently", success: true });
     } catch (error) {
       console.error("❌ Error deleting account:", error);
       res.status(500).json({ message: "Failed to delete account", error: error.message });
