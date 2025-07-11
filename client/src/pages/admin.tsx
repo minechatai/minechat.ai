@@ -97,23 +97,32 @@ export default function AdminPage() {
   // Switch to account mutation
   const switchToAccountMutation = useMutation({
     mutationFn: async (userId: string) => {
-      const response = await apiRequest(`/api/admin/switch-to-account/${userId}`, {
-        method: "POST",
-      });
-      return response;
+      console.log("🔄 Starting account switch for user:", userId);
+      try {
+        const response = await apiRequest("POST", `/api/admin/switch-to-account/${userId}`);
+        console.log("✅ Switch API response:", response);
+        return response;
+      } catch (error) {
+        console.error("❌ Switch API error:", error);
+        throw error;
+      }
     },
     onSuccess: (data) => {
+      console.log("✅ Switch successful, redirecting to dashboard");
       toast({
         title: "Success",
-        description: data.message,
+        description: data.message || "Successfully switched to account",
       });
-      // Redirect to dashboard to show switched view
-      window.location.href = "/dashboard";
+      // Small delay to ensure toast is visible before redirect
+      setTimeout(() => {
+        window.location.href = "/dashboard";
+      }, 500);
     },
     onError: (error: any) => {
+      console.error("❌ Switch mutation error:", error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to switch to account",
+        title: "Account Switch Failed",
+        description: error.message || "Unable to switch to this account. Please try again.",
         variant: "destructive",
       });
     },

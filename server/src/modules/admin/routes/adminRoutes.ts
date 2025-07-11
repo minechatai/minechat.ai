@@ -228,10 +228,10 @@ export function registerAdminRoutes(app: Express) {
       method: req.method,
       url: req.url,
       params: req.params,
-      headers: req.headers,
-      hasUser: !!req.user,
-      hasSession: !!req.session
+      adminId: req.admin?.id,
+      targetUserId: req.params.userId
     });
+
     try {
       const targetUserId = req.params.userId;
       const adminId = req.admin?.id;
@@ -240,20 +240,29 @@ export function registerAdminRoutes(app: Express) {
         targetUserId,
         adminId,
         hasAdmin: !!req.admin,
-        hasUser: !!req.user,
-        hasSession: !!req.session,
-        userStructure: req.user
+        adminRole: req.admin?.role
       });
 
       if (!adminId) {
+        console.error("❌ No admin ID found");
         return res.status(401).json({ message: "Admin authentication required" });
       }
 
       // Verify target user exists
+      console.log("🔍 Looking up target user:", targetUserId);
       const targetUser = await storage.getUser(targetUserId);
+      
       if (!targetUser) {
-        return res.status(404).json({ message: "User not found" });
+        console.error("❌ Target user not found:", targetUserId);
+        return res.status(404).json({ message: "The account you're trying to access doesn't exist" });
       }
+
+      console.log("✅ Target user found:", {
+        id: targetUser.id,
+        email: targetUser.email,
+        firstName: targetUser.firstName,
+        lastName: targetUser.lastName
+      });
 
       // Store original admin session for switching back
       req.session.originalAdminId = adminId;
@@ -265,9 +274,9 @@ export function registerAdminRoutes(app: Express) {
         claims: {
           sub: targetUserId,
           email: targetUser.email,
-          first_name: targetUser.firstName || targetUser.first_name,
-          last_name: targetUser.lastName || targetUser.last_name,
-          profile_image_url: targetUser.profileImageUrl || targetUser.profile_image_url,
+          first_name: targetUser.firstName || targetUser.first_name || "",
+          last_name: targetUser.lastName || targetUser.last_name || "",
+          profile_image_url: targetUser.profileImageUrl || targetUser.profile_image_url || "",
           iat: Math.floor(Date.now() / 1000),
           exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60),
         },
@@ -276,8 +285,10 @@ export function registerAdminRoutes(app: Express) {
         expires_at: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60),
       };
 
+      console.log("🔄 Creating session for target user:", targetUserSession.claims);
+
       // Use req.login to properly set the session
-      req.login(targetUserSession, (err) => {
+      req.login(targetUserSession, async (err) => {
         if (err) {
           console.error("❌ Error setting switched user session:", err);
           return res.status(500).json({ 
@@ -290,35 +301,40 @@ export function registerAdminRoutes(app: Express) {
           adminId,
           targetUserId,
           targetEmail: targetUser.email,
-          newUserSession: req.user
+          sessionSet: true
         });
+
+        // Log the action
+        try {
+          await storage.createAdminLog({
+            adminId,
+            action: "switch_to_account",
+            targetUserId,
+            details: `Switched to account: ${targetUser.email || targetUser.id}`,
+            ipAddress: req.ip || 'unknown'
+          });
+        } catch (logError) {
+          console.warn("⚠️ Failed to log switch action:", logError);
+        }
 
         res.json({ 
           success: true, 
-          message: `Switched to account: ${targetUser.email || targetUser.id}`,
+          message: `Successfully switched to ${targetUser.email || 'account'}`,
           switchedUser: {
             id: targetUser.id,
             email: targetUser.email,
-            name: targetUser.name || `${targetUser.firstName} ${targetUser.lastName}`.trim()
+            name: targetUser.firstName && targetUser.lastName 
+              ? `${targetUser.firstName} ${targetUser.lastName}`.trim()
+              : targetUser.email || targetUser.id
           }
         });
       });
-
-      // Log the action
-      await storage.createAdminLog({
-        adminId,
-        action: "switch_to_account",
-        targetUserId,
-        details: `Switched to account: ${targetUser.email || targetUser.id}`,
-        ipAddress: req.ip || 'unknown'
-      });
-
       
     } catch (error) {
       console.error("❌ Error switching to account:", error);
       res.status(500).json({ 
         message: "Failed to switch to account", 
-        error: error.message 
+        error: error instanceof Error ? error.message : "Unknown error"
       });
     }
   });
