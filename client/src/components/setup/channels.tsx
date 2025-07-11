@@ -609,7 +609,16 @@ function FacebookMessengerIntegration() {
       <div className="flex justify-end">
         <Button
           onClick={() => {
+            console.log("🔥 FACEBOOK BUTTON CLICKED!");
+            console.log("🔥 Authentication state:", { 
+              isAuthenticated, 
+              authLoading, 
+              isPending: startOAuthMutation.isPending,
+              isConnecting 
+            });
+
             if (!isAuthenticated) {
+              console.log("🔥 User not authenticated, showing toast");
               toast({
                 title: "Authentication Required",
                 description: "Please log in to connect your Facebook page.",
@@ -620,6 +629,8 @@ function FacebookMessengerIntegration() {
               }, 1500);
               return;
             }
+
+            console.log("🔥 User authenticated, calling startOAuthMutation.mutate()");
             startOAuthMutation.mutate();
           }}
           disabled={startOAuthMutation.isPending || isConnecting || authLoading || !isAuthenticated}
@@ -642,7 +653,7 @@ function FacebookMessengerIntegration() {
           ) : (
             <>
               <ExternalLink className="w-4 h-4 mr-2" />
-              Connect Facebook Page
+              🔥 Connect Facebook Page 🔥
             </>
           )}
         </Button>

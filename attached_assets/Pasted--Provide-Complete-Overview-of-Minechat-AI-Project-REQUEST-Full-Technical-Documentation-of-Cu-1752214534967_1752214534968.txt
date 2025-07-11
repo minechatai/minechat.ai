@@ -1,0 +1,62 @@
+# Provide Complete Overview of Minechat AI Project
+
+## REQUEST: Full Technical Documentation of Current Build
+
+Please provide a comprehensive overview of the entire Minechat AI project as it currently exists. I need to share this with my technical advisor so they understand exactly what we've built.
+
+## INCLUDE ALL OF THE FOLLOWING:
+
+### 1. **Project Architecture & Tech Stack**
+- What framework/language are we using? (React, Node.js, etc.)
+- Database structure and type
+- File structure and organization
+- Key dependencies and libraries installed
+
+### 2. **Features Currently Implemented** 
+- List all working features and pages
+- Dashboard functionality
+- Chat system capabilities
+- AI Assistant features
+- Analytics features
+- CRM functionality
+- User authentication system
+- Any admin/super admin functionality
+
+### 3. **Database Schema**
+- All tables and their columns
+- User roles and permissions structure
+- How data relationships work
+- Any multi-tenancy or admin structure
+
+### 4. **Integration Status**
+- Which social media integrations are working
+- Current Facebook integration state
+- Other platform connections (Instagram, Telegram, etc.)
+- Webhook configurations
+
+### 5. **User Flow & Experience**
+- How new users sign up and onboard
+- User dashboard and navigation
+- How users set up their AI assistants
+- How the chat system works for end customers
+
+### 6. **Current Issues or Limitations**
+- What's not working yet
+- Known bugs or problems
+- Features planned but not implemented
+- Any architectural decisions that need review
+
+### 7. **File Structure Overview**
+- Key files and their purposes
+- Frontend components organization
+- Backend API endpoints
+- Configuration files
+
+### 8. **Environment & Deployment**
+- How the app runs in production
+- Environment variables needed
+- Any deployment configurations
+
+**Goal:** Provide enough detail that a technical advisor can understand our entire project, current status, architecture decisions, and help guide next development steps.
+
+**Format:** Please be thorough and organized - this overview will be used for important technical guidance.
