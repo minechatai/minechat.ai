@@ -77,7 +77,7 @@ export default function Sidebar({ isOpen = false, isCollapsed = false, onClose, 
       ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       md:translate-x-0 
       fixed inset-y-0 left-0 z-50 
-      ${isCollapsed ? 'w-16' : 'w-64 sm:w-56 md:w-64 lg:w-72 xl:w-80'}
+      ${isCollapsed ? 'w-16' : 'w-64'}
       transition-all duration-300 ease-in-out
       h-screen
     `}>
