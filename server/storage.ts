@@ -131,6 +131,7 @@ export interface IStorage {
   // Admin user management
   getAllUsers(page?: number, limit?: number): Promise<{ users: User[]; total: number }>;
   updateUserRole(userId: string, role: string): Promise<User>;
+  updateUserStatus(userId: string, status: string): Promise<User>;
   searchUsers(query: string, page?: number, limit?: number): Promise<{ users: User[]; total: number }>;
 }
 
@@ -1000,6 +1001,15 @@ export class DatabaseStorage implements IStorage {
     const [user] = await db
       .update(users)
       .set({ role, updatedAt: new Date() })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async updateUserStatus(userId: string, status: string): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ status, updatedAt: new Date() })
       .where(eq(users.id, userId))
       .returning();
     return user;

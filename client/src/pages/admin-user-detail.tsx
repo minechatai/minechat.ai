@@ -1,20 +1,30 @@
 import { useParams, useLocation } from "wouter";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, User, Mail, Calendar, Shield, Edit, Ban, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
 import MainLayout from "@/components/layout/main-layout";
 import { format } from "date-fns";
+import { useState } from "react";
 
 export default function AdminUserDetail() {
   const { userId } = useParams<{ userId: string }>();
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
+  // State for dialog management
+  const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
+  const [isDisableDialogOpen, setIsDisableDialogOpen] = useState(false);
+  const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState("");
 
   // Fetch user details
   const { data: user, isLoading } = useQuery({
@@ -40,29 +50,59 @@ export default function AdminUserDetail() {
     enabled: !!userId,
   });
 
-  const updateUserMutation = useMutation({
-    mutationFn: async (updates: { role?: string; status?: string }) => {
+  // Update user role mutation
+  const updateRoleMutation = useMutation({
+    mutationFn: async (role: string) => {
       return await apiRequest(`/api/admin/users/${userId}`, {
         method: "PATCH",
-        body: updates,
+        body: { role },
       });
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
       toast({
         title: "Success",
-        description: "User updated successfully",
+        description: "User role updated successfully",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      setIsRoleDialogOpen(false);
     },
     onError: (error) => {
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to update user role",
         variant: "destructive",
       });
     },
   });
 
+  // Toggle user status mutation
+  const toggleUserStatusMutation = useMutation({
+    mutationFn: async (status: string) => {
+      return await apiRequest(`/api/admin/users/${userId}`, {
+        method: "PATCH",
+        body: { status },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      toast({
+        title: "Success",
+        description: "User status updated successfully",
+      });
+      setIsDisableDialogOpen(false);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update user status",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Reset user account mutation
   const resetUserMutation = useMutation({
     mutationFn: async () => {
       return await apiRequest(`/api/admin/users/${userId}/reset`, {
@@ -70,16 +110,18 @@ export default function AdminUserDetail() {
       });
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
       toast({
         title: "Success",
         description: "User account reset successfully",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      setIsResetDialogOpen(false);
     },
     onError: (error) => {
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to reset user account",
         variant: "destructive",
       });
     },
@@ -271,44 +313,157 @@ export default function AdminUserDetail() {
                     Admin Actions
                   </h3>
                   <div className="space-y-2">
-                    <Button
-                      onClick={() =>
-                        updateUserMutation.mutate({
-                          role: user.role === "admin" ? "user" : "admin",
-                        })
-                      }
-                      disabled={updateUserMutation.isPending}
-                      variant="outline"
-                      size="sm"
-                      className="w-full"
-                    >
-                      <Edit className="w-4 h-4 mr-2" />
-                      {user.role === "admin" ? "Remove Admin" : "Make Admin"}
-                    </Button>
-                    <Button
-                      onClick={() =>
-                        updateUserMutation.mutate({
-                          status: user.status === "disabled" ? "active" : "disabled",
-                        })
-                      }
-                      disabled={updateUserMutation.isPending}
-                      variant="outline"
-                      size="sm"
-                      className="w-full"
-                    >
-                      <Ban className="w-4 h-4 mr-2" />
-                      {user.status === "disabled" ? "Enable Account" : "Disable Account"}
-                    </Button>
-                    <Button
-                      onClick={() => resetUserMutation.mutate()}
-                      disabled={resetUserMutation.isPending}
-                      variant="outline"
-                      size="sm"
-                      className="w-full"
-                    >
-                      <RotateCcw className="w-4 h-4 mr-2" />
-                      Reset Account
-                    </Button>
+                    {/* Edit Role Dialog */}
+                    <Dialog open={isRoleDialogOpen} onOpenChange={setIsRoleDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button
+                          onClick={() => {
+                            setSelectedRole(user.role);
+                            setIsRoleDialogOpen(true);
+                          }}
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                        >
+                          <Edit className="w-4 h-4 mr-2" />
+                          Edit Role
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Edit User Role</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            Update the role for {user.firstName} {user.lastName} ({user.email})
+                          </p>
+                          <Select value={selectedRole} onValueChange={setSelectedRole}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select role" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="user">User</SelectItem>
+                              <SelectItem value="admin">Admin</SelectItem>
+                              <SelectItem value="super_admin">Super Admin</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <DialogFooter>
+                          <Button
+                            variant="outline"
+                            onClick={() => setIsRoleDialogOpen(false)}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            onClick={() => updateRoleMutation.mutate(selectedRole)}
+                            disabled={updateRoleMutation.isPending}
+                          >
+                            {updateRoleMutation.isPending ? "Updating..." : "Update Role"}
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+
+                    {/* Disable Account Dialog */}
+                    <Dialog open={isDisableDialogOpen} onOpenChange={setIsDisableDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                        >
+                          <Ban className="w-4 h-4 mr-2" />
+                          {user.status === "disabled" ? "Enable Account" : "Disable Account"}
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>
+                            {user.status === "disabled" ? "Enable Account" : "Disable Account"}
+                          </DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            Are you sure you want to {user.status === "disabled" ? "enable" : "disable"} the account for {user.firstName} {user.lastName} ({user.email})?
+                          </p>
+                          <p className="text-sm text-red-600 dark:text-red-400">
+                            Do you still wish to proceed?
+                          </p>
+                        </div>
+                        <DialogFooter>
+                          <Button
+                            variant="outline"
+                            onClick={() => setIsDisableDialogOpen(false)}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            onClick={() => 
+                              toggleUserStatusMutation.mutate(
+                                user.status === "disabled" ? "active" : "disabled"
+                              )
+                            }
+                            disabled={toggleUserStatusMutation.isPending}
+                            variant={user.status === "disabled" ? "default" : "destructive"}
+                          >
+                            {toggleUserStatusMutation.isPending 
+                              ? "Updating..." 
+                              : user.status === "disabled" ? "Enable" : "Disable"
+                            }
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+
+                    {/* Reset Account Dialog */}
+                    <Dialog open={isResetDialogOpen} onOpenChange={setIsResetDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                        >
+                          <RotateCcw className="w-4 h-4 mr-2" />
+                          Reset Account
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Reset User Account</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            This will reset all data for {user.firstName} {user.lastName} ({user.email}), including:
+                          </p>
+                          <ul className="text-sm text-gray-600 dark:text-gray-400 list-disc list-inside space-y-1">
+                            <li>Business information and settings</li>
+                            <li>AI assistant configuration</li>
+                            <li>Product catalog</li>
+                            <li>Chat conversations and messages</li>
+                            <li>Analytics data</li>
+                          </ul>
+                          <p className="text-sm text-red-600 dark:text-red-400 font-medium">
+                            This action cannot be undone. Do you still wish to proceed?
+                          </p>
+                        </div>
+                        <DialogFooter>
+                          <Button
+                            variant="outline"
+                            onClick={() => setIsResetDialogOpen(false)}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            onClick={() => resetUserMutation.mutate()}
+                            disabled={resetUserMutation.isPending}
+                            variant="destructive"
+                          >
+                            {resetUserMutation.isPending ? "Resetting..." : "Reset Account"}
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 </div>
               </div>

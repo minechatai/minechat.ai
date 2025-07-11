@@ -183,6 +183,10 @@ export function registerAdminRoutes(app: Express) {
         await storage.updateUserRole(userId, role);
       }
 
+      if (status) {
+        await storage.updateUserStatus(userId, status);
+      }
+
       const updatedUser = await storage.getUser(userId);
       res.json(updatedUser);
     } catch (error) {
