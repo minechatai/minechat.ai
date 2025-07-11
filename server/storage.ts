@@ -1021,18 +1021,43 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteUser(userId: string): Promise<void> {
-    // Delete all related data first (cascading delete)
-    await db.delete(businesses).where(eq(businesses.userId, userId));
-    await db.delete(aiAssistants).where(eq(aiAssistants.userId, userId));
-    await db.delete(products).where(eq(products.userId, userId));
-    await db.delete(userProfiles).where(eq(userProfiles.businessOwnerId, userId));
-    await db.delete(conversations).where(eq(conversations.userId, userId));
-    await db.delete(facebookConnections).where(eq(facebookConnections.userId, userId));
-    await db.delete(analytics).where(eq(analytics.userId, userId));
-    await db.delete(adminLogs).where(eq(adminLogs.targetUserId, userId));
-    
-    // Finally delete the user
-    await db.delete(users).where(eq(users.id, userId));
+    try {
+      console.log("🗑️ Starting cascading delete for user:", userId);
+      
+      // Delete all related data first (cascading delete)
+      await db.delete(businesses).where(eq(businesses.userId, userId));
+      console.log("✅ Deleted businesses for user:", userId);
+      
+      await db.delete(aiAssistants).where(eq(aiAssistants.userId, userId));
+      console.log("✅ Deleted AI assistants for user:", userId);
+      
+      await db.delete(products).where(eq(products.userId, userId));
+      console.log("✅ Deleted products for user:", userId);
+      
+      await db.delete(userProfiles).where(eq(userProfiles.businessOwnerId, userId));
+      console.log("✅ Deleted user profiles for user:", userId);
+      
+      await db.delete(conversations).where(eq(conversations.userId, userId));
+      console.log("✅ Deleted conversations for user:", userId);
+      
+      await db.delete(facebookConnections).where(eq(facebookConnections.userId, userId));
+      console.log("✅ Deleted Facebook connections for user:", userId);
+      
+      await db.delete(analytics).where(eq(analytics.userId, userId));
+      console.log("✅ Deleted analytics for user:", userId);
+      
+      await db.delete(adminLogs).where(eq(adminLogs.targetUserId, userId));
+      console.log("✅ Deleted admin logs for user:", userId);
+      
+      // Finally delete the user
+      await db.delete(users).where(eq(users.id, userId));
+      console.log("✅ Deleted user:", userId);
+      
+      console.log("🎉 Successfully completed cascading delete for user:", userId);
+    } catch (error) {
+      console.error("❌ Error in deleteUser:", error);
+      throw error;
+    }
   }
 
   async searchUsers(query: string, page: number = 1, limit: number = 50): Promise<{ users: User[]; total: number }> {

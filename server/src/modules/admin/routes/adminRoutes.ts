@@ -26,9 +26,11 @@ export function registerAdminRoutes(app: Express) {
         return !account.id.startsWith("profile-") && 
                !account.id.startsWith("user-") &&
                !account.id.startsWith("temp-") &&
+               !account.id.startsWith("google-") &&
                account.email && 
                account.email.length > 0 &&
-               account.email !== "test@example.com";
+               account.email !== "test@example.com" &&
+               account.email !== "test@minechat.ai";
       });
 
       // Transform users to accounts with business info
@@ -228,6 +230,11 @@ export function registerAdminRoutes(app: Express) {
       // Prevent admin from deleting their own account
       if (req.admin.id === accountId) {
         return res.status(400).json({ message: "Cannot delete your own account" });
+      }
+
+      // Don't allow deletion of user profiles - only business accounts
+      if (accountId.startsWith("profile-") || accountId.startsWith("user-")) {
+        return res.status(400).json({ message: "Cannot delete user profiles through this endpoint" });
       }
 
       // Get user data before deletion for logging
