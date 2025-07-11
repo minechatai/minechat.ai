@@ -290,7 +290,7 @@ export default function AdminAccountDetail() {
               <div>
                 <CardTitle className="text-xl">
                   {account?.firstName && account?.lastName
-                    ? `${account.firstName} ${account.lastName}`
+                    ? `${account?.firstName} ${account?.lastName}`
                     : account?.email || "Unknown Account"}
                 </CardTitle>
                 <div className="flex items-center space-x-2 mt-2">
@@ -322,7 +322,7 @@ export default function AdminAccountDetail() {
                     <div className="flex items-center space-x-2">
                       <Calendar className="w-4 h-4 text-gray-500" />
                       <span className="text-sm text-gray-600 dark:text-gray-400">
-                        Joined {account?.createdAt ? format(new Date(account.createdAt), "PPP") : "Unknown"}
+                        Joined {account?.createdAt ? format(new Date(account?.createdAt), "PPP") : "Unknown"}
                       </span>
                     </div>
                   </div>
