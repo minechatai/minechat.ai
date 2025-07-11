@@ -61,48 +61,44 @@ export default function MainLayout({ children }: MainLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="flex">
-        <div className={viewStatus?.isViewing ? 'pt-[56px]' : ''}>
-          <Sidebar />
-        </div>
-        <div className="flex-1 flex flex-col min-h-screen">
-          <div className={viewStatus?.isViewing ? 'pt-[56px]' : ''}>
-            <Header />
-          </div>
-
-          {/* God Mode Admin Banner */}
-          {viewStatus?.isViewing && (
-            <div className="fixed top-0 left-0 right-0 bg-blue-600 text-white px-4 py-3 flex items-center justify-between shadow-lg z-50">
-              <div className="flex items-center space-x-2">
-                <div className="text-sm font-medium">
-                  🚀 God Mode Admin: Currently viewing as {viewStatus.viewedUser?.firstName} {viewStatus.viewedUser?.lastName} ({viewStatus.viewedUser?.email})
-                </div>
-              </div>
-              <Button
-                onClick={() => stopViewingMutation.mutate()}
-                disabled={stopViewingMutation.isPending}
-                variant="secondary"
-                size="sm"
-                className="bg-white/20 hover:bg-white/30 text-white border-white/30"
-              >
-                {stopViewingMutation.isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Returning...
-                  </>
-                ) : (
-                  "Return to Admin"
-                )}
-              </Button>
+    <div className="h-screen bg-gray-50 overflow-hidden">
+      {/* God Mode Admin Banner */}
+      {viewStatus?.isViewing && (
+        <div className="fixed top-0 left-0 right-0 bg-blue-600 text-white px-4 py-3 flex items-center justify-between shadow-lg z-50">
+          <div className="flex items-center space-x-2">
+            <div className="text-sm font-medium">
+              🚀 God Mode Admin: Currently viewing as {viewStatus.viewedUser?.firstName} {viewStatus.viewedUser?.lastName} ({viewStatus.viewedUser?.email})
             </div>
-          )}
-
-          <div className="flex min-h-screen">
-            <main className="flex-1">
-              {children}
-            </main>
           </div>
+          <Button
+            onClick={() => stopViewingMutation.mutate()}
+            disabled={stopViewingMutation.isPending}
+            variant="secondary"
+            size="sm"
+            className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+          >
+            {stopViewingMutation.isPending ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Returning...
+              </>
+            ) : (
+              "Return to Admin"
+            )}
+          </Button>
+        </div>
+      )}
+
+      <div className="flex h-full">
+        {/* Fixed Sidebar */}
+        <Sidebar />
+        
+        {/* Main Content Area */}
+        <div className={`flex-1 flex flex-col h-full ml-64 ${viewStatus?.isViewing ? 'pt-[56px]' : ''}`}>
+          <Header />
+          <main className="flex-1 overflow-y-auto">
+            {children}
+          </main>
         </div>
       </div>
     </div>
