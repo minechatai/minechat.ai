@@ -29,31 +29,31 @@ export default function AdminAccountDetail() {
 
   // Fetch account details
   const { data: account, isLoading } = useQuery({
-    queryKey: ["/api/admin/accounts", accountId],
+    queryKey: [`/api/admin/accounts/${accountId}`],
     enabled: !!accountId,
   });
 
   // Fetch account's business info
   const { data: business } = useQuery({
-    queryKey: ["/api/admin/accounts", accountId, "business"],
+    queryKey: [`/api/admin/accounts/${accountId}/business`],
     enabled: !!accountId,
   });
 
   // Fetch account's users (user profiles)
   const { data: users } = useQuery({
-    queryKey: ["/api/admin/accounts", accountId, "users"],
+    queryKey: [`/api/admin/accounts/${accountId}/users`],
     enabled: !!accountId,
   });
 
   // Fetch account's conversations
   const { data: conversations } = useQuery({
-    queryKey: ["/api/admin/accounts", accountId, "conversations"],
+    queryKey: [`/api/admin/accounts/${accountId}/conversations`],
     enabled: !!accountId,
   });
 
   // Fetch account's activity logs
   const { data: activityLogs } = useQuery({
-    queryKey: ["/api/admin/accounts", accountId, "logs"],
+    queryKey: [`/api/admin/accounts/${accountId}/logs`],
     enabled: !!accountId,
   });
 
@@ -66,7 +66,7 @@ export default function AdminAccountDetail() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/accounts", accountId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/admin/accounts/${accountId}`] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/accounts"] });
       toast({
         title: "Success",
@@ -92,7 +92,7 @@ export default function AdminAccountDetail() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/accounts", accountId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/admin/accounts/${accountId}`] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/accounts"] });
       toast({
         title: "Success",
@@ -117,7 +117,7 @@ export default function AdminAccountDetail() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/accounts", accountId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/admin/accounts/${accountId}`] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/accounts"] });
       toast({
         title: "Success",
