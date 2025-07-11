@@ -119,15 +119,11 @@ export default function AdminPage() {
     },
   });
 
-  const handleSwitchToAccount = async (userId: string) => {
-    setSelectedAccount(userId);
+  const handleSwitchToAccount = (accountId: string) => {
+    console.log("🔄 Handling switch to account:", accountId);
+    setSelectedAccount(accountId);
     setIsSwitching(true);
-    try {
-      await switchToAccountMutation.mutateAsync(userId);
-    } finally {
-      setIsSwitching(false);
-      setSelectedAccount(null);
-    }
+    switchToAccountMutation.mutate(accountId);
   };
 
   // Redirect if not admin
@@ -306,7 +302,7 @@ export default function AdminPage() {
                                       <SelectItem value="super_admin">Super Admin</SelectItem>
                                     </SelectContent>
                                   </Select>
-                                  
+
                                   <Button
                                     onClick={() => handleSwitchToAccount(account.id)}
                                     disabled={isSwitching || switchToAccountMutation.isPending}

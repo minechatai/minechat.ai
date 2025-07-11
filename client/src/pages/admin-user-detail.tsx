@@ -170,10 +170,8 @@ export default function AdminAccountDetail() {
   // Switch to account mutation
   const switchToAccountMutation = useMutation({
     mutationFn: async (userId: string) => {
-      const response = await apiRequest(
-        "POST",
-        `/api/admin/switch-to-account/${userId}`
-      );
+      console.log("🔄 Making API request to switch to user:", userId);
+      const response = await apiRequest("POST", `/api/admin/switch-to-account/${userId}`);
       return response;
     },
     onSuccess: (data) => {
