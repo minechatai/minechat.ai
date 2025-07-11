@@ -914,7 +914,7 @@ export class DatabaseStorage implements IStorage {
               sql`messages.conversation_id IN (${sql.join(conversationIds, sql`, `)})`,
               or(
                 eq(messages.senderType, "customer"), // Traditional customer messages
-                eq(messages.senderType, "user")This commit adds a helper function to get the effective user ID for impersonation.
+                eq(messages.senderType, "user")      // Facebook/social media customer messages
               )
             )
           );
