@@ -120,23 +120,6 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
-  // Get specific user details
-  app.get("/api/admin/users/:userId", ...adminRoute("view_user_details"), async (req: any, res) => {
-    try {
-      const { userId } = req.params;
-      const user = await storage.getUser(userId);
-      
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user details:", error);
-      res.status(500).json({ message: "Failed to fetch user details" });
-    }
-  });
-
   // Get user's business information
   app.get("/api/admin/users/:userId/business", ...adminRoute("view_user_business"), async (req: any, res) => {
     try {
@@ -145,7 +128,7 @@ export function registerAdminRoutes(app: Express) {
       res.json(business);
     } catch (error) {
       console.error("Error fetching user business:", error);
-      res.status(500).json({ message: "Failed to fetch business information" });
+      res.status(500).json({ message: "Failed to fetch user business" });
     }
   });
 
@@ -157,7 +140,7 @@ export function registerAdminRoutes(app: Express) {
       res.json(conversations);
     } catch (error) {
       console.error("Error fetching user conversations:", error);
-      res.status(500).json({ message: "Failed to fetch conversations" });
+      res.status(500).json({ message: "Failed to fetch user conversations" });
     }
   });
 
@@ -165,7 +148,7 @@ export function registerAdminRoutes(app: Express) {
   app.get("/api/admin/users/:userId/logs", ...adminRoute("view_user_logs"), async (req: any, res) => {
     try {
       const { userId } = req.params;
-      const logs = await storage.getAdminLogs(undefined, userId, 20);
+      const logs = await storage.getAdminLogs(undefined, userId, 50);
       res.json(logs);
     } catch (error) {
       console.error("Error fetching user logs:", error);
