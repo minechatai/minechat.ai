@@ -97,7 +97,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
           <div className={viewStatus?.isViewing ? 'pt-[56px]' : ''}>
             <Header />
           </div>
-          <main className="flex-1">
+          <main className="flex-1 w-full">
             {children}
           </main>
         </div>

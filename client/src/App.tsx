@@ -16,6 +16,7 @@ import CreateUserProfile from "@/pages/create-user-profile";
 import ManageUserProfiles from "@/pages/manage-user-profiles";
 import AdminPage from "@/pages/admin";
 import AdminAccountDetail from "@/pages/admin-user-detail";
+import LayoutTest from "@/pages/layout-test";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -39,6 +40,7 @@ function Router() {
           <Route path="/" component={Landing} />
           <Route path="/landing" component={Landing} />
           <Route path="/login" component={Login} />
+          <Route path="/layout-test" component={LayoutTest} />
         </>
       ) : (
         <>

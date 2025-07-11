@@ -227,4 +227,69 @@ export function setupAuthRoutes(app: Express): void {
       res.status(500).json({ message: "Failed to upload profile picture" });
     }
   });
+
+  // Test login endpoint for development (simplified authentication)
+  app.post('/api/auth/test-login', async (req: any, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      // Simple test authentication
+      if (email === 'tech@minechat.ai' && password === 'test123') {
+        // Create session like normal authentication
+        const mockSession = {
+          claims: {
+            sub: '43996777',
+            email: 'tech@minechat.ai',
+            first_name: 'Tech',
+            last_name: 'Admin',
+            exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60), // 7 days
+          },
+          access_token: "test-access-token",
+          refresh_token: "test-refresh-token",
+          expires_at: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60),
+        };
+        
+        (req as any).login(mockSession, (err: any) => {
+          if (err) {
+            return res.status(500).json({ message: "Failed to create session" });
+          }
+          res.json({ 
+            success: true, 
+            message: 'Test login successful',
+            user: { id: '43996777', email: 'tech@minechat.ai' }
+          });
+        });
+      } else if (email === 'aiminechat@gmail.com' && password === 'test123') {
+        // Test user with data
+        const mockSession = {
+          claims: {
+            sub: 'aiminechat_god_migration',
+            email: 'aiminechat@gmail.com',
+            first_name: 'AI',
+            last_name: 'Minechat',
+            exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60), // 7 days
+          },
+          access_token: "test-access-token",
+          refresh_token: "test-refresh-token",
+          expires_at: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60),
+        };
+        
+        (req as any).login(mockSession, (err: any) => {
+          if (err) {
+            return res.status(500).json({ message: "Failed to create session" });
+          }
+          res.json({ 
+            success: true, 
+            message: 'Test login successful',
+            user: { id: 'aiminechat_god_migration', email: 'aiminechat@gmail.com' }
+          });
+        });
+      } else {
+        res.status(401).json({ message: 'Invalid credentials' });
+      }
+    } catch (error) {
+      console.error('Test login error:', error);
+      res.status(500).json({ message: 'Login failed' });
+    }
+  });
 }
