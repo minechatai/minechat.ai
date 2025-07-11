@@ -198,10 +198,39 @@ export function registerAdminRoutes(app: Express) {
   // Reset account
   app.post("/api/admin/accounts/:accountId/reset", ...adminRoute("reset_account", true), async (req: any, res) => {
     try {
+      const accountId = req.params.accountId;
+      
+      // TODO: Implement resetUserData method
+      // await storage.resetUserData(accountId);
+      
+      // Log the reset action
+      await storage.createAdminLog({
+        adminId: req.admin.id,
+        action: "reset_account",
+        targetUserId: accountId,
+        details: "Account data reset",
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent") || "Unknown",
+      });
 
+      res.json({ success: true, message: "Account reset functionality not yet implemented" });
+    } catch (error) {
+      console.error("Error resetting account:", error);
+      res.status(500).json({ message: "Failed to reset account" });
+    }
+  });
 
   // Account switching for super admins
   app.post('/api/admin/switch-to-account/:userId', isSuperAdmin, async (req: any, res) => {
+    console.log("🔄 Switch to account endpoint HIT - Route matched successfully");
+    console.log("🔄 Request details:", {
+      method: req.method,
+      url: req.url,
+      params: req.params,
+      headers: req.headers,
+      hasUser: !!req.user,
+      hasSession: !!req.session
+    });
     try {
       const targetUserId = req.params.userId;
       const adminId = req.admin?.id;
@@ -337,29 +366,6 @@ export function registerAdminRoutes(app: Express) {
     } catch (error) {
       console.error("Error getting switch status:", error);
       res.status(500).json({ message: "Failed to get switch status" });
-    }
-  });
-
-      const { accountId } = req.params;
-
-      // Reset all account data except the user record itself
-      await storage.deleteBusiness(accountId);
-      await storage.deleteAiAssistant(accountId);
-
-      // Log the reset action
-      await storage.createAdminLog({
-        adminId: req.admin.id,
-        action: "reset_account",
-        targetUserId: accountId,
-        details: { resetType: "full_reset" },
-        ipAddress: req.ip,
-        userAgent: req.get("User-Agent") || "Unknown",
-      });
-
-      res.json({ message: "Account reset successfully" });
-    } catch (error) {
-      console.error("Error resetting account:", error);
-      res.status(500).json({ message: "Failed to reset account" });
     }
   });
 

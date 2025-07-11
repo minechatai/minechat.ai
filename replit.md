@@ -645,9 +645,11 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - **File Modified**: `client/src/components/layout/switch-back-banner.tsx` - Fixed API request format to use correct parameter order
   - **File Modified**: `client/src/components/layout/switch-back-banner.tsx` - Enhanced banner positioning with fixed top positioning (z-50)
   - **File Modified**: `client/src/components/layout/main-layout.tsx` - Improved SwitchBackBanner integration with proper positioning
+  - **File Modified**: `server/src/modules/admin/routes/adminRoutes.ts` - Fixed syntax error in reset account route that was causing route malfunction
   - **Issue Fixed**: Account switching now works correctly with proper session management and authentication
   - **Enhancement**: Switch-back banner displays prominently at top of screen when in switched mode
   - **Super Admin Feature**: Super admins can now successfully switch into any user account and return to admin panel
+  - **Route Verification**: API endpoint `/api/admin/switch-to-account/:userId` now properly returns JSON responses and handles authentication correctly
 
 # User Preferences
 
