@@ -405,7 +405,7 @@ export default function Dashboard() {
     <MainLayout title="Dashboard">
       <div className="flex flex-col min-h-full">
         {/* Page Title with Date Controls */}
-        <div className="flex justify-between items-center mb-6 px-6 pt-6">
+        <div className="flex justify-between items-center mb-4 px-6 pt-2">
           <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Dashboard</h1>
           
           {/* Date Range Selector aligned with title */}
@@ -475,7 +475,7 @@ export default function Dashboard() {
         </div>
 
         {/* Metrics Cards - Reduced margin */}
-        <div className="mb-4 px-6">
+        <div className="mb-3 px-6">
           <MetricsCards data={metricsData} />
         </div>
 
