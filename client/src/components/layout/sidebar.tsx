@@ -12,28 +12,41 @@ import {
   ChevronRight,
   ChevronLeft,
   ChevronsLeft,
-  ChevronsRight
+  ChevronsRight,
+  Shield
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 
-const navigation = [
-  { name: "Dashboard", href: "/", icon: Home },
-  { name: "Chat", href: "/chat", icon: MessageSquare },
-  { 
-    name: "Setup", 
-    href: "/setup", 
-    icon: Settings,
-    submenu: [
-      { name: "AI Assistant", href: "/setup/ai-assistant" },
-      { name: "AI Knowledge", href: "/setup/business" },
-      { name: "Channels", href: "/setup/channels" },
-    ]
-  },
-  { name: "CRM", href: "/crm", icon: BarChart3 },
-  { name: "Account", href: "/accounts", icon: User },
-];
+const getNavigationItems = (isAdmin: boolean) => {
+  const baseNavigation = [
+    { name: "Dashboard", href: "/", icon: Home },
+    { name: "Chat", href: "/chat", icon: MessageSquare },
+    { 
+      name: "Setup", 
+      href: "/setup", 
+      icon: Settings,
+      submenu: [
+        { name: "AI Assistant", href: "/setup/ai-assistant" },
+        { name: "AI Knowledge", href: "/setup/business" },
+        { name: "Channels", href: "/setup/channels" },
+      ]
+    },
+    { name: "CRM", href: "/crm", icon: BarChart3 },
+    { name: "Account", href: "/accounts", icon: User },
+  ];
+
+  if (isAdmin) {
+    return [
+      ...baseNavigation,
+      { name: "Admin", href: "/admin", icon: Shield },
+    ];
+  }
+
+  return baseNavigation;
+};
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -45,6 +58,15 @@ interface SidebarProps {
 export default function Sidebar({ isOpen = false, isCollapsed = false, onClose, onToggleCollapse }: SidebarProps) {
   const [location] = useLocation();
   const [setupExpanded, setSetupExpanded] = useState(true);
+
+  // Check if user is admin
+  const { data: adminCheck } = useQuery({
+    queryKey: ["/api/admin/check"],
+    retry: false,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  const navigation = getNavigationItems(adminCheck?.isAdmin || false);
 
   const handleLogout = () => {
     window.location.href = "/api/logout";

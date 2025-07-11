@@ -10,6 +10,8 @@ import {
   channels,
   facebookConnections,
   userProfiles,
+  adminLogs,
+  adminSessions,
   type User,
   type UpsertUser,
   type Business,
@@ -33,6 +35,10 @@ import {
   type UserProfile,
   type InsertUserProfile,
   type ConversationWithLastMessage,
+  type AdminLog,
+  type InsertAdminLog,
+  type AdminSession,
+  type InsertAdminSession,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, or, sql } from "drizzle-orm";
@@ -111,6 +117,21 @@ export interface IStorage {
   getUnreadNotificationCount(userId: string): Promise<number>;
   markConversationAsRead(userId: string, conversationId: number): Promise<void>;
   markAllNotificationsAsRead(userId: string): Promise<void>;
+
+  // Admin operations
+  createAdminLog(log: InsertAdminLog): Promise<AdminLog>;
+  getAdminLogs(adminId?: string, targetUserId?: string, limit?: number): Promise<AdminLog[]>;
+  
+  // Admin session operations
+  createAdminSession(session: InsertAdminSession): Promise<AdminSession>;
+  getAdminSession(sessionToken: string): Promise<AdminSession | undefined>;
+  updateAdminSession(sessionToken: string, updates: Partial<InsertAdminSession>): Promise<void>;
+  invalidateAllAdminSessions(adminId: string): Promise<void>;
+  
+  // Admin user management
+  getAllUsers(page?: number, limit?: number): Promise<{ users: User[]; total: number }>;
+  updateUserRole(userId: string, role: string): Promise<User>;
+  searchUsers(query: string, page?: number, limit?: number): Promise<{ users: User[]; total: number }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -879,6 +900,139 @@ export class DatabaseStorage implements IStorage {
       console.error("Error marking all notifications as read:", error);
       // Ignore error if readByAdmin column doesn't exist yet
     }
+  }
+
+  // Admin operations
+  async createAdminLog(log: InsertAdminLog): Promise<AdminLog> {
+    const [adminLog] = await db
+      .insert(adminLogs)
+      .values(log)
+      .returning();
+    return adminLog;
+  }
+
+  async getAdminLogs(adminId?: string, targetUserId?: string, limit: number = 100): Promise<AdminLog[]> {
+    let conditions = [];
+
+    if (adminId) {
+      conditions.push(eq(adminLogs.adminId, adminId));
+    }
+
+    if (targetUserId) {
+      conditions.push(eq(adminLogs.targetUserId, targetUserId));
+    }
+
+    const query = db
+      .select()
+      .from(adminLogs)
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(desc(adminLogs.createdAt))
+      .limit(limit);
+
+    return await query;
+  }
+
+  // Admin session operations
+  async createAdminSession(session: InsertAdminSession): Promise<AdminSession> {
+    const [adminSession] = await db
+      .insert(adminSessions)
+      .values(session)
+      .returning();
+    return adminSession;
+  }
+
+  async getAdminSession(sessionToken: string): Promise<AdminSession | undefined> {
+    const [session] = await db
+      .select()
+      .from(adminSessions)
+      .where(eq(adminSessions.sessionToken, sessionToken));
+    return session;
+  }
+
+  async updateAdminSession(sessionToken: string, updates: Partial<InsertAdminSession>): Promise<void> {
+    await db
+      .update(adminSessions)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .where(eq(adminSessions.sessionToken, sessionToken));
+  }
+
+  async invalidateAllAdminSessions(adminId: string): Promise<void> {
+    await db
+      .update(adminSessions)
+      .set({ isActive: false, updatedAt: new Date() })
+      .where(eq(adminSessions.adminId, adminId));
+  }
+
+  // Admin user management
+  async getAllUsers(page: number = 1, limit: number = 50): Promise<{ users: User[]; total: number }> {
+    const offset = (page - 1) * limit;
+    
+    const [usersResult, countResult] = await Promise.all([
+      db
+        .select()
+        .from(users)
+        .orderBy(desc(users.createdAt))
+        .limit(limit)
+        .offset(offset),
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(users)
+    ]);
+
+    return {
+      users: usersResult,
+      total: countResult[0]?.count || 0,
+    };
+  }
+
+  async updateUserRole(userId: string, role: string): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ role, updatedAt: new Date() })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async searchUsers(query: string, page: number = 1, limit: number = 50): Promise<{ users: User[]; total: number }> {
+    const offset = (page - 1) * limit;
+    const searchPattern = `%${query}%`;
+    
+    const [usersResult, countResult] = await Promise.all([
+      db
+        .select()
+        .from(users)
+        .where(
+          or(
+            sql`${users.email} ILIKE ${searchPattern}`,
+            sql`${users.firstName} ILIKE ${searchPattern}`,
+            sql`${users.lastName} ILIKE ${searchPattern}`,
+            sql`${users.id} ILIKE ${searchPattern}`
+          )
+        )
+        .orderBy(desc(users.createdAt))
+        .limit(limit)
+        .offset(offset),
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(users)
+        .where(
+          or(
+            sql`${users.email} ILIKE ${searchPattern}`,
+            sql`${users.firstName} ILIKE ${searchPattern}`,
+            sql`${users.lastName} ILIKE ${searchPattern}`,
+            sql`${users.id} ILIKE ${searchPattern}`
+          )
+        )
+    ]);
+
+    return {
+      users: usersResult,
+      total: countResult[0]?.count || 0,
+    };
   }
 }
 

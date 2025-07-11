@@ -16,6 +16,7 @@ import { setupChannelRoutes } from "./src/modules/channels/routes/channelRoutes"
 import { setupUserProfileRoutes } from "./src/modules/userProfiles/routes/userProfileRoutes";
 import { setupFacebookRoutes } from "./src/modules/facebook/routes/facebookRoutes";
 import { setupAiChatEngineRoutes } from "./src/modules/aiChatEngine/routes/aiChatEngineRoutes";
+import { registerAdminRoutes } from "./src/modules/admin/routes/adminRoutes";
 
 import { 
   insertBusinessSchema, 
@@ -338,6 +339,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Setup modular AI Chat Engine routes
   setupAiChatEngineRoutes(app);
+
+  // Setup admin routes
+  registerAdminRoutes(app);
 
   // Quick session fix endpoint
   app.get('/api/fix-user-session', async (req: any, res: any) => {

@@ -32,6 +32,7 @@ export const users = pgTable("users", {
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
+  role: varchar("role").default("user"), // "user", "admin", "super_admin"
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -192,6 +193,31 @@ export const userProfiles = pgTable("user_profiles", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Admin activity logs
+export const adminLogs = pgTable("admin_logs", {
+  id: serial("id").primaryKey(),
+  adminId: varchar("admin_id").notNull().references(() => users.id),
+  action: varchar("action").notNull(), // "view_user", "edit_user", "delete_user", "view_analytics", etc.
+  targetUserId: varchar("target_user_id").references(() => users.id), // Optional - for actions on specific users
+  details: jsonb("details"), // Additional action details
+  ipAddress: varchar("ip_address"),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Admin sessions (separate from regular user sessions for security)
+export const adminSessions = pgTable("admin_sessions", {
+  id: serial("id").primaryKey(),
+  adminId: varchar("admin_id").notNull().references(() => users.id),
+  sessionToken: varchar("session_token").notNull().unique(),
+  expiresAt: timestamp("expires_at").notNull(),
+  ipAddress: varchar("ip_address"),
+  userAgent: text("user_agent"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   businesses: many(businesses),
@@ -272,6 +298,24 @@ export const facebookConnectionsRelations = relations(facebookConnections, ({ on
 export const userProfilesRelations = relations(userProfiles, ({ one }) => ({
   businessOwner: one(users, {
     fields: [userProfiles.businessOwnerId],
+    references: [users.id],
+  }),
+}));
+
+export const adminLogsRelations = relations(adminLogs, ({ one }) => ({
+  admin: one(users, {
+    fields: [adminLogs.adminId],
+    references: [users.id],
+  }),
+  targetUser: one(users, {
+    fields: [adminLogs.targetUserId],
+    references: [users.id],
+  }),
+}));
+
+export const adminSessionsRelations = relations(adminSessions, ({ one }) => ({
+  admin: one(users, {
+    fields: [adminSessions.adminId],
     references: [users.id],
   }),
 }));
@@ -359,6 +403,24 @@ export type UserProfile = typeof userProfiles.$inferSelect;
 export const insertUserProfileSchema = createInsertSchema(userProfiles).omit({
   id: true,
   businessOwnerId: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Admin schema types
+export type InsertAdminLog = typeof adminLogs.$inferInsert;
+export type AdminLog = typeof adminLogs.$inferSelect;
+
+export type InsertAdminSession = typeof adminSessions.$inferInsert;
+export type AdminSession = typeof adminSessions.$inferSelect;
+
+export const insertAdminLogSchema = createInsertSchema(adminLogs).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertAdminSessionSchema = createInsertSchema(adminSessions).omit({
+  id: true,
   createdAt: true,
   updatedAt: true,
 });
