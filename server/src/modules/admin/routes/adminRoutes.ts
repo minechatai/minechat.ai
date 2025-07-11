@@ -3,7 +3,7 @@ import { storage } from "../../../../storage";
 import { isAdmin, isSuperAdmin, adminRoute } from "../../../../adminAuth";
 import { insertAdminLogSchema } from "@shared/schema";
 import { z } from "zod";
-import { isAuthenticated } from "../../../../googleAuth";
+// Authentication middleware is handled by adminRoute wrapper
 
 // Admin account management routes
 export function registerAdminRoutes(app: Express) {
@@ -62,7 +62,7 @@ export function registerAdminRoutes(app: Express) {
     try {
       const { accountId } = req.params;
       const account = await storage.getUser(accountId);
-      
+
       if (!account) {
         return res.status(404).json({ message: "Account not found" });
       }
@@ -92,7 +92,7 @@ export function registerAdminRoutes(app: Express) {
     try {
       const { accountId } = req.params;
       const business = await storage.getBusiness(accountId);
-      
+
       res.json(business || null);
     } catch (error) {
       console.error("Error fetching account business:", error);
@@ -105,7 +105,7 @@ export function registerAdminRoutes(app: Express) {
     try {
       const { accountId } = req.params;
       const users = await storage.getUserProfiles(accountId);
-      
+
       res.json(users);
     } catch (error) {
       console.error("Error fetching account users:", error);
@@ -118,7 +118,7 @@ export function registerAdminRoutes(app: Express) {
     try {
       const { accountId } = req.params;
       const conversations = await storage.getConversations(accountId);
-      
+
       res.json(conversations);
     } catch (error) {
       console.error("Error fetching account conversations:", error);
@@ -131,7 +131,7 @@ export function registerAdminRoutes(app: Express) {
     try {
       const { accountId } = req.params;
       const logs = await storage.getAdminLogs(undefined, accountId, 100);
-      
+
       res.json(logs);
     } catch (error) {
       console.error("Error fetching account logs:", error);
@@ -156,7 +156,7 @@ export function registerAdminRoutes(app: Express) {
         }
 
         const updatedAccount = await storage.updateUserRole(accountId, role);
-        
+
         // Log the role change
         await storage.createAdminLog({
           adminId: req.admin.id,
@@ -174,7 +174,7 @@ export function registerAdminRoutes(app: Express) {
         }
 
         const updatedAccount = await storage.updateUserStatus(accountId, status);
-        
+
         // Log the status change
         await storage.createAdminLog({
           adminId: req.admin.id,
@@ -268,7 +268,7 @@ export function registerAdminRoutes(app: Express) {
   });
 
   // Switch back to admin account
-  app.post('/api/admin/switch-back', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/switch-back', ...adminRoute("admin"), async (req: any, res) => {
     try {
       if (!req.session.isSwitchedMode || !req.session.originalAdminId) {
         return res.status(400).json({ message: "Not in switched mode" });
@@ -303,12 +303,12 @@ export function registerAdminRoutes(app: Express) {
   });
 
   // Get current switch status
-  app.get('/api/admin/switch-status', isAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/switch-status', ...adminRoute("admin"), async (req: any, res) => {
     try {
       if (req.session.isSwitchedMode) {
         const switchedUser = await storage.getUser(req.session.switchedToUserId);
         const business = await storage.getBusiness(req.session.switchedToUserId);
-        
+
         res.json({
           isSwitched: true,
           switchedUser: {
@@ -328,11 +328,11 @@ export function registerAdminRoutes(app: Express) {
   });
 
       const { accountId } = req.params;
-      
+
       // Reset all account data except the user record itself
       await storage.deleteBusiness(accountId);
       await storage.deleteAiAssistant(accountId);
-      
+
       // Log the reset action
       await storage.createAdminLog({
         adminId: req.admin.id,
@@ -359,12 +359,12 @@ export function registerAdminRoutes(app: Express) {
         adminRole: req.admin?.role,
         adminEmail: req.admin?.email
       });
-      
+
       const { accountId } = req.params;
-      
+
       // Debug admin object
       console.log("🔍 Admin object:", req.admin);
-      
+
       // Prevent admin from deleting their own account
       if (req.admin.id === accountId) {
         console.log("❌ Admin trying to delete their own account");
@@ -379,13 +379,13 @@ export function registerAdminRoutes(app: Express) {
       // Get user data before deletion for logging
       const accountToDelete = await storage.getUser(accountId);
       console.log("🔍 Account to delete:", accountToDelete);
-      
+
       if (!accountToDelete) {
         return res.status(404).json({ message: "Account not found" });
       }
 
       console.log("🗑️ Starting permanent deletion process for account:", accountId);
-      
+
       // Log the deletion action BEFORE deletion
       try {
         await storage.createAdminLog({
@@ -409,7 +409,7 @@ export function registerAdminRoutes(app: Express) {
 
       // Delete the account and all related data
       await storage.deleteUser(accountId);
-      
+
       console.log("✅ Account deleted successfully:", accountId);
       res.json({ message: "Account deleted permanently", success: true });
     } catch (error) {
@@ -423,7 +423,7 @@ export function registerAdminRoutes(app: Express) {
     try {
       const { userId } = req.params;
       const user = await storage.getUser(userId);
-      
+
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -478,7 +478,7 @@ export function registerAdminRoutes(app: Express) {
     try {
       const { accounts, totalAccounts } = await storage.getAllAccounts(1, 1);
       const logs = await storage.getAdminLogs(undefined, undefined, 10);
-      
+
       // Get role distribution
       const { accounts: allAccounts } = await storage.getAllAccounts(1, 1000);
       const roleStats = allAccounts.reduce((acc, account) => {
@@ -551,25 +551,25 @@ export function registerAdminRoutes(app: Express) {
   app.delete("/api/admin/users/:userId/delete", ...adminRoute("delete_user", true), async (req: any, res) => {
     try {
       console.log("🗑️ DELETE USER REQUEST:", { userId: req.params.userId, adminId: req.admin?.id });
-      
+
       const { userId } = req.params;
       const adminId = req.admin.id;
-      
+
       // Get user info for logging before deletion
       const userToDelete = await storage.getUser(userId);
       console.log("🔍 User to delete:", userToDelete);
-      
+
       if (!userToDelete) {
         return res.status(404).json({ message: "User not found" });
       }
-      
+
       // Prevent admin from deleting themselves
       if (req.admin.id === userId) {
         return res.status(400).json({ message: "Cannot delete your own account" });
       }
-      
+
       console.log("🗑️ Starting deletion process for user:", userId);
-      
+
       // Log the deletion action
       await storage.createAdminLog({
         adminId,
@@ -585,10 +585,10 @@ export function registerAdminRoutes(app: Express) {
         },
         ipAddress: req.ip,
       });
-      
+
       // Delete the user and all related data
       await storage.deleteUser(userId);
-      
+
       console.log("✅ User deleted successfully:", userId);
       res.json({ message: "User deleted successfully" });
     } catch (error) {
@@ -623,7 +623,7 @@ export function registerAdminRoutes(app: Express) {
   app.post("/api/admin/users/:userId/reset", ...adminRoute("reset_user_account"), async (req: any, res) => {
     try {
       const { userId } = req.params;
-      
+
       // Here you would implement the reset logic
       // For now, we'll just log the action
       res.json({ message: "User account reset successfully" });
