@@ -19,9 +19,10 @@ export function SwitchBackBanner() {
   // Switch back mutation
   const switchBackMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('/api/admin/switch-back', {
-        method: 'POST',
-      });
+      const response = await apiRequest(
+        'POST',
+        '/api/admin/switch-back'
+      );
       return response;
     },
     onSuccess: () => {
@@ -46,7 +47,7 @@ export function SwitchBackBanner() {
   }
 
   return (
-    <div className="bg-blue-600 text-white py-2 px-4 flex items-center justify-between">
+    <div className="fixed top-0 left-0 right-0 z-50 bg-blue-600 text-white py-2 px-4 flex items-center justify-between">
       <div className="flex items-center gap-3">
         <User className="w-4 h-4" />
         <span className="text-sm font-medium">

@@ -167,6 +167,32 @@ export default function AdminAccountDetail() {
     },
   });
 
+  // Switch to account mutation
+  const switchToAccountMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const response = await apiRequest(
+        "POST",
+        `/api/admin/switch-to-account/${userId}`
+      );
+      return response;
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Success",
+        description: data.message || "Switched to account successfully",
+      });
+      // Redirect to dashboard to show switched view
+      window.location.href = "/dashboard";
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to switch to account",
+        variant: "destructive",
+      });
+    },
+  });
+
   if (isLoading) {
     return (
       <MainLayout>
@@ -383,26 +409,12 @@ export default function AdminAccountDetail() {
                   <div className="space-y-2">
                     {/* Login as User Button */}
                     <Button
-                      onClick={() => {
-                        // Implement switch to account functionality
-                        fetch(`/api/admin/switch-to-account/${account.id}`, {
-                          method: 'POST',
-                          credentials: 'include'
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                          if (data.success) {
-                            window.location.href = '/dashboard';
-                          }
-                        })
-                        .catch(error => {
-                          console.error('Error switching to account:', error);
-                        });
-                      }}
+                      onClick={() => switchToAccountMutation.mutate(account.id)}
                       variant="default"
                       className="w-full"
+                      disabled={switchToAccountMutation.isPending}
                     >
-                      Login as User
+                      {switchToAccountMutation.isPending ? "Switching..." : "Login as User"}
                     </Button>
 
                     {/* Edit Role Dialog */}

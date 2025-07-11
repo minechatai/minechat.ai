@@ -14,7 +14,9 @@ export default function MainLayout({ children, title }: MainLayoutProps) {
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Switch Back Banner - Fixed positioning */}
       <SwitchBackBanner />
+      
       {/* Sidebar */}
       <Sidebar 
         isOpen={sidebarOpen} 

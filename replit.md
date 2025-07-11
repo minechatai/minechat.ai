@@ -639,6 +639,15 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - **Activity Logging**: Records deletion action with deleted user details in admin logs
   - **UI Enhancement**: Red warning dialog with comprehensive data deletion list and "Delete Forever" confirmation
   - **Navigation**: Automatically redirects to admin dashboard after successful deletion
+- July 11, 2025: Account Switching Functionality Fix - Complete
+  - **File Modified**: `client/src/pages/admin-user-detail.tsx` - Fixed "Login as User" button to use proper mutation pattern instead of manual fetch
+  - **File Modified**: `client/src/pages/admin-user-detail.tsx` - Added switchToAccountMutation with proper error handling and loading states
+  - **File Modified**: `client/src/components/layout/switch-back-banner.tsx` - Fixed API request format to use correct parameter order
+  - **File Modified**: `client/src/components/layout/switch-back-banner.tsx` - Enhanced banner positioning with fixed top positioning (z-50)
+  - **File Modified**: `client/src/components/layout/main-layout.tsx` - Improved SwitchBackBanner integration with proper positioning
+  - **Issue Fixed**: Account switching now works correctly with proper session management and authentication
+  - **Enhancement**: Switch-back banner displays prominently at top of screen when in switched mode
+  - **Super Admin Feature**: Super admins can now successfully switch into any user account and return to admin panel
 
 # User Preferences
 
