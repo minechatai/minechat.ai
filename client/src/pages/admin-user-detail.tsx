@@ -28,10 +28,15 @@ export default function AdminAccountDetail() {
   const [selectedRole, setSelectedRole] = useState("");
 
   // Fetch account details
-  const { data: account, isLoading } = useQuery({
+  const { data: account, isLoading, error } = useQuery({
     queryKey: [`/api/admin/accounts/${accountId}`],
     enabled: !!accountId,
   });
+
+  // Add error logging for debugging
+  if (error) {
+    console.error("Error loading account:", error);
+  }
 
   // Fetch account's business info
   const { data: business } = useQuery({
@@ -173,6 +178,31 @@ export default function AdminAccountDetail() {
     );
   }
 
+  if (error) {
+    return (
+      <MainLayout>
+        <div className="space-y-6">
+          <div className="text-center py-12">
+            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
+              Error loading account
+            </h2>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">
+              {error instanceof Error ? error.message : "An error occurred while loading the account."}
+            </p>
+            <Button
+              onClick={() => navigate("/admin")}
+              className="mt-4"
+              variant="outline"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Admin
+            </Button>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
   if (!account) {
     return (
       <MainLayout>
@@ -249,7 +279,7 @@ export default function AdminAccountDetail() {
           <CardHeader>
             <div className="flex items-center space-x-4">
               <Avatar className="w-16 h-16">
-                <AvatarImage src={account?.profileImageUrl} alt={account?.firstName} />
+                <AvatarImage src={account?.profileImageUrl} alt={account?.firstName || account?.email} />
                 <AvatarFallback>
                   {getInitials(account?.firstName, account?.lastName, account?.email)}
                 </AvatarFallback>
@@ -258,7 +288,7 @@ export default function AdminAccountDetail() {
                 <CardTitle className="text-xl">
                   {account?.firstName && account?.lastName
                     ? `${account.firstName} ${account.lastName}`
-                    : account?.email}
+                    : account?.email || "Unknown Account"}
                 </CardTitle>
                 <div className="flex items-center space-x-2 mt-2">
                   <Badge className={getRoleBadgeColor(account?.role || "user")}>
