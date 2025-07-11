@@ -221,10 +221,10 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
-  // Account switching for super admins
-  app.post('/api/admin/switch-to-account/:userId', ...adminRoute("switch_to_account", true), async (req: any, res) => {
-    console.log("🔄 Switch to account endpoint HIT - Route matched successfully");
-    console.log("🔄 Request details:", {
+  // User impersonation for super admins (View as User)
+  app.post('/api/admin/view-as-user/:userId', ...adminRoute("view_as_user", true), async (req: any, res) => {
+    console.log("👁️ View as user endpoint HIT - Route matched successfully");
+    console.log("👁️ Request details:", {
       method: req.method,
       url: req.url,
       params: req.params,
@@ -236,7 +236,7 @@ export function registerAdminRoutes(app: Express) {
       const targetUserId = req.params.userId;
       const adminId = req.admin?.id;
 
-      console.log("🔄 Switch to account request:", {
+      console.log("👁️ View as user request:", {
         targetUserId,
         adminId,
         hasAdmin: !!req.admin,
@@ -264,144 +264,87 @@ export function registerAdminRoutes(app: Express) {
         lastName: targetUser.lastName
       });
 
-      // Store original admin session for switching back
-      req.session.originalAdminId = adminId;
-      req.session.isSwitchedMode = true;
-      req.session.switchedToUserId = targetUserId;
+      // Store impersonation info in session (keeping original admin session intact)
+      req.session.impersonatingUserId = targetUserId;
+      req.session.isImpersonating = true;
+      req.session.originalAdminId = adminId; // Keep for reference
 
-      // Create proper session structure for target user
-      const targetUserSession = {
-        claims: {
-          sub: targetUserId,
-          email: targetUser.email,
-          first_name: targetUser.firstName || targetUser.first_name || "",
-          last_name: targetUser.lastName || targetUser.last_name || "",
-          profile_image_url: targetUser.profileImageUrl || targetUser.profile_image_url || "",
-          iat: Math.floor(Date.now() / 1000),
-          exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60),
-        },
-        access_token: "switched-access-token",
-        refresh_token: "switched-refresh-token",
-        expires_at: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60),
-      };
+      console.log("✅ Impersonation session set:", {
+        adminId,
+        impersonatingUserId: targetUserId,
+        targetEmail: targetUser.email
+      });
 
-      console.log("🔄 Creating session for target user:", targetUserSession.claims);
-
-      // Use req.login to properly set the session
-      req.login(targetUserSession, async (err) => {
-        if (err) {
-          console.error("❌ Error setting switched user session:", err);
-          return res.status(500).json({ 
-            message: "Failed to switch to account", 
-            error: err.message 
-          });
-        }
-
-        console.log("✅ Account switch successful:", {
+      // Log the action
+      try {
+        await storage.createAdminLog({
           adminId,
+          action: "view_as_user",
           targetUserId,
-          targetEmail: targetUser.email,
-          sessionSet: true
+          details: `Started viewing as user: ${targetUser.email || targetUser.id}`,
+          ipAddress: req.ip || 'unknown'
         });
+      } catch (logError) {
+        console.warn("⚠️ Failed to log view action:", logError);
+      }
 
-        // Log the action
-        try {
-          await storage.createAdminLog({
-            adminId,
-            action: "switch_to_account",
-            targetUserId,
-            details: `Switched to account: ${targetUser.email || targetUser.id}`,
-            ipAddress: req.ip || 'unknown'
-          });
-        } catch (logError) {
-          console.warn("⚠️ Failed to log switch action:", logError);
+      res.json({ 
+        success: true, 
+        message: `Now viewing as ${targetUser.email || 'user'}`,
+        viewingUser: {
+          id: targetUser.id,
+          email: targetUser.email,
+          name: targetUser.firstName && targetUser.lastName 
+            ? `${targetUser.firstName} ${targetUser.lastName}`.trim()
+            : targetUser.email || targetUser.id
         }
-
-        res.json({ 
-          success: true, 
-          message: `Successfully switched to ${targetUser.email || 'account'}`,
-          switchedUser: {
-            id: targetUser.id,
-            email: targetUser.email,
-            name: targetUser.firstName && targetUser.lastName 
-              ? `${targetUser.firstName} ${targetUser.lastName}`.trim()
-              : targetUser.email || targetUser.id
-          }
-        });
       });
       
     } catch (error) {
-      console.error("❌ Error switching to account:", error);
+      console.error("❌ Error starting user view:", error);
       res.status(500).json({ 
-        message: "Failed to switch to account", 
+        message: "Failed to view as user", 
         error: error instanceof Error ? error.message : "Unknown error"
       });
     }
   });
 
-  // Switch back to admin account
-  app.post('/api/admin/switch-back', ...adminRoute("admin"), async (req: any, res) => {
+  // Stop viewing as user (return to admin view)
+  app.post('/api/admin/stop-viewing', ...adminRoute("admin"), async (req: any, res) => {
     try {
-      if (!req.session.isSwitchedMode || !req.session.originalAdminId) {
-        return res.status(400).json({ message: "Not in switched mode" });
+      if (!req.session.isImpersonating || !req.session.impersonatingUserId) {
+        return res.status(400).json({ message: "Not currently viewing as user" });
       }
 
-      const originalAdminId = req.session.originalAdminId;
-      const switchedFromUserId = req.session.switchedToUserId;
+      const adminId = req.admin?.id;
+      const viewedUserId = req.session.impersonatingUserId;
 
-      // Get original admin user data
-      const originalAdmin = await storage.getUser(originalAdminId);
-      
-      // Create proper admin session structure
-      const adminSession = {
-        claims: {
-          sub: originalAdminId,
-          email: originalAdmin.email,
-          first_name: originalAdmin.firstName || originalAdmin.first_name,
-          last_name: originalAdmin.lastName || originalAdmin.last_name,
-          profile_image_url: originalAdmin.profileImageUrl || originalAdmin.profile_image_url,
-          iat: Math.floor(Date.now() / 1000),
-          exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60),
-        },
-        access_token: "admin-access-token",
-        refresh_token: "admin-refresh-token",
-        expires_at: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60),
-      };
-
-      // Use req.login to properly restore admin session
-      req.login(adminSession, (err) => {
-        if (err) {
-          console.error("❌ Error restoring admin session:", err);
-          return res.status(500).json({ 
-            message: "Failed to switch back to admin", 
-            error: err.message 
-          });
-        }
-
-        // Clean up switch session data
-        delete req.session.originalAdminId;
-        delete req.session.isSwitchedMode;
-        delete req.session.switchedToUserId;
-
-        res.json({ 
-          success: true, 
-          message: "Switched back to admin account" 
-        });
-      });
+      // Clean up impersonation session data
+      delete req.session.impersonatingUserId;
+      delete req.session.isImpersonating;
+      delete req.session.originalAdminId;
 
       // Log the action
-      await storage.createAdminLog({
-        adminId: originalAdminId,
-        action: "switch_back",
-        targetUserId: switchedFromUserId,
-        details: "Switched back to admin account",
-        ipAddress: req.ip || 'unknown'
-      });
+      try {
+        await storage.createAdminLog({
+          adminId,
+          action: "stop_viewing_user",
+          targetUserId: viewedUserId,
+          details: "Stopped viewing as user",
+          ipAddress: req.ip || 'unknown'
+        });
+      } catch (logError) {
+        console.warn("⚠️ Failed to log stop viewing action:", logError);
+      }
 
+      res.json({ 
+        success: true, 
+        message: "Returned to admin view" 
+      });
       
     } catch (error) {
-      console.error("Error switching back to admin:", error);
-      res.status(500).json({ message: "Failed to switch back to admin" });
+      console.error("Error stopping user view:", error);
+      res.status(500).json({ message: "Failed to return to admin view" });
     }
   });
 
@@ -429,28 +372,30 @@ export function registerAdminRoutes(app: Express) {
     });
   });
 
-  // Get current switch status
-  app.get('/api/admin/switch-status', ...adminRoute("admin"), async (req: any, res) => {
+  // Get current impersonation status
+  app.get('/api/admin/view-status', ...adminRoute("admin"), async (req: any, res) => {
     try {
-      if (req.session.isSwitchedMode) {
-        const switchedUser = await storage.getUser(req.session.switchedToUserId);
-        const business = await storage.getBusiness(req.session.switchedToUserId);
+      if (req.session.isImpersonating) {
+        const viewedUser = await storage.getUser(req.session.impersonatingUserId);
+        const business = await storage.getBusiness(req.session.impersonatingUserId);
 
         res.json({
-          isSwitched: true,
-          switchedUser: {
-            id: switchedUser?.id,
-            email: switchedUser?.email,
-            name: switchedUser?.name
+          isViewing: true,
+          viewedUser: {
+            id: viewedUser?.id,
+            email: viewedUser?.email,
+            name: viewedUser?.firstName && viewedUser?.lastName 
+              ? `${viewedUser.firstName} ${viewedUser.lastName}`.trim()
+              : viewedUser?.email || viewedUser?.id
           },
-          businessName: business?.companyName || switchedUser?.name || 'Unknown Business'
+          businessName: business?.companyName || 'Unknown Business'
         });
       } else {
-        res.json({ isSwitched: false });
+        res.json({ isViewing: false });
       }
     } catch (error) {
-      console.error("Error getting switch status:", error);
-      res.status(500).json({ message: "Failed to get switch status" });
+      console.error("Error getting view status:", error);
+      res.status(500).json({ message: "Failed to get view status" });
     }
   });
 

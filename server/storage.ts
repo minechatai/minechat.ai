@@ -121,26 +121,35 @@ export interface IStorage {
   // Admin operations
   createAdminLog(log: InsertAdminLog): Promise<AdminLog>;
   getAdminLogs(adminId?: string, targetUserId?: string, limit?: number): Promise<AdminLog[]>;
-  
+
   // Admin session operations
   createAdminSession(session: InsertAdminSession): Promise<AdminSession>;
   getAdminSession(sessionToken: string): Promise<AdminSession | undefined>;
   updateAdminSession(sessionToken: string, updates: Partial<InsertAdminSession>): Promise<void>;
   invalidateAllAdminSessions(adminId: string): Promise<void>;
-  
+
   // Admin user management
   getAllUsers(page?: number, limit?: number): Promise<{ users: User[]; total: number }>;
   updateUserRole(userId: string, role: string): Promise<User>;
   updateUserStatus(userId: string, status: string): Promise<User>;
   deleteUser(userId: string): Promise<void>;
   searchUsers(query: string, page?: number, limit?: number): Promise<{ users: User[]; total: number }>;
-  
+
   // Admin account management (same as user operations but with account terminology)
   getAllAccounts(page?: number, limit?: number): Promise<{ accounts: User[]; totalPages: number; currentPage: number; totalAccounts: number }>;
   searchAccounts(query: string, page?: number, limit?: number): Promise<{ accounts: User[]; totalPages: number; currentPage: number; totalAccounts: number }>;
 }
 
 export class DatabaseStorage implements IStorage {
+  // Helper function to get the effective user ID (for impersonation)
+  getEffectiveUserId(req: any): string {
+    // If admin is impersonating a user, return the impersonated user's ID
+    if (req.session?.isImpersonating && req.session?.impersonatingUserId) {
+      return req.session.impersonatingUserId;
+    }
+    // Otherwise return the actual authenticated user's ID
+    return req.user?.claims?.sub;
+  }
   // User operations
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
@@ -211,7 +220,7 @@ export class DatabaseStorage implements IStorage {
 
   async upsertBusiness(userId: string, businessData: InsertBusiness): Promise<Business> {
     const existing = await this.getBusiness(userId);
-    
+
     if (existing) {
       const [business] = await db
         .update(businesses)
@@ -245,7 +254,7 @@ export class DatabaseStorage implements IStorage {
 
   async upsertAiAssistant(userId: string, assistantData: InsertAiAssistant): Promise<AiAssistant> {
     const existing = await this.getAiAssistant(userId);
-    
+
     if (existing) {
       const [assistant] = await db
         .update(aiAssistants)
@@ -327,7 +336,7 @@ export class DatabaseStorage implements IStorage {
       .from(conversations)
       .where(eq(conversations.userId, userId))
       .orderBy(desc(conversations.lastMessageAt));
-    
+
     // Then get the last message for each conversation
     const conversationsWithMessages = await Promise.all(
       allConversations.map(async (conversation) => {
@@ -337,14 +346,14 @@ export class DatabaseStorage implements IStorage {
           .where(eq(messages.conversationId, conversation.id))
           .orderBy(desc(messages.createdAt))
           .limit(1);
-        
+
         return {
           ...conversation,
           lastMessage: lastMessage?.content || null
         };
       })
     );
-    
+
     return conversationsWithMessages;
   }
 
@@ -392,7 +401,7 @@ export class DatabaseStorage implements IStorage {
       .insert(messages)
       .values(messageData)
       .returning();
-    
+
     // Update conversation's lastMessageAt timestamp
     if (messageData.conversationId) {
       await db
@@ -400,7 +409,7 @@ export class DatabaseStorage implements IStorage {
         .set({ lastMessageAt: new Date() })
         .where(eq(conversations.id, messageData.conversationId));
     }
-    
+
     return message;
   }
 
@@ -434,7 +443,7 @@ export class DatabaseStorage implements IStorage {
 
   async upsertChannel(userId: string, channelData: InsertChannel): Promise<Channel> {
     const existing = await this.getChannel(userId);
-    
+
     if (existing) {
       const [channel] = await db
         .update(channels)
@@ -462,7 +471,7 @@ export class DatabaseStorage implements IStorage {
 
   async upsertFacebookConnection(userId: string, connectionData: InsertFacebookConnection): Promise<FacebookConnection> {
     const existing = await this.getFacebookConnection(userId);
-    
+
     if (existing) {
       const [connection] = await db
         .update(facebookConnections)
@@ -544,7 +553,7 @@ export class DatabaseStorage implements IStorage {
 
   async createUserProfile(businessOwnerId: string, profileData: InsertUserProfile): Promise<UserProfile> {
     const profileId = `profile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const [profile] = await db
       .insert(userProfiles)
       .values({
@@ -592,7 +601,7 @@ export class DatabaseStorage implements IStorage {
   async getMessagesForFaqAnalysis(userId: string, startDate?: string, endDate?: string): Promise<Message[]> {
     try {
       console.log("Database connection established");
-      
+
       let query = db
         .select()
         .from(messages)
@@ -611,16 +620,16 @@ export class DatabaseStorage implements IStorage {
       if (startDate && endDate) {
         // Convert Philippines date to UTC for database filtering
         const philippinesOffset = 8 * 60 * 60 * 1000; // 8 hours in milliseconds
-        
+
         const startPH = new Date(startDate + 'T00:00:00.000');
         const endPH = new Date(endDate + 'T23:59:59.999');
-        
+
         // Convert to UTC by subtracting 8 hours
         const startUTC = new Date(startPH.getTime() - philippinesOffset);
         const endUTC = new Date(endPH.getTime() - philippinesOffset);
-        
+
         console.log(`🔍 FAQ Messages Date filtering: PH ${startDate} to ${endDate} -> UTC ${startUTC.toISOString()} to ${endUTC.toISOString()}`);
-        
+
         query = db
           .select()
           .from(messages)
@@ -648,7 +657,7 @@ export class DatabaseStorage implements IStorage {
   async getCustomerAiMessages(userId: string, startDate?: string, endDate?: string): Promise<Message[]> {
     try {
       console.log("Database connection established");
-      
+
       let query = db
         .select()
         .from(messages)
@@ -668,13 +677,13 @@ export class DatabaseStorage implements IStorage {
         // Convert to Philippines timezone properly
         const startDatePH = new Date(startDate + 'T00:00:00+08:00');
         const endDatePH = new Date(endDate + 'T23:59:59+08:00');
-        
+
         // Convert to UTC for database query
         const startUTC = startDatePH.toISOString();
         const endUTC = endDatePH.toISOString();
-        
+
         console.log(`🔍 Time Saved Debug - Date filtering: PH ${startDate} to ${endDate} -> UTC ${startUTC} to ${endUTC}`);
-        
+
         query = db
           .select()
           .from(messages)
@@ -703,7 +712,7 @@ export class DatabaseStorage implements IStorage {
   async getOutboundMessages(userId: string, startDate?: string, endDate?: string): Promise<{ai: Message[], human: Message[]}> {
     try {
       console.log("Database connection established");
-      
+
       let baseQuery = db
         .select()
         .from(messages)
@@ -726,16 +735,16 @@ export class DatabaseStorage implements IStorage {
       if (startDate && endDate) {
         // Convert Philippines date to UTC for database filtering
         const philippinesOffset = 8 * 60 * 60 * 1000; // 8 hours in milliseconds
-        
+
         const startPH = new Date(startDate + 'T00:00:00.000');
         const endPH = new Date(endDate + 'T23:59:59.999');
-        
+
         // Convert to UTC by subtracting 8 hours
         const startUTC = new Date(startPH.getTime() - philippinesOffset);
         const endUTC = new Date(endPH.getTime() - philippinesOffset);
-        
+
         console.log(`🔍 Outbound Messages Date filtering: PH ${startDate} to ${endDate} -> UTC ${startUTC.toISOString()} to ${endUTC.toISOString()}`);
-        
+
         baseQuery = db
           .select()
           .from(messages)
@@ -757,11 +766,11 @@ export class DatabaseStorage implements IStorage {
 
       const result = await baseQuery;
       const allMessages = result.map(row => row.messages);
-      
+
       // Separate AI and human messages
       const aiMessages = allMessages.filter(msg => msg.senderType === "ai");
       const humanMessages = allMessages.filter(msg => msg.senderType === "human");
-      
+
       return {
         ai: aiMessages,
         human: humanMessages
@@ -775,7 +784,7 @@ export class DatabaseStorage implements IStorage {
   async getInboundCustomerMessages(userId: string, startDate?: string, endDate?: string): Promise<Message[]> {
     try {
       console.log("Database connection established");
-      
+
       let query = db
         .select()
         .from(messages)
@@ -797,17 +806,17 @@ export class DatabaseStorage implements IStorage {
       if (startDate && endDate) {
         // Convert Philippines date to UTC for database filtering
         const philippinesOffset = 8 * 60 * 60 * 1000; // 8 hours in milliseconds
-        
+
         const startPH = new Date(startDate + 'T00:00:00.000');
         const endPH = new Date(endDate + 'T23:59:59.999');
-        
+
         // Convert PH date to UTC by SUBTRACTING 8 hours from PH time
         // When it's July 11 00:00 in PH, it's July 10 16:00 in UTC
         const startUTC = new Date(startPH.getTime() - philippinesOffset);
         const endUTC = new Date(endPH.getTime() - philippinesOffset);
-        
+
         console.log(`🔍 Date filtering: PH ${startDate} to ${endDate} -> UTC ${startUTC.toISOString()} to ${endUTC.toISOString()}`);
-        
+
         query = db
           .select()
           .from(messages)
@@ -856,7 +865,7 @@ export class DatabaseStorage implements IStorage {
             )
           )
         );
-      
+
       return result[0]?.count || 0;
     } catch (error) {
       console.error("Error getting unread notification count:", error);
@@ -893,9 +902,9 @@ export class DatabaseStorage implements IStorage {
         .select({ id: conversations.id })
         .from(conversations)
         .where(eq(conversations.userId, userId));
-      
+
       const conversationIds = userConversations.map(c => c.id);
-      
+
       if (conversationIds.length > 0) {
         await db
           .update(messages)
@@ -905,7 +914,7 @@ export class DatabaseStorage implements IStorage {
               sql`messages.conversation_id IN (${sql.join(conversationIds, sql`, `)})`,
               or(
                 eq(messages.senderType, "customer"), // Traditional customer messages
-                eq(messages.senderType, "user")      // Facebook/social media customer messages
+                eq(messages.senderType, "user")This commit adds a helper function to get the effective user ID for impersonation.
               )
             )
           );
@@ -983,7 +992,7 @@ export class DatabaseStorage implements IStorage {
   // Admin user management
   async getAllUsers(page: number = 1, limit: number = 50): Promise<{ users: User[]; total: number }> {
     const offset = (page - 1) * limit;
-    
+
     const [usersResult, countResult] = await Promise.all([
       db
         .select()
@@ -1023,36 +1032,36 @@ export class DatabaseStorage implements IStorage {
   async deleteUser(userId: string): Promise<void> {
     try {
       console.log("🗑️ Starting cascading delete for user:", userId);
-      
+
       // Delete all related data first (cascading delete)
       await db.delete(businesses).where(eq(businesses.userId, userId));
       console.log("✅ Deleted businesses for user:", userId);
-      
+
       await db.delete(aiAssistants).where(eq(aiAssistants.userId, userId));
       console.log("✅ Deleted AI assistants for user:", userId);
-      
+
       await db.delete(products).where(eq(products.userId, userId));
       console.log("✅ Deleted products for user:", userId);
-      
+
       await db.delete(userProfiles).where(eq(userProfiles.businessOwnerId, userId));
       console.log("✅ Deleted user profiles for user:", userId);
-      
+
       await db.delete(conversations).where(eq(conversations.userId, userId));
       console.log("✅ Deleted conversations for user:", userId);
-      
+
       await db.delete(facebookConnections).where(eq(facebookConnections.userId, userId));
       console.log("✅ Deleted Facebook connections for user:", userId);
-      
+
       await db.delete(analytics).where(eq(analytics.userId, userId));
       console.log("✅ Deleted analytics for user:", userId);
-      
+
       await db.delete(adminLogs).where(eq(adminLogs.targetUserId, userId));
       console.log("✅ Deleted admin logs for user:", userId);
-      
+
       // Finally delete the user
       await db.delete(users).where(eq(users.id, userId));
       console.log("✅ Deleted user:", userId);
-      
+
       console.log("🎉 Successfully completed cascading delete for user:", userId);
     } catch (error) {
       console.error("❌ Error in deleteUser:", error);
@@ -1063,7 +1072,7 @@ export class DatabaseStorage implements IStorage {
   async searchUsers(query: string, page: number = 1, limit: number = 50): Promise<{ users: User[]; total: number }> {
     const offset = (page - 1) * limit;
     const searchPattern = `%${query}%`;
-    
+
     const [usersResult, countResult] = await Promise.all([
       db
         .select()
@@ -1101,11 +1110,11 @@ export class DatabaseStorage implements IStorage {
   // Account operations (Admin perspective - same as user operations but with account terminology)
   async getAllAccounts(page: number = 1, limit: number = 50): Promise<{ accounts: User[]; totalPages: number; currentPage: number; totalAccounts: number }> {
     const offset = (page - 1) * limit;
-    
+
     // Only get real business accounts (exclude User Profiles that have IDs starting with "profile-")
     const [countResult] = await db.select({ count: sql<number>`count(*)` }).from(users)
       .where(not(like(users.id, 'profile-%')));
-    
+
     const accountResults = await db.select()
       .from(users)
       .where(not(like(users.id, 'profile-%')))
@@ -1127,7 +1136,7 @@ export class DatabaseStorage implements IStorage {
   async searchAccounts(query: string, page: number = 1, limit: number = 50): Promise<{ accounts: User[]; totalPages: number; currentPage: number; totalAccounts: number }> {
     const offset = (page - 1) * limit;
     const searchPattern = `%${query}%`;
-    
+
     const [accountsResult, countResult] = await Promise.all([
       db
         .select()

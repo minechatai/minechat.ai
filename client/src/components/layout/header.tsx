@@ -24,11 +24,11 @@ export default function Header({ title, onMenuClick, sidebarCollapsed = false }:
     cacheTime: 0
   });
 
-  const { data: switchStatus } = useQuery({
-    queryKey: ['/api/admin/switch-status'],
-    enabled: !!user,
-    staleTime: 0,
-    cacheTime: 0
+  // Check if admin is viewing as user
+  const { data: viewStatus } = useQuery({
+    queryKey: ['/api/admin/view-status'],
+    enabled: true,
+    refetchInterval: 5000, // Check every 5 seconds
   });
 
 
@@ -67,11 +67,11 @@ export default function Header({ title, onMenuClick, sidebarCollapsed = false }:
             )}
             <div className="text-lg">
               <div className="font-semibold text-gray-900 dark:text-white">
-                {switchStatus?.isSwitched 
-                  ? switchStatus.businessName 
+                {viewStatus?.isSwitched 
+                  ? viewStatus.businessName 
                   : (business?.companyName || "Your Company")
                 }
-                 {switchStatus?.isSwitched && (
+                 {viewStatus?.isSwitched && (
                     <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
                       Admin View
                     </span>

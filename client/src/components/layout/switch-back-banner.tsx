@@ -10,25 +10,25 @@ export function SwitchBackBanner() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Check if in switched mode
-  const { data: switchStatus } = useQuery({
-    queryKey: ['/api/admin/switch-status'],
+  // Check if in impersonation mode
+  const { data: viewStatus } = useQuery({
+    queryKey: ['/api/admin/view-status'],
     refetchInterval: 5000, // Check every 5 seconds
   });
 
-  // Switch back mutation
-  const switchBackMutation = useMutation({
+  // Stop viewing mutation
+  const stopViewingMutation = useMutation({
     mutationFn: async () => {
       const response = await apiRequest(
         'POST',
-        '/api/admin/switch-back'
+        '/api/admin/stop-viewing'
       );
       return response;
     },
     onSuccess: () => {
       toast({
         title: "Success",
-        description: "Switched back to admin account",
+        description: "Returned to admin view",
       });
       // Redirect to admin panel
       window.location.href = "/admin";
@@ -36,13 +36,13 @@ export function SwitchBackBanner() {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to switch back",
+        description: error.message || "Failed to return to admin view",
         variant: "destructive",
       });
     },
   });
 
-  if (!switchStatus?.isSwitched) {
+  if (!viewStatus?.isViewing) {
     return null;
   }
 
@@ -51,22 +51,22 @@ export function SwitchBackBanner() {
       <div className="flex items-center gap-3">
         <User className="w-4 h-4" />
         <span className="text-sm font-medium">
-          Admin Mode: Viewing as "{switchStatus.businessName}"
+          Admin View: Viewing as "{viewStatus.businessName}"
         </span>
         <span className="text-xs bg-blue-500 px-2 py-1 rounded">
-          User ID: {switchStatus.switchedUser?.id}
+          User: {viewStatus.viewedUser?.name}
         </span>
       </div>
       
       <Button
-        onClick={() => switchBackMutation.mutate()}
+        onClick={() => stopViewingMutation.mutate()}
         variant="outline"
         size="sm"
         className="bg-white text-blue-600 hover:bg-gray-100 border-white"
-        disabled={switchBackMutation.isPending}
+        disabled={stopViewingMutation.isPending}
       >
         <ArrowLeft className="w-4 h-4 mr-1" />
-        {switchBackMutation.isPending ? "Switching..." : "Return to Admin"}
+        {stopViewingMutation.isPending ? "Returning..." : "Return to Admin"}
       </Button>
     </div>
   );

@@ -167,24 +167,24 @@ export default function AdminAccountDetail() {
     },
   });
 
-  // Switch to account mutation
+  // View as user mutation
   const switchToAccountMutation = useMutation({
     mutationFn: async (userId: string) => {
-      console.log("🔄 Making API request to switch to user:", userId);
+      console.log("👁️ Making API request to view as user:", userId);
       try {
-        const response = await apiRequest("POST", `/api/admin/switch-to-account/${userId}`);
-        console.log("✅ Switch response received:", response);
+        const response = await apiRequest("POST", `/api/admin/view-as-user/${userId}`);
+        console.log("✅ View response received:", response);
         return response;
       } catch (error) {
-        console.error("❌ Switch API call failed:", error);
+        console.error("❌ View API call failed:", error);
         throw error;
       }
     },
     onSuccess: (data) => {
-      console.log("✅ Account switch successful, redirecting...");
+      console.log("✅ Now viewing as user, redirecting...");
       toast({
         title: "Success",
-        description: data.message || "Successfully switched to account",
+        description: data.message || "Now viewing as user",
       });
       // Small delay to ensure session is properly set
       setTimeout(() => {
@@ -192,10 +192,10 @@ export default function AdminAccountDetail() {
       }, 500);
     },
     onError: (error: any) => {
-      console.error("❌ Account switch failed:", error);
+      console.error("❌ View as user failed:", error);
       toast({
-        title: "Switch Failed", 
-        description: error.message || "Unable to switch to this account. Please verify the account exists and try again.",
+        title: "View Failed", 
+        description: error.message || "Unable to view as this user. Please verify the account exists and try again.",
         variant: "destructive",
       });
     },
@@ -415,14 +415,14 @@ export default function AdminAccountDetail() {
                     Account Management
                   </h3>
                   <div className="space-y-2">
-                    {/* Login as User Button */}
+                    {/* View as User Button */}
                     <Button
                       onClick={() => switchToAccountMutation.mutate(account.id)}
                       variant="default"
                       className="w-full"
                       disabled={switchToAccountMutation.isPending}
                     >
-                      {switchToAccountMutation.isPending ? "Switching..." : "Login as User"}
+                      {switchToAccountMutation.isPending ? "Starting View..." : "View as User"}
                     </Button>
 
                     {/* Edit Role Dialog */}
