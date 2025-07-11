@@ -13,6 +13,29 @@ import { apiRequest } from "@/lib/queryClient";
 import { ArrowLeft, User, Building, MessageSquare, Activity, Trash2, Shield } from "lucide-react";
 import MainLayout from "@/components/layout/main-layout";
 import { format } from "date-fns";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import {
+  Calendar,
+  Mail,
+  Edit,
+  Ban,
+  RotateCcw,
+} from "lucide-react"
 
 interface Account {
   id: string;
@@ -71,14 +94,12 @@ function AdminViewButton({ accountId }: { accountId: string }) {
       return response;
     },
     onSuccess: (data) => {
-      console.log("✅ View successful, redirecting to dashboard");
       toast({
         title: "Success",
-        description: data.message || "Now viewing as user",
+        description: "Now viewing as user",
       });
-      setTimeout(() => {
-        window.location.href = "/dashboard";
-      }, 500);
+      // Redirect to user dashboard instead of staying on admin panel
+      window.location.href = "/dashboard";
     },
     onError: (error: any) => {
       console.error("❌ View mutation error:", error);
@@ -295,7 +316,7 @@ export default function AdminAccountDetail() {
   });
 
   // View as user mutation
-  const viewAsUserMutation = useMutation({
+  const viewAsUserMutation2 = useMutation({
     mutationFn: async (userId: string) => {
       console.log("👁️ Making API request to view as user:", userId);
       try {

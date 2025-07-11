@@ -97,26 +97,16 @@ export default function AdminPage() {
   // View as user mutation
   const viewAsUserMutation = useMutation({
     mutationFn: async (userId: string) => {
-      console.log("👁️ Starting view as user for:", userId);
-      try {
-        const response = await apiRequest("POST", `/api/admin/view-as-user/${userId}`);
-        console.log("✅ View API response:", response);
-        return response;
-      } catch (error) {
-        console.error("❌ View API error:", error);
-        throw error;
-      }
+      const response = await apiRequest('POST', `/api/admin/view-as-user/${userId}`);
+      return response;
     },
-    onSuccess: (data) => {
-      console.log("✅ View successful, redirecting to dashboard");
+    onSuccess: () => {
       toast({
         title: "Success",
-        description: data.message || "Now viewing as user",
+        description: "Now viewing as user",
       });
-      // Small delay to ensure toast is visible before redirect
-      setTimeout(() => {
-        window.location.href = "/dashboard";
-      }, 500);
+      // Redirect to user dashboard instead of staying on admin panel
+      window.location.href = "/dashboard";
     },
     onError: (error: any) => {
       console.error("❌ View mutation error:", error);
