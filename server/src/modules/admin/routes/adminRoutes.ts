@@ -163,7 +163,7 @@ export function registerAdminRoutes(app: Express) {
           adminId: req.admin.id,
           action: "update_account_role",
           targetUserId: accountId,
-          details: { oldRole: req.admin.role, newRole: role },
+          details: JSON.stringify({ oldRole: req.admin.role, newRole: role }),
           ipAddress: req.ip,
           userAgent: req.get("User-Agent") || "Unknown",
         });
@@ -181,7 +181,7 @@ export function registerAdminRoutes(app: Express) {
           adminId: req.admin.id,
           action: "update_account_status",
           targetUserId: accountId,
-          details: { status },
+          details: JSON.stringify({ status }),
           ipAddress: req.ip,
           userAgent: req.get("User-Agent") || "Unknown",
         });
@@ -209,7 +209,7 @@ export function registerAdminRoutes(app: Express) {
         adminId: req.admin.id,
         action: "reset_account",
         targetUserId: accountId,
-        details: "Account data reset",
+        details: JSON.stringify({ message: "Account data reset" }),
         ipAddress: req.ip,
         userAgent: req.get("User-Agent") || "Unknown",
       });
@@ -480,14 +480,14 @@ export function registerAdminRoutes(app: Express) {
           adminId: req.admin.id,
           action: "delete_account_permanently",
           targetUserId: accountId,
-          details: { 
+          details: JSON.stringify({ 
             deletedAccount: {
               email: accountToDelete.email,
               firstName: accountToDelete.firstName || accountToDelete.first_name,
               lastName: accountToDelete.lastName || accountToDelete.last_name,
               role: accountToDelete.role
             }
-          },
+          }),
           ipAddress: req.ip,
           userAgent: req.get("User-Agent") || "Unknown",
         });
@@ -661,17 +661,18 @@ export function registerAdminRoutes(app: Express) {
       // Log the deletion action
       await storage.createAdminLog({
         adminId,
-        action: `Deleted user account permanently`,
+        action: "delete_user_permanently",
         targetUserId: userId,
-        details: { 
+        details: JSON.stringify({ 
           deletedUser: {
             email: userToDelete.email,
             firstName: userToDelete.firstName,
             lastName: userToDelete.lastName,
             role: userToDelete.role
           }
-        },
+        }),
         ipAddress: req.ip,
+        userAgent: req.get("User-Agent") || "Unknown",
       });
 
       // Delete the user and all related data
