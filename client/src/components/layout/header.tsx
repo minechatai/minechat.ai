@@ -30,7 +30,7 @@ export default function Header() {
       const userName = user?.firstName && user?.lastName 
         ? `${user.firstName} ${user.lastName}` 
         : user?.email || 'User';
-      
+
       return {
         title: businessName || userName,
         isBusinessName: !!businessName,
@@ -59,9 +59,12 @@ export default function Header() {
 
   const displayInfo = getDisplayInfo();
 
+  // Adjust header height when God Mode banner is present
+  const headerHeight = false ? '73px' : '73px';
+
   return (
-    <header className="bg-white border-b border-gray-200 px-6 py-4">
-      <div className="flex items-center justify-between">
+    <header className="bg-white border-b border-gray-200 px-6 flex items-center" style={{ height: headerHeight }}>
+      <div className="flex items-center justify-between w-full">
         <div className="flex items-center space-x-4">
           {/* Show business logo if available */}
           {displayInfo.logo && (

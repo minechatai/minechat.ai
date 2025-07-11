@@ -37,15 +37,39 @@ export default function MainLayout({ children }: MainLayoutProps) {
         <Sidebar />
         <div className="flex-1 flex flex-col min-h-screen">
           <Header />
-          
-          {/* Switch Back Banner - shows at top of content when admin is viewing as user */}
+
+          {/* God Mode Admin Banner */}
           {viewStatus?.isViewing && (
-            <SwitchBackBanner userName={viewStatus.viewedUser?.firstName || 'Unknown User'} />
+            <div className="fixed top-0 left-0 right-0 bg-blue-600 text-white px-4 py-3 flex items-center justify-between shadow-lg z-50">
+              <div className="flex items-center space-x-2">
+                <div className="text-sm font-medium">
+                  🚀 God Mode Admin: Currently viewing as {viewStatus.viewedUser?.firstName} {viewStatus.viewedUser?.lastName} ({viewStatus.viewedUser?.email})
+                </div>
+              </div>
+              <Button
+                onClick={() => stopViewingMutation.mutate()}
+                disabled={stopViewingMutation.isPending}
+                variant="secondary"
+                size="sm"
+                className="bg-white/20 hover:bg-white/30 text-white border-white/30"
+              >
+                {stopViewingMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Returning...
+                  </>
+                ) : (
+                  "Return to Admin"
+                )}
+              </Button>
+            </div>
           )}
-          
-          <main className="flex-1">
-            {children}
-          </main>
+
+          <div className={`flex min-h-screen ${viewStatus?.isViewing ? 'pt-[56px]' : ''}`}>
+            <main className="flex-1">
+              {children}
+            </main>
+          </div>
         </div>
       </div>
     </div>
