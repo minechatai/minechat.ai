@@ -15,7 +15,7 @@ import Account from "@/pages/account";
 import CreateUserProfile from "@/pages/create-user-profile";
 import ManageUserProfiles from "@/pages/manage-user-profiles";
 import AdminPage from "@/pages/admin";
-import AdminUserDetail from "@/pages/admin-user-detail";
+import AdminAccountDetail from "@/pages/admin-user-detail";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -58,7 +58,7 @@ function Router() {
           <Route path="/create-user-profile" component={CreateUserProfile} />
           <Route path="/manage-user-profiles" component={ManageUserProfiles} />
           <Route path="/admin" component={AdminPage} />
-          <Route path="/admin/users/:userId" component={AdminUserDetail} />
+          <Route path="/admin/accounts/:accountId" component={AdminAccountDetail} />
         </>
       )}
       <Route component={NotFound} />

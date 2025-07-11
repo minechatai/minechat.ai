@@ -134,6 +134,10 @@ export interface IStorage {
   updateUserStatus(userId: string, status: string): Promise<User>;
   deleteUser(userId: string): Promise<void>;
   searchUsers(query: string, page?: number, limit?: number): Promise<{ users: User[]; total: number }>;
+  
+  // Admin account management (same as user operations but with account terminology)
+  getAllAccounts(page?: number, limit?: number): Promise<{ accounts: User[]; totalPages: number; currentPage: number; totalAccounts: number }>;
+  searchAccounts(query: string, page?: number, limit?: number): Promise<{ accounts: User[]; totalPages: number; currentPage: number; totalAccounts: number }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1066,6 +1070,70 @@ export class DatabaseStorage implements IStorage {
     return {
       users: usersResult,
       total: countResult[0]?.count || 0,
+    };
+  }
+
+  // Account operations (Admin perspective - same as user operations but with account terminology)
+  async getAllAccounts(page: number = 1, limit: number = 50): Promise<{ accounts: User[]; totalPages: number; currentPage: number; totalAccounts: number }> {
+    const offset = (page - 1) * limit;
+    const [countResult] = await db.select({ count: sql<number>`count(*)` }).from(users);
+    const accountResults = await db.select()
+      .from(users)
+      .limit(limit)
+      .offset(offset)
+      .orderBy(desc(users.createdAt));
+
+    const totalAccounts = countResult.count;
+    const totalPages = Math.ceil(totalAccounts / limit);
+
+    return {
+      accounts: accountResults,
+      totalPages,
+      currentPage: page,
+      totalAccounts
+    };
+  }
+
+  async searchAccounts(query: string, page: number = 1, limit: number = 50): Promise<{ accounts: User[]; totalPages: number; currentPage: number; totalAccounts: number }> {
+    const offset = (page - 1) * limit;
+    const searchPattern = `%${query}%`;
+    
+    const [accountsResult, countResult] = await Promise.all([
+      db
+        .select()
+        .from(users)
+        .where(
+          or(
+            sql`${users.email} ILIKE ${searchPattern}`,
+            sql`${users.firstName} ILIKE ${searchPattern}`,
+            sql`${users.lastName} ILIKE ${searchPattern}`,
+            sql`${users.id} ILIKE ${searchPattern}`
+          )
+        )
+        .orderBy(desc(users.createdAt))
+        .limit(limit)
+        .offset(offset),
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(users)
+        .where(
+          or(
+            sql`${users.email} ILIKE ${searchPattern}`,
+            sql`${users.firstName} ILIKE ${searchPattern}`,
+            sql`${users.lastName} ILIKE ${searchPattern}`,
+            sql`${users.id} ILIKE ${searchPattern}`
+          )
+        )
+    ]);
+
+    const totalAccounts = countResult[0]?.count || 0;
+    const totalPages = Math.ceil(totalAccounts / limit);
+
+    return {
+      accounts: accountsResult,
+      totalPages,
+      currentPage: page,
+      totalAccounts
     };
   }
 }

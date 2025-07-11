@@ -14,20 +14,21 @@ import { useToast } from "@/hooks/use-toast";
 import MainLayout from "@/components/layout/main-layout";
 import { Link } from "wouter";
 
-interface User {
+interface Account {
   id: string;
   email: string;
   firstName: string;
   lastName: string;
   role: string;
   createdAt: string;
+  companyName?: string;
 }
 
 interface AdminLog {
   id: number;
   adminId: string;
   action: string;
-  targetUserId: string;
+  targetAccountId: string;
   details: any;
   ipAddress: string;
   userAgent: string;
@@ -55,9 +56,9 @@ export default function AdminPage() {
     enabled: !!adminCheck?.isAdmin,
   });
 
-  // Get users list
-  const { data: usersData, isLoading: usersLoading } = useQuery({
-    queryKey: ["/api/admin/users", { page: currentPage, search: searchQuery }],
+  // Get accounts list
+  const { data: accountsData, isLoading: accountsLoading } = useQuery({
+    queryKey: ["/api/admin/accounts", { page: currentPage, search: searchQuery }],
     enabled: !!adminCheck?.isAdmin,
   });
 
@@ -67,26 +68,26 @@ export default function AdminPage() {
     enabled: !!adminCheck?.isAdmin,
   });
 
-  // Update user role mutation
+  // Update account role mutation
   const updateRoleMutation = useMutation({
-    mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
-      await apiRequest(`/api/admin/users/${userId}/role`, {
-        method: "PUT",
+    mutationFn: async ({ accountId, role }: { accountId: string; role: string }) => {
+      await apiRequest(`/api/admin/accounts/${accountId}`, {
+        method: "PATCH",
         body: { role },
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/accounts"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
       toast({
         title: "Success",
-        description: "User role updated successfully",
+        description: "Account role updated successfully",
       });
     },
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to update user role",
+        description: error.message || "Failed to update account role",
         variant: "destructive",
       });
     },
@@ -139,7 +140,7 @@ export default function AdminPage() {
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="users">Users</TabsTrigger>
+            <TabsTrigger value="accounts">Account Management</TabsTrigger>
             <TabsTrigger value="logs">Activity Logs</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
@@ -148,17 +149,17 @@ export default function AdminPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                  <CardTitle className="text-sm font-medium">Total Accounts</CardTitle>
                   <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{adminStats?.totalUsers || 0}</div>
+                  <div className="text-2xl font-bold">{adminStats?.totalAccounts || 0}</div>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Admin Users</CardTitle>
+                  <CardTitle className="text-sm font-medium">Admin Accounts</CardTitle>
                   <Shield className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -198,15 +199,15 @@ export default function AdminPage() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="users" className="space-y-6">
+          <TabsContent value="accounts" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>User Management</CardTitle>
+                <CardTitle>Account Management</CardTitle>
                 <div className="flex gap-4 mt-4">
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                     <Input
-                      placeholder="Search users..."
+                      placeholder="Search accounts..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="pl-10"
@@ -215,13 +216,14 @@ export default function AdminPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                {usersLoading ? (
-                  <div className="text-center py-4">Loading users...</div>
+                {accountsLoading ? (
+                  <div className="text-center py-4">Loading accounts...</div>
                 ) : (
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>User</TableHead>
+                        <TableHead>Account Owner</TableHead>
+                        <TableHead>Company</TableHead>
                         <TableHead>Email</TableHead>
                         <TableHead>Role</TableHead>
                         <TableHead>Created</TableHead>
@@ -229,31 +231,32 @@ export default function AdminPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {usersData?.users?.map((user: User) => (
-                        <TableRow key={user.id}>
+                      {accountsData?.accounts?.map((account: Account) => (
+                        <TableRow key={account.id}>
                           <TableCell>
                             <div>
                               <Link 
-                                href={`/admin/users/${user.id}`}
+                                href={`/admin/accounts/${account.id}`}
                                 className="font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                               >
-                                {user.firstName} {user.lastName}
+                                {account.firstName} {account.lastName}
                               </Link>
-                              <div className="text-sm text-gray-500">{user.id}</div>
+                              <div className="text-sm text-gray-500">{account.id}</div>
                             </div>
                           </TableCell>
-                          <TableCell>{user.email}</TableCell>
+                          <TableCell>{account.companyName || "Not Set"}</TableCell>
+                          <TableCell>{account.email}</TableCell>
                           <TableCell>
-                            <Badge variant={user.role === "super_admin" ? "default" : user.role === "admin" ? "secondary" : "outline"}>
-                              {user.role?.replace("_", " ") || "user"}
+                            <Badge variant={account.role === "super_admin" ? "default" : account.role === "admin" ? "secondary" : "outline"}>
+                              {account.role?.replace("_", " ") || "user"}
                             </Badge>
                           </TableCell>
-                          <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
+                          <TableCell>{new Date(account.createdAt).toLocaleDateString()}</TableCell>
                           <TableCell>
                             {adminCheck.adminInfo.role === "super_admin" && (
                               <Select
-                                value={user.role || "user"}
-                                onValueChange={(role) => updateRoleMutation.mutate({ userId: user.id, role })}
+                                value={account.role || "user"}
+                                onValueChange={(role) => updateRoleMutation.mutate({ accountId: account.id, role })}
                               >
                                 <SelectTrigger className="w-32">
                                   <SelectValue />

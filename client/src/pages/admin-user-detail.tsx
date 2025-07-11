@@ -14,8 +14,8 @@ import MainLayout from "@/components/layout/main-layout";
 import { format } from "date-fns";
 import { useState } from "react";
 
-export default function AdminUserDetail() {
-  const { userId } = useParams<{ userId: string }>();
+export default function AdminAccountDetail() {
+  const { accountId } = useParams<{ accountId: string }>();
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -27,119 +27,125 @@ export default function AdminUserDetail() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState("");
 
-  // Fetch user details
-  const { data: user, isLoading } = useQuery({
-    queryKey: ["/api/admin/users", userId],
-    enabled: !!userId,
+  // Fetch account details
+  const { data: account, isLoading } = useQuery({
+    queryKey: ["/api/admin/accounts", accountId],
+    enabled: !!accountId,
   });
 
-  // Fetch user's business info
+  // Fetch account's business info
   const { data: business } = useQuery({
-    queryKey: ["/api/admin/users", userId, "business"],
-    enabled: !!userId,
+    queryKey: ["/api/admin/accounts", accountId, "business"],
+    enabled: !!accountId,
   });
 
-  // Fetch user's conversations
+  // Fetch account's users (user profiles)
+  const { data: users } = useQuery({
+    queryKey: ["/api/admin/accounts", accountId, "users"],
+    enabled: !!accountId,
+  });
+
+  // Fetch account's conversations
   const { data: conversations } = useQuery({
-    queryKey: ["/api/admin/users", userId, "conversations"],
-    enabled: !!userId,
+    queryKey: ["/api/admin/accounts", accountId, "conversations"],
+    enabled: !!accountId,
   });
 
-  // Fetch user's activity logs
+  // Fetch account's activity logs
   const { data: activityLogs } = useQuery({
-    queryKey: ["/api/admin/users", userId, "logs"],
-    enabled: !!userId,
+    queryKey: ["/api/admin/accounts", accountId, "logs"],
+    enabled: !!accountId,
   });
 
-  // Update user role mutation
+  // Update account role mutation
   const updateRoleMutation = useMutation({
     mutationFn: async (role: string) => {
-      return await apiRequest(`/api/admin/users/${userId}`, {
+      return await apiRequest(`/api/admin/accounts/${accountId}`, {
         method: "PATCH",
         body: { role },
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/users", userId] });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/accounts", accountId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/accounts"] });
       toast({
         title: "Success",
-        description: "User role updated successfully",
+        description: "Account role updated successfully",
       });
       setIsRoleDialogOpen(false);
     },
     onError: (error) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to update user role",
+        description: error.message || "Failed to update account role",
         variant: "destructive",
       });
     },
   });
 
-  // Toggle user status mutation
-  const toggleUserStatusMutation = useMutation({
+  // Toggle account status mutation
+  const toggleAccountStatusMutation = useMutation({
     mutationFn: async (status: string) => {
-      return await apiRequest(`/api/admin/users/${userId}`, {
+      return await apiRequest(`/api/admin/accounts/${accountId}`, {
         method: "PATCH",
         body: { status },
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/users", userId] });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/accounts", accountId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/accounts"] });
       toast({
         title: "Success",
-        description: "User status updated successfully",
+        description: "Account status updated successfully",
       });
       setIsDisableDialogOpen(false);
     },
     onError: (error) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to update user status",
+        description: error.message || "Failed to update account status",
         variant: "destructive",
       });
     },
   });
 
-  // Reset user account mutation
-  const resetUserMutation = useMutation({
+  // Reset account mutation
+  const resetAccountMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest(`/api/admin/users/${userId}/reset`, {
+      return await apiRequest(`/api/admin/accounts/${accountId}/reset`, {
         method: "POST",
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/users", userId] });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/accounts", accountId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/accounts"] });
       toast({
         title: "Success",
-        description: "User account reset successfully",
+        description: "Account reset successfully",
       });
       setIsResetDialogOpen(false);
     },
     onError: (error) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to reset user account",
+        description: error.message || "Failed to reset account",
         variant: "destructive",
       });
     },
   });
 
-  // Delete user account mutation
-  const deleteUserMutation = useMutation({
+  // Delete account mutation
+  const deleteAccountMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest(`/api/admin/users/${userId}/delete`, {
+      return await apiRequest(`/api/admin/accounts/${accountId}/delete`, {
         method: "DELETE",
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/accounts"] });
       toast({
         title: "Success",
-        description: "User account deleted permanently",
+        description: "Account deleted permanently",
       });
       setIsDeleteDialogOpen(false);
       // Navigate back to admin dashboard
@@ -148,7 +154,7 @@ export default function AdminUserDetail() {
     onError: (error) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to delete user account",
+        description: error.message || "Failed to delete account",
         variant: "destructive",
       });
     },
@@ -238,21 +244,21 @@ export default function AdminUserDetail() {
           </div>
         </div>
 
-        {/* User Profile Card */}
+        {/* Account Profile Card */}
         <Card>
           <CardHeader>
             <div className="flex items-center space-x-4">
               <Avatar className="w-16 h-16">
-                <AvatarImage src={user?.profileImageUrl} alt={user?.firstName} />
+                <AvatarImage src={account?.profileImageUrl} alt={account?.firstName} />
                 <AvatarFallback>
-                  {getInitials(user?.firstName, user?.lastName, user?.email)}
+                  {getInitials(account?.firstName, account?.lastName, account?.email)}
                 </AvatarFallback>
               </Avatar>
               <div>
                 <CardTitle className="text-xl">
-                  {user?.firstName && user?.lastName
-                    ? `${user.firstName} ${user.lastName}`
-                    : user?.email}
+                  {account?.firstName && account?.lastName
+                    ? `${account.firstName} ${account.lastName}`
+                    : account?.email}
                 </CardTitle>
                 <div className="flex items-center space-x-2 mt-2">
                   <Badge className={getRoleBadgeColor(user?.role || "user")}>

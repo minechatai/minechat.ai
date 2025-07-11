@@ -4,10 +4,10 @@ import { isAdmin, isSuperAdmin, logAdminActivity, adminRoute } from "../../../..
 import { insertAdminLogSchema } from "@shared/schema";
 import { z } from "zod";
 
-// Admin user management routes
+// Admin account management routes
 export function registerAdminRoutes(app: Express) {
-  // Get all users (paginated)
-  app.get("/api/admin/users", ...adminRoute("view_users"), async (req: any, res) => {
+  // Get all accounts (paginated)
+  app.get("/api/admin/accounts", ...adminRoute("view_accounts"), async (req: any, res) => {
     try {
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 50;
@@ -15,19 +15,228 @@ export function registerAdminRoutes(app: Express) {
 
       let result;
       if (search) {
-        result = await storage.searchUsers(search, page, limit);
+        result = await storage.searchAccounts(search, page, limit);
       } else {
-        result = await storage.getAllUsers(page, limit);
+        result = await storage.getAllAccounts(page, limit);
       }
 
-      res.json(result);
+      // Transform users to accounts with business info
+      const accountsWithBusiness = await Promise.all(
+        result.accounts.map(async (account: any) => {
+          const business = await storage.getBusiness(account.id);
+          return {
+            ...account,
+            companyName: business?.companyName || null,
+          };
+        })
+      );
+
+      res.json({ 
+        accounts: accountsWithBusiness, 
+        totalPages: result.totalPages,
+        currentPage: result.currentPage,
+        totalAccounts: result.totalAccounts
+      });
     } catch (error) {
-      console.error("Error fetching users:", error);
-      res.status(500).json({ message: "Failed to fetch users" });
+      console.error("Error fetching accounts:", error);
+      res.status(500).json({ message: "Failed to fetch accounts" });
     }
   });
 
-  // Get specific user details
+  // Get specific account details
+  app.get("/api/admin/accounts/:accountId", ...adminRoute("view_account"), async (req: any, res) => {
+    try {
+      const { accountId } = req.params;
+      const account = await storage.getUser(accountId);
+      
+      if (!account) {
+        return res.status(404).json({ message: "Account not found" });
+      }
+
+      res.json(account);
+    } catch (error) {
+      console.error("Error fetching account:", error);
+      res.status(500).json({ message: "Failed to fetch account" });
+    }
+  });
+
+  // Get account's business info
+  app.get("/api/admin/accounts/:accountId/business", ...adminRoute("view_account_business"), async (req: any, res) => {
+    try {
+      const { accountId } = req.params;
+      const business = await storage.getBusiness(accountId);
+      
+      res.json(business || null);
+    } catch (error) {
+      console.error("Error fetching account business:", error);
+      res.status(500).json({ message: "Failed to fetch account business" });
+    }
+  });
+
+  // Get account's users (user profiles)
+  app.get("/api/admin/accounts/:accountId/users", ...adminRoute("view_account_users"), async (req: any, res) => {
+    try {
+      const { accountId } = req.params;
+      const users = await storage.getUserProfiles(accountId);
+      
+      res.json(users);
+    } catch (error) {
+      console.error("Error fetching account users:", error);
+      res.status(500).json({ message: "Failed to fetch account users" });
+    }
+  });
+
+  // Get account's conversations
+  app.get("/api/admin/accounts/:accountId/conversations", ...adminRoute("view_account_conversations"), async (req: any, res) => {
+    try {
+      const { accountId } = req.params;
+      const conversations = await storage.getConversations(accountId);
+      
+      res.json(conversations);
+    } catch (error) {
+      console.error("Error fetching account conversations:", error);
+      res.status(500).json({ message: "Failed to fetch account conversations" });
+    }
+  });
+
+  // Get account's activity logs
+  app.get("/api/admin/accounts/:accountId/logs", ...adminRoute("view_account_logs"), async (req: any, res) => {
+    try {
+      const { accountId } = req.params;
+      const logs = await storage.getAdminLogs(undefined, accountId, 100);
+      
+      res.json(logs);
+    } catch (error) {
+      console.error("Error fetching account logs:", error);
+      res.status(500).json({ message: "Failed to fetch account logs" });
+    }
+  });
+
+  // Update account (role and status)
+  app.patch("/api/admin/accounts/:accountId", ...adminRoute("update_account", true), async (req: any, res) => {
+    try {
+      const { accountId } = req.params;
+      const { role, status } = req.body;
+
+      if (role) {
+        if (!["user", "admin", "super_admin"].includes(role)) {
+          return res.status(400).json({ message: "Invalid role" });
+        }
+
+        // Prevent super admin from downgrading themselves
+        if (req.admin.id === accountId && req.admin.role === "super_admin" && role !== "super_admin") {
+          return res.status(400).json({ message: "Cannot downgrade your own super admin role" });
+        }
+
+        const updatedAccount = await storage.updateUserRole(accountId, role);
+        
+        // Log the role change
+        await storage.createAdminLog({
+          adminId: req.admin.id,
+          action: "update_account_role",
+          targetUserId: accountId,
+          details: { oldRole: req.admin.role, newRole: role },
+          ipAddress: req.ip,
+          userAgent: req.get("User-Agent") || "Unknown",
+        });
+
+        res.json(updatedAccount);
+      } else if (status) {
+        if (!["active", "disabled"].includes(status)) {
+          return res.status(400).json({ message: "Invalid status" });
+        }
+
+        const updatedAccount = await storage.updateUserStatus(accountId, status);
+        
+        // Log the status change
+        await storage.createAdminLog({
+          adminId: req.admin.id,
+          action: "update_account_status",
+          targetUserId: accountId,
+          details: { status },
+          ipAddress: req.ip,
+          userAgent: req.get("User-Agent") || "Unknown",
+        });
+
+        res.json(updatedAccount);
+      } else {
+        res.status(400).json({ message: "No valid update fields provided" });
+      }
+    } catch (error) {
+      console.error("Error updating account:", error);
+      res.status(500).json({ message: "Failed to update account" });
+    }
+  });
+
+  // Reset account
+  app.post("/api/admin/accounts/:accountId/reset", ...adminRoute("reset_account", true), async (req: any, res) => {
+    try {
+      const { accountId } = req.params;
+      
+      // Reset all account data except the user record itself
+      await storage.deleteBusiness(accountId);
+      await storage.deleteAiAssistant(accountId);
+      
+      // Log the reset action
+      await storage.createAdminLog({
+        adminId: req.admin.id,
+        action: "reset_account",
+        targetUserId: accountId,
+        details: { resetType: "full_reset" },
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent") || "Unknown",
+      });
+
+      res.json({ message: "Account reset successfully" });
+    } catch (error) {
+      console.error("Error resetting account:", error);
+      res.status(500).json({ message: "Failed to reset account" });
+    }
+  });
+
+  // Delete account (super admin only)
+  app.delete("/api/admin/accounts/:accountId/delete", ...adminRoute("delete_account", true), async (req: any, res) => {
+    try {
+      const { accountId } = req.params;
+      
+      // Prevent admin from deleting their own account
+      if (req.admin.id === accountId) {
+        return res.status(400).json({ message: "Cannot delete your own account" });
+      }
+
+      // Get user data before deletion for logging
+      const accountToDelete = await storage.getUser(accountId);
+      if (!accountToDelete) {
+        return res.status(404).json({ message: "Account not found" });
+      }
+
+      // Delete the account and all related data
+      await storage.deleteUser(accountId);
+      
+      // Log the deletion
+      await storage.createAdminLog({
+        adminId: req.admin.id,
+        action: "delete_account",
+        targetUserId: accountId,
+        details: { 
+          deletedAccount: {
+            email: accountToDelete.email,
+            name: `${accountToDelete.firstName} ${accountToDelete.lastName}`,
+            role: accountToDelete.role
+          }
+        },
+        ipAddress: req.ip,
+        userAgent: req.get("User-Agent") || "Unknown",
+      });
+
+      res.json({ message: "Account deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      res.status(500).json({ message: "Failed to delete account" });
+    }
+  });
+
+  // Get specific user details (keeping for backward compatibility)
   app.get("/api/admin/users/:userId", ...adminRoute("view_user"), async (req: any, res) => {
     try {
       const { userId } = req.params;
@@ -85,19 +294,19 @@ export function registerAdminRoutes(app: Express) {
   // Admin dashboard stats
   app.get("/api/admin/stats", ...adminRoute("view_stats"), async (req: any, res) => {
     try {
-      const { users, total: totalUsers } = await storage.getAllUsers(1, 1);
+      const { accounts, totalAccounts } = await storage.getAllAccounts(1, 1);
       const logs = await storage.getAdminLogs(undefined, undefined, 10);
       
       // Get role distribution
-      const { users: allUsers } = await storage.getAllUsers(1, 1000);
-      const roleStats = allUsers.reduce((acc, user) => {
-        const role = user.role || "user";
+      const { accounts: allAccounts } = await storage.getAllAccounts(1, 1000);
+      const roleStats = allAccounts.reduce((acc, account) => {
+        const role = account.role || "user";
         acc[role] = (acc[role] || 0) + 1;
         return acc;
       }, {} as Record<string, number>);
 
       res.json({
-        totalUsers,
+        totalAccounts,
         roleStats,
         recentLogs: logs.slice(0, 10),
       });
