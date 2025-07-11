@@ -80,8 +80,9 @@ export default function Sidebar({ isOpen = false, isCollapsed = false, onClose, 
       ${isCollapsed ? 'w-16' : 'w-64 sm:w-56 md:w-64 lg:w-72 xl:w-80'}
       transition-all duration-300 ease-in-out
       md:relative md:z-auto md:flex md:flex-col
+      h-full
     `}>
-      <div className="flex-1 flex flex-col min-h-0 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
+      <div className="flex flex-col h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700">
         {/* Logo */}
         <div className={`py-4 border-b border-gray-200 dark:border-gray-700 h-[73px] flex items-center justify-between ${
           isCollapsed ? 'px-2' : 'px-6'
@@ -148,7 +149,7 @@ export default function Sidebar({ isOpen = false, isCollapsed = false, onClose, 
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-1">
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {navigation.map((item) => {
             const isActive = location === item.href || (item.submenu && item.submenu.some(sub => location.includes(sub.href)));
             
@@ -263,7 +264,7 @@ export default function Sidebar({ isOpen = false, isCollapsed = false, onClose, 
         </nav>
 
         {/* User section */}
-        <div className="flex-shrink-0 px-3 py-2 border-t border-gray-200 dark:border-gray-700">
+        <div className="mt-auto flex-shrink-0 px-3 py-2 border-t border-gray-200 dark:border-gray-700">
           {isCollapsed ? (
             <div className="relative group">
               <button
