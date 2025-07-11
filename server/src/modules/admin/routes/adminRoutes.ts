@@ -20,9 +20,15 @@ export function registerAdminRoutes(app: Express) {
         result = await storage.getAllAccounts(page, limit);
       }
 
+      // Filter out user profiles (only show actual business owner accounts)
+      const businessAccounts = result.accounts.filter((account: any) => {
+        // User profiles have IDs starting with "profile-", exclude them
+        return !account.id.startsWith("profile-");
+      });
+
       // Transform users to accounts with business info
       const accountsWithBusiness = await Promise.all(
-        result.accounts.map(async (account: any) => {
+        businessAccounts.map(async (account: any) => {
           const business = await storage.getBusiness(account.id);
           return {
             ...account,
@@ -33,9 +39,9 @@ export function registerAdminRoutes(app: Express) {
 
       res.json({ 
         accounts: accountsWithBusiness, 
-        totalPages: result.totalPages,
-        currentPage: result.currentPage,
-        totalAccounts: result.totalAccounts
+        totalPages: Math.ceil(businessAccounts.length / limit),
+        currentPage: page,
+        totalAccounts: businessAccounts.length
       });
     } catch (error) {
       console.error("Error fetching accounts:", error);

@@ -384,7 +384,7 @@ export default function AdminAccountDetail() {
                       <DialogTrigger asChild>
                         <Button
                           onClick={() => {
-                            setSelectedRole(user?.role || "user");
+                            setSelectedRole(account?.role || "user");
                             setIsRoleDialogOpen(true);
                           }}
                           variant="outline"
@@ -401,7 +401,7 @@ export default function AdminAccountDetail() {
                         </DialogHeader>
                         <div className="space-y-4">
                           <p className="text-sm text-gray-600 dark:text-gray-400">
-                            Update the role for {user?.firstName} {user?.lastName} ({user?.email})
+                            Update the role for {account?.firstName} {account?.lastName} ({account?.email})
                           </p>
                           <Select value={selectedRole} onValueChange={setSelectedRole}>
                             <SelectTrigger>
@@ -440,18 +440,18 @@ export default function AdminAccountDetail() {
                           className="w-full"
                         >
                           <Ban className="w-4 h-4 mr-2" />
-                          {user?.status === "disabled" ? "Enable Account" : "Disable Account"}
+                          {account?.status === "disabled" ? "Enable Account" : "Disable Account"}
                         </Button>
                       </DialogTrigger>
                       <DialogContent>
                         <DialogHeader>
                           <DialogTitle>
-                            {user?.status === "disabled" ? "Enable Account" : "Disable Account"}
+                            {account?.status === "disabled" ? "Enable Account" : "Disable Account"}
                           </DialogTitle>
                         </DialogHeader>
                         <div className="space-y-4">
                           <p className="text-sm text-gray-600 dark:text-gray-400">
-                            Are you sure you want to {user?.status === "disabled" ? "enable" : "disable"} the account for {user?.firstName} {user?.lastName} ({user?.email})?
+                            Are you sure you want to {account?.status === "disabled" ? "enable" : "disable"} the account for {account?.firstName} {account?.lastName} ({account?.email})?
                           </p>
                           <p className="text-sm text-red-600 dark:text-red-400">
                             Do you still wish to proceed?
@@ -466,16 +466,16 @@ export default function AdminAccountDetail() {
                           </Button>
                           <Button
                             onClick={() => 
-                              toggleUserStatusMutation.mutate(
-                                user?.status === "disabled" ? "active" : "disabled"
+                              toggleAccountStatusMutation.mutate(
+                                account?.status === "disabled" ? "active" : "disabled"
                               )
                             }
-                            disabled={toggleUserStatusMutation.isPending}
-                            variant={user?.status === "disabled" ? "default" : "destructive"}
+                            disabled={toggleAccountStatusMutation.isPending}
+                            variant={account?.status === "disabled" ? "default" : "destructive"}
                           >
-                            {toggleUserStatusMutation.isPending 
+                            {toggleAccountStatusMutation.isPending 
                               ? "Updating..." 
-                              : user?.status === "disabled" ? "Enable" : "Disable"
+                              : account?.status === "disabled" ? "Enable" : "Disable"
                             }
                           </Button>
                         </DialogFooter>
@@ -500,7 +500,7 @@ export default function AdminAccountDetail() {
                         </DialogHeader>
                         <div className="space-y-4">
                           <p className="text-sm text-gray-600 dark:text-gray-400">
-                            This will reset all data for {user?.firstName} {user?.lastName} ({user?.email}), including:
+                            This will reset all data for {account?.firstName} {account?.lastName} ({account?.email}), including:
                           </p>
                           <ul className="text-sm text-gray-600 dark:text-gray-400 list-disc list-inside space-y-1">
                             <li>Business information and settings</li>
@@ -521,11 +521,11 @@ export default function AdminAccountDetail() {
                             Cancel
                           </Button>
                           <Button
-                            onClick={() => resetUserMutation.mutate()}
-                            disabled={resetUserMutation.isPending}
+                            onClick={() => resetAccountMutation.mutate()}
+                            disabled={resetAccountMutation.isPending}
                             variant="destructive"
                           >
-                            {resetUserMutation.isPending ? "Resetting..." : "Reset Account"}
+                            {resetAccountMutation.isPending ? "Resetting..." : "Reset Account"}
                           </Button>
                         </DialogFooter>
                       </DialogContent>
@@ -549,7 +549,7 @@ export default function AdminAccountDetail() {
                         </DialogHeader>
                         <div className="space-y-4">
                           <p className="text-sm text-gray-600 dark:text-gray-400">
-                            This will permanently delete the account for {user?.firstName} {user?.lastName} ({user?.email}) and all associated data, including:
+                            This will permanently delete the account for {account?.firstName} {account?.lastName} ({account?.email}) and all associated data, including:
                           </p>
                           <ul className="text-sm text-gray-600 dark:text-gray-400 list-disc list-inside space-y-1">
                             <li>User profile and account information</li>
@@ -581,11 +581,11 @@ export default function AdminAccountDetail() {
                             Cancel
                           </Button>
                           <Button
-                            onClick={() => deleteUserMutation.mutate()}
-                            disabled={deleteUserMutation.isPending}
+                            onClick={() => deleteAccountMutation.mutate()}
+                            disabled={deleteAccountMutation.isPending}
                             variant="destructive"
                           >
-                            {deleteUserMutation.isPending ? "Deleting..." : "Delete Forever"}
+                            {deleteAccountMutation.isPending ? "Deleting..." : "Delete Forever"}
                           </Button>
                         </DialogFooter>
                       </DialogContent>
