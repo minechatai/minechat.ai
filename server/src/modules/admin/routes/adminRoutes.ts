@@ -157,13 +157,13 @@ export function registerAdminRoutes(app: Express) {
   });
 
   // Delete user permanently
-  app.delete("/api/admin/users/:userId/delete", ...adminRoute("delete_user"), async (req: any, res) => {
+  app.delete("/api/admin/users/:userId/delete", ...adminRoute("delete_user", true), async (req: any, res) => {
     try {
       const { userId } = req.params;
       const adminId = req.admin.id;
       
       // Get user info for logging before deletion
-      const userToDelete = await storage.getUserById(userId);
+      const userToDelete = await storage.getUser(userId);
       if (!userToDelete) {
         return res.status(404).json({ message: "User not found" });
       }
