@@ -260,14 +260,49 @@ export function registerAdminRoutes(app: Express) {
       req.session.isSwitchedMode = true;
       req.session.switchedToUserId = targetUserId;
 
-      // Update session to target user - ensure proper structure
-      if (!req.user) {
-        req.user = { claims: {} };
-      }
-      if (!req.user.claims) {
-        req.user.claims = {};
-      }
-      req.user.claims.sub = targetUserId;
+      // Create proper session structure for target user
+      const targetUserSession = {
+        claims: {
+          sub: targetUserId,
+          email: targetUser.email,
+          first_name: targetUser.firstName || targetUser.first_name,
+          last_name: targetUser.lastName || targetUser.last_name,
+          profile_image_url: targetUser.profileImageUrl || targetUser.profile_image_url,
+          iat: Math.floor(Date.now() / 1000),
+          exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60),
+        },
+        access_token: "switched-access-token",
+        refresh_token: "switched-refresh-token",
+        expires_at: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60),
+      };
+
+      // Use req.login to properly set the session
+      req.login(targetUserSession, (err) => {
+        if (err) {
+          console.error("❌ Error setting switched user session:", err);
+          return res.status(500).json({ 
+            message: "Failed to switch to account", 
+            error: err.message 
+          });
+        }
+
+        console.log("✅ Account switch successful:", {
+          adminId,
+          targetUserId,
+          targetEmail: targetUser.email,
+          newUserSession: req.user
+        });
+
+        res.json({ 
+          success: true, 
+          message: `Switched to account: ${targetUser.email || targetUser.id}`,
+          switchedUser: {
+            id: targetUser.id,
+            email: targetUser.email,
+            name: targetUser.name || `${targetUser.firstName} ${targetUser.lastName}`.trim()
+          }
+        });
+      });
 
       // Log the action
       await storage.createAdminLog({
@@ -278,22 +313,7 @@ export function registerAdminRoutes(app: Express) {
         ipAddress: req.ip || 'unknown'
       });
 
-      console.log("✅ Account switch successful:", {
-        adminId,
-        targetUserId,
-        targetEmail: targetUser.email,
-        newUserSession: req.user
-      });
-
-      res.json({ 
-        success: true, 
-        message: `Switched to account: ${targetUser.email || targetUser.id}`,
-        switchedUser: {
-          id: targetUser.id,
-          email: targetUser.email,
-          name: targetUser.name || `${targetUser.firstName} ${targetUser.lastName}`.trim()
-        }
-      });
+      
     } catch (error) {
       console.error("❌ Error switching to account:", error);
       res.status(500).json({ 
@@ -313,18 +333,45 @@ export function registerAdminRoutes(app: Express) {
       const originalAdminId = req.session.originalAdminId;
       const switchedFromUserId = req.session.switchedToUserId;
 
-      // Restore original admin session - ensure proper structure
-      if (!req.user) {
-        req.user = { claims: {} };
-      }
-      if (!req.user.claims) {
-        req.user.claims = {};
-      }
-      req.user.claims.sub = originalAdminId;
+      // Get original admin user data
+      const originalAdmin = await storage.getUser(originalAdminId);
       
-      delete req.session.originalAdminId;
-      delete req.session.isSwitchedMode;
-      delete req.session.switchedToUserId;
+      // Create proper admin session structure
+      const adminSession = {
+        claims: {
+          sub: originalAdminId,
+          email: originalAdmin.email,
+          first_name: originalAdmin.firstName || originalAdmin.first_name,
+          last_name: originalAdmin.lastName || originalAdmin.last_name,
+          profile_image_url: originalAdmin.profileImageUrl || originalAdmin.profile_image_url,
+          iat: Math.floor(Date.now() / 1000),
+          exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60),
+        },
+        access_token: "admin-access-token",
+        refresh_token: "admin-refresh-token",
+        expires_at: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60),
+      };
+
+      // Use req.login to properly restore admin session
+      req.login(adminSession, (err) => {
+        if (err) {
+          console.error("❌ Error restoring admin session:", err);
+          return res.status(500).json({ 
+            message: "Failed to switch back to admin", 
+            error: err.message 
+          });
+        }
+
+        // Clean up switch session data
+        delete req.session.originalAdminId;
+        delete req.session.isSwitchedMode;
+        delete req.session.switchedToUserId;
+
+        res.json({ 
+          success: true, 
+          message: "Switched back to admin account" 
+        });
+      });
 
       // Log the action
       await storage.createAdminLog({
@@ -335,10 +382,7 @@ export function registerAdminRoutes(app: Express) {
         ipAddress: req.ip || 'unknown'
       });
 
-      res.json({ 
-        success: true, 
-        message: "Switched back to admin account" 
-      });
+      
     } catch (error) {
       console.error("Error switching back to admin:", error);
       res.status(500).json({ message: "Failed to switch back to admin" });
