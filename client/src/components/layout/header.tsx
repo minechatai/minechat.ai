@@ -15,7 +15,7 @@ interface HeaderProps {
 
 export default function Header({ title, onMenuClick, sidebarCollapsed = false }: HeaderProps) {
   const { user } = useAuth();
-  
+
   // Fetch business information to display company logo
   const { data: business } = useQuery<Business>({
     queryKey: ['/api/business'],
@@ -24,6 +24,12 @@ export default function Header({ title, onMenuClick, sidebarCollapsed = false }:
     cacheTime: 0
   });
 
+  const { data: switchStatus } = useQuery({
+    queryKey: ['/api/admin/switch-status'],
+    enabled: !!user,
+    staleTime: 0,
+    cacheTime: 0
+  });
 
 
   return (
@@ -38,7 +44,7 @@ export default function Header({ title, onMenuClick, sidebarCollapsed = false }:
           >
             <Menu className="w-5 h-5" />
           </Button>
-          
+
           {/* Company Logo and Name - aligned with sidebar Dashboard text */}
           <div className="flex items-center space-x-2 -ml-3">
             {business?.logoUrl ? (
@@ -61,17 +67,25 @@ export default function Header({ title, onMenuClick, sidebarCollapsed = false }:
             )}
             <div className="text-lg">
               <div className="font-semibold text-gray-900 dark:text-white">
-                {business?.companyName || 'Your Company'}
+                {switchStatus?.isSwitched 
+                  ? switchStatus.businessName 
+                  : (business?.companyName || "Your Company")
+                }
+                 {switchStatus?.isSwitched && (
+                    <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                      Admin View
+                    </span>
+                  )}
               </div>
             </div>
           </div>
         </div>
-        
+
         <div className="flex items-center space-x-4">
           <NotificationBell />
-          
+
           <ModeToggle />
-          
+
           <UserProfileDropdown user={user} />
         </div>
       </div>

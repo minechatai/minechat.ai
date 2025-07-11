@@ -38,7 +38,8 @@ interface AdminLog {
 export default function AdminPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedRole, setSelectedRole] = useState<string>("");
+  const [selectedAccount, setSelectedAccount] = useState<any>(null);
+  const [isSwitching, setIsSwitching] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -92,6 +93,40 @@ export default function AdminPage() {
       });
     },
   });
+
+  // Switch to account mutation
+  const switchToAccountMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const response = await apiRequest(`/api/admin/switch-to-account/${userId}`, {
+        method: "POST",
+      });
+      return response;
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Success",
+        description: data.message,
+      });
+      // Redirect to dashboard to show switched view
+      window.location.href = "/dashboard";
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to switch to account",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSwitchToAccount = async (userId: string) => {
+    setIsSwitching(true);
+    try {
+      await switchToAccountMutation.mutateAsync(userId);
+    } finally {
+      setIsSwitching(false);
+    }
+  };
 
   // Redirect if not admin
   useEffect(() => {
@@ -330,7 +365,7 @@ export default function AdminPage() {
                     <p><strong>Role:</strong> {adminCheck.adminInfo.role}</p>
                     <p><strong>ID:</strong> {adminCheck.adminInfo.id}</p>
                   </div>
-                  
+
                   <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                     <h3 className="font-semibold mb-2 text-blue-800 dark:text-blue-200">Admin Features</h3>
                     <ul className="space-y-1 text-sm text-blue-700 dark:text-blue-300">

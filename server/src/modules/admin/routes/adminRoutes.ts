@@ -197,6 +197,112 @@ export function registerAdminRoutes(app: Express) {
   // Reset account
   app.post("/api/admin/accounts/:accountId/reset", ...adminRoute("reset_account", true), async (req: any, res) => {
     try {
+
+
+  // Account switching for super admins
+  app.post('/api/admin/switch-to-account/:userId', isSuperAdmin, async (req: any, res) => {
+    try {
+      const targetUserId = req.params.userId;
+      const adminId = req.user.claims.sub;
+
+      // Verify target user exists
+      const targetUser = await storage.getUser(targetUserId);
+      if (!targetUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Store original admin session for switching back
+      req.session.originalAdminId = adminId;
+      req.session.isSwitchedMode = true;
+      req.session.switchedToUserId = targetUserId;
+
+      // Update session to target user
+      req.user.claims.sub = targetUserId;
+
+      // Log the action
+      await storage.createAdminLog({
+        adminId,
+        action: "switch_to_account",
+        targetUserId,
+        details: `Switched to account: ${targetUser.email || targetUser.id}`,
+        ipAddress: req.ip || 'unknown'
+      });
+
+      res.json({ 
+        success: true, 
+        message: `Switched to account: ${targetUser.email || targetUser.id}`,
+        switchedUser: {
+          id: targetUser.id,
+          email: targetUser.email,
+          name: targetUser.name
+        }
+      });
+    } catch (error) {
+      console.error("Error switching to account:", error);
+      res.status(500).json({ message: "Failed to switch to account" });
+    }
+  });
+
+  // Switch back to admin account
+  app.post('/api/admin/switch-back', isAuthenticated, async (req: any, res) => {
+    try {
+      if (!req.session.isSwitchedMode || !req.session.originalAdminId) {
+        return res.status(400).json({ message: "Not in switched mode" });
+      }
+
+      const originalAdminId = req.session.originalAdminId;
+      const switchedFromUserId = req.session.switchedToUserId;
+
+      // Restore original admin session
+      req.user.claims.sub = originalAdminId;
+      delete req.session.originalAdminId;
+      delete req.session.isSwitchedMode;
+      delete req.session.switchedToUserId;
+
+      // Log the action
+      await storage.createAdminLog({
+        adminId: originalAdminId,
+        action: "switch_back",
+        targetUserId: switchedFromUserId,
+        details: "Switched back to admin account",
+        ipAddress: req.ip || 'unknown'
+      });
+
+      res.json({ 
+        success: true, 
+        message: "Switched back to admin account" 
+      });
+    } catch (error) {
+      console.error("Error switching back to admin:", error);
+      res.status(500).json({ message: "Failed to switch back to admin" });
+    }
+  });
+
+  // Get current switch status
+  app.get('/api/admin/switch-status', isAuthenticated, async (req: any, res) => {
+    try {
+      if (req.session.isSwitchedMode) {
+        const switchedUser = await storage.getUser(req.session.switchedToUserId);
+        const business = await storage.getBusiness(req.session.switchedToUserId);
+        
+        res.json({
+          isSwitched: true,
+          switchedUser: {
+            id: switchedUser?.id,
+            email: switchedUser?.email,
+            name: switchedUser?.name
+          },
+          businessName: business?.companyName || switchedUser?.name || 'Unknown Business'
+        });
+      } else {
+        res.json({ isSwitched: false });
+      }
+    } catch (error) {
+      console.error("Error getting switch status:", error);
+      res.status(500).json({ message: "Failed to get switch status" });
+    }
+  });
+
       const { accountId } = req.params;
       
       // Reset all account data except the user record itself
