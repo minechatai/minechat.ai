@@ -1,28 +1,19 @@
+import { useMutation } from "@tanstack/react-query";
+import { ArrowLeft, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 
-import React from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
-import { apiRequest } from '@/lib/queryClient';
-import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, User } from 'lucide-react';
+interface SwitchBackBannerProps {
+  userName: string;
+}
 
-export function SwitchBackBanner() {
+export default function SwitchBackBanner({ userName }: SwitchBackBannerProps) {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
 
-  // Check if in impersonation mode
-  const { data: viewStatus } = useQuery({
-    queryKey: ['/api/admin/view-status'],
-    refetchInterval: 5000, // Check every 5 seconds
-  });
-
-  // Stop viewing mutation
   const stopViewingMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest(
-        'POST',
-        '/api/admin/stop-viewing'
-      );
+      const response = await apiRequest('POST', '/api/admin/stop-viewing');
       return response;
     },
     onSuccess: () => {
@@ -42,14 +33,24 @@ export function SwitchBackBanner() {
     },
   });
 
-  // Return just the button data for use in admin user detail page
-  if (!viewStatus?.isViewing) {
-    return null;
-  }
+  return (
+    <div className="fixed top-0 left-0 right-0 z-50 bg-blue-600 text-white px-4 py-2 flex items-center justify-between shadow-lg">
+      <div className="flex items-center space-x-2">
+        <div className="text-sm font-medium">
+          Admin Mode: Currently viewing user account
+        </div>
+      </div>
 
-  return {
-    viewStatus,
-    stopViewingMutation,
-    isViewing: viewStatus.isViewing
-  };
+      <Button
+        onClick={() => stopViewingMutation.mutate()}
+        disabled={stopViewingMutation.isPending}
+        size="sm"
+        variant="ghost"
+        className="text-white hover:bg-blue-700 hover:text-white"
+      >
+        <ArrowLeft className="w-4 h-4 mr-2" />
+        {stopViewingMutation.isPending ? "Returning..." : "Return to Admin"}
+      </Button>
+    </div>
+  );
 }

@@ -1,92 +1,56 @@
 import { useAuth } from "@/hooks/useAuth";
+import { Bell, Settings, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Menu } from "lucide-react";
-import { ModeToggle } from "@/components/ui/mode-toggle";
+import { Badge } from "@/components/ui/badge";
 import UserProfileDropdown from "./user-profile-dropdown";
-import NotificationBell from "@/components/notifications/notification-bell";
+import { useActiveProfile } from "@/hooks/useActiveProfile";
 import { useQuery } from "@tanstack/react-query";
-import type { Business } from "@shared/schema";
 
-interface HeaderProps {
-  title?: string;
-  onMenuClick?: () => void;
-  sidebarCollapsed?: boolean;
-}
+export default function Header() {
+  const { user, isImpersonating } = useAuth();
+  const { activeProfile } = useActiveProfile();
 
-export default function Header({ title, onMenuClick, sidebarCollapsed = false }: HeaderProps) {
-  const { user } = useAuth();
-
-  // Fetch business information to display company logo
-  const { data: business } = useQuery<Business>({
-    queryKey: ['/api/business'],
-    enabled: !!user,
-    staleTime: 0,
-    cacheTime: 0
+  // Get unread message count
+  const { data: unreadCount } = useQuery({
+    queryKey: ["/api/conversations/unread-count"],
+    refetchInterval: 30000, // Refresh every 30 seconds
   });
 
-  // Check if admin is viewing as user
-  const { data: viewStatus } = useQuery({
-    queryKey: ['/api/admin/view-status'],
-    enabled: true,
-    refetchInterval: 5000, // Check every 5 seconds
-  });
-
+  const displayName = user?.firstName && user?.lastName 
+    ? `${user.firstName} ${user.lastName}` 
+    : user?.email || 'User';
 
   return (
-    <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-4 h-[73px]">
-      <div className="flex items-center justify-between h-full">
-        <div className="flex items-center">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="lg:hidden mr-2"
-            onClick={onMenuClick}
-          >
-            <Menu className="w-5 h-5" />
-          </Button>
+    <header className="bg-white border-b border-gray-200 px-6 py-4">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <h1 className="text-xl font-semibold text-gray-900">
+            {activeProfile?.name || displayName}
+          </h1>
 
-          {/* Company Logo and Name - aligned with sidebar Dashboard text */}
-          <div className="flex items-center space-x-2 -ml-3">
-            {business?.logoUrl ? (
-              <img
-                src={business.logoUrl}
-                alt={`${business.companyName} logo`}
-                className="w-8 h-8 rounded-full object-cover"
-              />
-            ) : (
-              <div 
-                className="w-8 h-8 rounded-full flex items-center justify-center"
-                style={{
-                  background: 'linear-gradient(135deg, #8b1950, #b33054, #b73850)'
-                }}
-              >
-                <span className="text-white font-semibold text-sm">
-                  {business?.companyName?.[0]?.toUpperCase() || 'S'}
-                </span>
-              </div>
-            )}
-            <div className="text-lg">
-              <div className="font-semibold text-gray-900 dark:text-white">
-                {viewStatus?.isSwitched 
-                  ? viewStatus.businessName 
-                  : (business?.companyName || "Your Company")
-                }
-                 {viewStatus?.isSwitched && (
-                    <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                      Admin View
-                    </span>
-                  )}
-              </div>
-            </div>
-          </div>
+          {/* Show viewing indicator if admin is viewing as user */}
+          {isImpersonating && (
+            <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+              Viewing as {displayName}
+            </Badge>
+          )}
         </div>
 
         <div className="flex items-center space-x-4">
-          <NotificationBell />
+          {/* Notifications */}
+          <Button variant="ghost" size="sm" className="relative">
+            <Bell className="h-5 w-5" />
+            {unreadCount && unreadCount > 0 && (
+              <Badge 
+                variant="destructive" 
+                className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+              >
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </Badge>
+            )}
+          </Button>
 
-          <ModeToggle />
-
-          <UserProfileDropdown user={user} />
+          <UserProfileDropdown />
         </div>
       </div>
     </header>

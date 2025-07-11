@@ -200,10 +200,10 @@ export function registerAdminRoutes(app: Express) {
   app.post("/api/admin/accounts/:accountId/reset", ...adminRoute("reset_account", true), async (req: any, res) => {
     try {
       const accountId = req.params.accountId;
-      
+
       // TODO: Implement resetUserData method
       // await storage.resetUserData(accountId);
-      
+
       // Log the reset action
       await storage.createAdminLog({
         adminId: req.admin.id,
@@ -251,7 +251,7 @@ export function registerAdminRoutes(app: Express) {
       // Verify target user exists
       console.log("🔍 Looking up target user:", targetUserId);
       const targetUser = await storage.getUser(targetUserId);
-      
+
       if (!targetUser) {
         console.error("❌ Target user not found:", targetUserId);
         return res.status(404).json({ message: "The account you're trying to access doesn't exist" });
@@ -299,7 +299,7 @@ export function registerAdminRoutes(app: Express) {
             : targetUser.email || targetUser.id
         }
       });
-      
+
     } catch (error) {
       console.error("❌ Error starting user view:", error);
       res.status(500).json({ 
@@ -341,7 +341,7 @@ export function registerAdminRoutes(app: Express) {
         success: true, 
         message: "Returned to admin view" 
       });
-      
+
     } catch (error) {
       console.error("Error stopping user view:", error);
       res.status(500).json({ message: "Failed to return to admin view" });
@@ -360,7 +360,7 @@ export function registerAdminRoutes(app: Express) {
       sessionKeys: Object.keys(req.session || {}),
       passportUser: req.session?.passport?.user
     });
-    
+
     res.json({
       hasUser: !!req.user,
       hasClaims: !!req.user?.claims,
@@ -384,6 +384,9 @@ export function registerAdminRoutes(app: Express) {
           viewedUser: {
             id: viewedUser?.id,
             email: viewedUser?.email,
+            firstName: viewedUser?.firstName,
+            lastName: viewedUser?.lastName,
+            profileImageUrl: viewedUser?.profileImageUrl,
             name: viewedUser?.firstName && viewedUser?.lastName 
               ? `${viewedUser.firstName} ${viewedUser.lastName}`.trim()
               : viewedUser?.email || viewedUser?.id
@@ -697,6 +700,40 @@ export function registerAdminRoutes(app: Express) {
     } catch (error) {
       console.error("Error creating admin log:", error);
       res.status(500).json({ message: "Failed to create admin log" });
+    }
+  });
+
+  // Get admin view status
+  app.get('/api/admin/view-status', async (req: any, res) => {
+    try {
+      const isViewing = !!req.session?.isImpersonating;
+      const viewedUserId = req.session?.impersonatingUserId;
+
+      if (isViewing && viewedUserId) {
+        // Get the viewed user's info
+        const viewedUser = await storage.getUser(viewedUserId);
+        if (viewedUser) {
+          res.json({
+            isViewing: true,
+            viewedUser: {
+              id: viewedUser.id,
+              email: viewedUser.email,
+              firstName: viewedUser.firstName,
+              lastName: viewedUser.lastName,
+              profileImageUrl: viewedUser.profileImageUrl,
+              name: viewedUser.firstName && viewedUser.lastName 
+                ? `${viewedUser.firstName} ${viewedUser.lastName}`.trim()
+                : viewedUser.email || viewedUser.id
+            }
+          });
+          return;
+        }
+      }
+
+      res.json({ isViewing: false });
+    } catch (error) {
+      console.error("Error checking view status:", error);
+      res.status(500).json({ message: "Failed to check view status" });
     }
   });
 }
