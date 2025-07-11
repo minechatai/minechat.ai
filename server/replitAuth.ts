@@ -135,20 +135,42 @@ export function getEffectiveUserId(req: any): string | null {
   }
   
   // Otherwise, return the authenticated user's ID
-  return req.user?.claims?.sub || null;
+  // Handle both OAuth (claims.sub) and email auth (direct id) structures
+  return req.user?.claims?.sub || req.user?.id || null;
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
   const user = req.user as any;
 
-  if (!req.isAuthenticated() || !user.expires_at) {
+  console.log("🔐 Auth middleware check:", {
+    isAuthenticated: req.isAuthenticated(),
+    hasUser: !!user,
+    userStructure: user ? Object.keys(user) : null,
+    expires_at: user?.expires_at,
+    claims: user?.claims ? Object.keys(user.claims) : null,
+    sessionId: req.session?.id,
+    impersonating: req.session?.isImpersonating,
+    impersonatingUserId: req.session?.impersonatingUserId
+  });
+
+  if (!req.isAuthenticated()) {
+    console.log("❌ Not authenticated");
     return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  // Handle email authentication (no expires_at field)
+  if (!user.expires_at) {
+    // Set the effective user ID for API requests
+    req.effectiveUserId = getEffectiveUserId(req);
+    console.log("✅ Email auth - effectiveUserId:", req.effectiveUserId);
+    return next();
   }
 
   const now = Math.floor(Date.now() / 1000);
   if (now <= user.expires_at) {
     // Set the effective user ID for API requests
     req.effectiveUserId = getEffectiveUserId(req);
+    console.log("✅ OAuth auth - effectiveUserId:", req.effectiveUserId);
     return next();
   }
 

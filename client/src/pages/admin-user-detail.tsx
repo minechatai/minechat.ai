@@ -102,10 +102,11 @@ function AdminViewButton({ accountId }: { accountId: string }) {
       queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/view-status'] });
       
-      // Use React Router navigation instead of window.location to preserve session
+      // Wait for session to be properly saved before redirect
       setTimeout(() => {
+        // Force a complete page reload to ensure fresh session state
         window.location.href = "/dashboard";
-      }, 100);
+      }, 500);
     },
     onError: (error: any) => {
       console.error("❌ View mutation error:", error);
