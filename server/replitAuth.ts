@@ -127,6 +127,17 @@ export async function setupAuth(app: Express) {
   });
 }
 
+// Helper function to get the effective user ID (considering impersonation)
+export function getEffectiveUserId(req: any): string | null {
+  // If admin is impersonating a user, return the impersonated user's ID
+  if (req.session?.isImpersonating && req.session?.impersonatingUserId) {
+    return req.session.impersonatingUserId;
+  }
+  
+  // Otherwise, return the authenticated user's ID
+  return req.user?.claims?.sub || null;
+}
+
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
   const user = req.user as any;
 

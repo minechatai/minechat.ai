@@ -168,7 +168,7 @@ export default function AdminAccountDetail() {
   });
 
   // View as user mutation
-  const switchToAccountMutation = useMutation({
+  const viewAsUserMutation = useMutation({
     mutationFn: async (userId: string) => {
       console.log("👁️ Making API request to view as user:", userId);
       try {
@@ -417,12 +417,12 @@ export default function AdminAccountDetail() {
                   <div className="space-y-2">
                     {/* View as User Button */}
                     <Button
-                      onClick={() => switchToAccountMutation.mutate(account.id)}
+                      onClick={() => viewAsUserMutation.mutate(account.id)}
                       variant="default"
                       className="w-full"
-                      disabled={switchToAccountMutation.isPending}
+                      disabled={viewAsUserMutation.isPending}
                     >
-                      {switchToAccountMutation.isPending ? "Starting View..." : "View as User"}
+                      {viewAsUserMutation.isPending ? "Starting View..." : "View as User"}
                     </Button>
 
                     {/* Edit Role Dialog */}

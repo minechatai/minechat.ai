@@ -94,24 +94,24 @@ export default function AdminPage() {
     },
   });
 
-  // Switch to account mutation
-  const switchToAccountMutation = useMutation({
+  // View as user mutation
+  const viewAsUserMutation = useMutation({
     mutationFn: async (userId: string) => {
-      console.log("🔄 Starting account switch for user:", userId);
+      console.log("👁️ Starting view as user for:", userId);
       try {
-        const response = await apiRequest("POST", `/api/admin/switch-to-account/${userId}`);
-        console.log("✅ Switch API response:", response);
+        const response = await apiRequest("POST", `/api/admin/view-as-user/${userId}`);
+        console.log("✅ View API response:", response);
         return response;
       } catch (error) {
-        console.error("❌ Switch API error:", error);
+        console.error("❌ View API error:", error);
         throw error;
       }
     },
     onSuccess: (data) => {
-      console.log("✅ Switch successful, redirecting to dashboard");
+      console.log("✅ View successful, redirecting to dashboard");
       toast({
         title: "Success",
-        description: data.message || "Successfully switched to account",
+        description: data.message || "Now viewing as user",
       });
       // Small delay to ensure toast is visible before redirect
       setTimeout(() => {
@@ -119,20 +119,20 @@ export default function AdminPage() {
       }, 500);
     },
     onError: (error: any) => {
-      console.error("❌ Switch mutation error:", error);
+      console.error("❌ View mutation error:", error);
       toast({
-        title: "Account Switch Failed",
-        description: error.message || "Unable to switch to this account. Please try again.",
+        title: "View Failed",
+        description: error.message || "Unable to view as this user. Please try again.",
         variant: "destructive",
       });
     },
   });
 
-  const handleSwitchToAccount = (accountId: string) => {
-    console.log("🔄 Handling switch to account:", accountId);
+  const handleViewAsUser = (accountId: string) => {
+    console.log("👁️ Handling view as user:", accountId);
     setSelectedAccount(accountId);
     setIsSwitching(true);
-    switchToAccountMutation.mutate(accountId);
+    viewAsUserMutation.mutate(accountId);
   };
 
   // Redirect if not admin
@@ -313,13 +313,13 @@ export default function AdminPage() {
                                   </Select>
 
                                   <Button
-                                    onClick={() => handleSwitchToAccount(account.id)}
-                                    disabled={isSwitching || switchToAccountMutation.isPending}
+                                    onClick={() => handleViewAsUser(account.id)}
+                                    disabled={isSwitching || viewAsUserMutation.isPending}
                                     variant="outline"
                                     size="sm"
                                     className="ml-2"
                                   >
-                                    {isSwitching && selectedAccount === account.id ? "Switching..." : "Login as User"}
+                                    {isSwitching && selectedAccount === account.id ? "Starting View..." : "View as User"}
                                   </Button>
                                 </>
                               )}
