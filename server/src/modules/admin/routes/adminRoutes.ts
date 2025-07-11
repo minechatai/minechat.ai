@@ -159,11 +159,15 @@ export function registerAdminRoutes(app: Express) {
   // Delete user permanently
   app.delete("/api/admin/users/:userId/delete", ...adminRoute("delete_user", true), async (req: any, res) => {
     try {
+      console.log("🗑️ DELETE USER REQUEST:", { userId: req.params.userId, adminId: req.admin?.id });
+      
       const { userId } = req.params;
       const adminId = req.admin.id;
       
       // Get user info for logging before deletion
       const userToDelete = await storage.getUser(userId);
+      console.log("🔍 User to delete:", userToDelete);
+      
       if (!userToDelete) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -172,6 +176,8 @@ export function registerAdminRoutes(app: Express) {
       if (req.admin.id === userId) {
         return res.status(400).json({ message: "Cannot delete your own account" });
       }
+      
+      console.log("🗑️ Starting deletion process for user:", userId);
       
       // Log the deletion action
       await storage.createAdminLog({
@@ -192,10 +198,11 @@ export function registerAdminRoutes(app: Express) {
       // Delete the user and all related data
       await storage.deleteUser(userId);
       
+      console.log("✅ User deleted successfully:", userId);
       res.json({ message: "User deleted successfully" });
     } catch (error) {
-      console.error("Error deleting user:", error);
-      res.status(500).json({ message: "Failed to delete user" });
+      console.error("❌ Error deleting user:", error);
+      res.status(500).json({ message: "Failed to delete user", error: error.message });
     }
   });
 
