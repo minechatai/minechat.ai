@@ -660,6 +660,13 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - **Business Data**: Business endpoints now properly filter by impersonated user's ID, showing correct business information
   - **Session Management**: Added forced session saving and comprehensive session tracking for reliable impersonation state
   - **Testing Verified**: Complete impersonation system tested and confirmed working with curl commands showing proper user data switching
+- July 11, 2025: Account Deletion Foreign Key Constraint Fix - COMPLETE
+  - **File Modified**: `server/storage.ts` - Implemented comprehensive cascading delete for complete user account removal
+  - **Database Integrity**: Added proper deletion order to handle all foreign key constraints (messages, conversations, documents, products, AI assistants, businesses, user profiles, channels, Facebook connections, analytics)
+  - **Admin Log Cleanup**: Fixed foreign key constraint violation by deleting admin logs where user is both target and admin
+  - **Session Cleanup**: Added admin session deletion to prevent orphaned session references
+  - **Cascade Order**: Implemented proper deletion sequence from child tables to parent tables
+  - **Issue Fixed**: Account deletion now works correctly without foreign key constraint violations
 
 # User Preferences
 
