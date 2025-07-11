@@ -155,7 +155,7 @@ export function setupFacebookRoutes(app: Express) {
       await storage.createMessage({
         conversationId: conversation.id,
         senderId: senderId,
-        senderType: "user",
+        senderType: "customer",
         content: messageText,
         messageType: "text"
       });
@@ -288,7 +288,7 @@ You represent ${business?.companyName || "our business"} and customers expect ac
             // Add recent conversation history (last 10 messages)
             const recentMessages = messages.slice(-10);
             recentMessages.forEach(msg => {
-              if (msg.senderType === "user") {
+              if (msg.senderType === "customer") {
                 conversationMessages.push({ role: "user", content: msg.content });
               } else if (msg.senderType === "ai") {
                 conversationMessages.push({ role: "assistant", content: msg.content });

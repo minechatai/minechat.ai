@@ -609,7 +609,10 @@ export class DatabaseStorage implements IStorage {
         .where(
           and(
             eq(conversations.userId, userId),
-            eq(messages.senderType, "customer"), // Only get customer messages
+            or(
+              eq(messages.senderType, "customer"), // Get customer messages
+              eq(messages.senderType, "user") // Also get user messages (Facebook format)
+            ),
             // Exclude test conversations
             sql`${conversations.source} != 'test'`
           )
@@ -637,7 +640,10 @@ export class DatabaseStorage implements IStorage {
           .where(
             and(
               eq(conversations.userId, userId),
-              eq(messages.senderType, "customer"),
+              or(
+                eq(messages.senderType, "customer"),
+                eq(messages.senderType, "user")
+              ),
               sql`${conversations.source} != 'test'`,
               sql`${messages.createdAt} >= ${startUTC}`,
               sql`${messages.createdAt} <= ${endUTC}`
