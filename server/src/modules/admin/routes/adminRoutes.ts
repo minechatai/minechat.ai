@@ -204,14 +204,15 @@ export function registerAdminRoutes(app: Express) {
   app.post('/api/admin/switch-to-account/:userId', isSuperAdmin, async (req: any, res) => {
     try {
       const targetUserId = req.params.userId;
-      const adminId = req.admin?.id || req.user?.claims?.sub;
+      const adminId = req.admin?.id;
 
       console.log("🔄 Switch to account request:", {
         targetUserId,
         adminId,
         hasAdmin: !!req.admin,
         hasUser: !!req.user,
-        hasSession: !!req.session
+        hasSession: !!req.session,
+        userStructure: req.user
       });
 
       if (!adminId) {
@@ -229,10 +230,14 @@ export function registerAdminRoutes(app: Express) {
       req.session.isSwitchedMode = true;
       req.session.switchedToUserId = targetUserId;
 
-      // Update session to target user
-      if (req.user && req.user.claims) {
-        req.user.claims.sub = targetUserId;
+      // Update session to target user - ensure proper structure
+      if (!req.user) {
+        req.user = { claims: {} };
       }
+      if (!req.user.claims) {
+        req.user.claims = {};
+      }
+      req.user.claims.sub = targetUserId;
 
       // Log the action
       await storage.createAdminLog({
@@ -246,7 +251,8 @@ export function registerAdminRoutes(app: Express) {
       console.log("✅ Account switch successful:", {
         adminId,
         targetUserId,
-        targetEmail: targetUser.email
+        targetEmail: targetUser.email,
+        newUserSession: req.user
       });
 
       res.json({ 
@@ -277,8 +283,15 @@ export function registerAdminRoutes(app: Express) {
       const originalAdminId = req.session.originalAdminId;
       const switchedFromUserId = req.session.switchedToUserId;
 
-      // Restore original admin session
+      // Restore original admin session - ensure proper structure
+      if (!req.user) {
+        req.user = { claims: {} };
+      }
+      if (!req.user.claims) {
+        req.user.claims = {};
+      }
       req.user.claims.sub = originalAdminId;
+      
       delete req.session.originalAdminId;
       delete req.session.isSwitchedMode;
       delete req.session.switchedToUserId;
