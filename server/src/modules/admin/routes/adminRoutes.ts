@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { storage } from "../../../../storage";
-import { isAdmin, isSuperAdmin, logAdminActivity, adminRoute } from "../../../../adminAuth";
+import { isAdmin, isSuperAdmin } from "../../../../adminAuth";
 import { insertAdminLogSchema } from "@shared/schema";
 import { z } from "zod";
 
@@ -221,7 +221,7 @@ export function registerAdminRoutes(app: Express) {
   });
 
   // Delete account (super admin only)
-  app.delete("/api/admin/accounts/:accountId/delete", ...adminRoute("delete_account", true), async (req: any, res) => {
+  app.delete("/api/admin/accounts/:accountId/delete", isSuperAdmin, async (req: any, res) => {
     try {
       console.log("🗑️ DELETE ACCOUNT REQUEST:", { accountId: req.params.accountId, adminId: req.admin?.id });
       
