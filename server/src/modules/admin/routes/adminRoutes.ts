@@ -223,12 +223,21 @@ export function registerAdminRoutes(app: Express) {
   // Delete account (super admin only)
   app.delete("/api/admin/accounts/:accountId/delete", isSuperAdmin, async (req: any, res) => {
     try {
-      console.log("🗑️ DELETE ACCOUNT REQUEST:", { accountId: req.params.accountId, adminId: req.admin?.id });
+      console.log("🗑️ DELETE ACCOUNT REQUEST:", { 
+        accountId: req.params.accountId, 
+        adminId: req.admin?.id,
+        adminRole: req.admin?.role,
+        adminEmail: req.admin?.email
+      });
       
       const { accountId } = req.params;
       
+      // Debug admin object
+      console.log("🔍 Admin object:", req.admin);
+      
       // Prevent admin from deleting their own account
       if (req.admin.id === accountId) {
+        console.log("❌ Admin trying to delete their own account");
         return res.status(400).json({ message: "Cannot delete your own account" });
       }
 

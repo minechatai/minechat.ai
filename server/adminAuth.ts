@@ -41,23 +41,33 @@ export const isAdmin: RequestHandler = async (req: any, res, next) => {
 // Super admin only middleware
 export const isSuperAdmin: RequestHandler = async (req: any, res, next) => {
   try {
+    console.log("🔒 isSuperAdmin middleware - checking authentication");
+    
     // Check if user is authenticated first
     if (!req.isAuthenticated() || !req.user?.claims?.sub) {
+      console.log("❌ User not authenticated or no claims");
       return res.status(401).json({ message: "Authentication required" });
     }
 
     const userId = req.user.claims.sub;
+    console.log("👤 User ID:", userId);
+    
     const user = await storage.getUser(userId);
+    console.log("📝 User from database:", user);
     
     if (!user) {
+      console.log("❌ User not found in database");
       return res.status(401).json({ message: "User not found" });
     }
 
     // Check if user has super admin role
     if (user.role !== "super_admin") {
+      console.log("❌ User role is not super_admin:", user.role);
       return res.status(403).json({ message: "Super admin access required" });
     }
 
+    console.log("✅ Super admin access granted");
+    
     // Add admin info to request
     req.admin = {
       id: user.id,
