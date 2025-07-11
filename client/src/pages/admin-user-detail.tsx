@@ -173,16 +173,16 @@ export default function AdminAccountDetail() {
     );
   }
 
-  if (!user) {
+  if (!account) {
     return (
       <MainLayout>
         <div className="space-y-6">
           <div className="text-center py-12">
             <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
-              User not found
+              Account not found
             </h2>
             <p className="mt-2 text-gray-600 dark:text-gray-400">
-              The user you're looking for doesn't exist.
+              The account you're looking for doesn't exist.
             </p>
             <Button
               onClick={() => navigate("/admin")}
@@ -235,10 +235,10 @@ export default function AdminAccountDetail() {
             </Button>
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                User Details
+                Account Details
               </h1>
               <p className="text-gray-600 dark:text-gray-400">
-                Manage user account and settings
+                Manage business account and settings
               </p>
             </div>
           </div>
@@ -261,12 +261,12 @@ export default function AdminAccountDetail() {
                     : account?.email}
                 </CardTitle>
                 <div className="flex items-center space-x-2 mt-2">
-                  <Badge className={getRoleBadgeColor(user?.role || "user")}>
+                  <Badge className={getRoleBadgeColor(account?.role || "user")}>
                     <Shield className="w-3 h-3 mr-1" />
-                    {(user?.role || "user").replace("_", " ").toUpperCase()}
+                    {(account?.role || "user").replace("_", " ").toUpperCase()}
                   </Badge>
                   <Badge variant="outline">
-                    {user?.status || "Active"}
+                    {account?.status || "Active"}
                   </Badge>
                 </div>
               </div>
@@ -283,13 +283,13 @@ export default function AdminAccountDetail() {
                     <div className="flex items-center space-x-2">
                       <Mail className="w-4 h-4 text-gray-500" />
                       <span className="text-sm text-gray-600 dark:text-gray-400">
-                        {user?.email}
+                        {account?.email}
                       </span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Calendar className="w-4 h-4 text-gray-500" />
                       <span className="text-sm text-gray-600 dark:text-gray-400">
-                        Joined {user?.createdAt ? format(new Date(user.createdAt), "PPP") : "Unknown"}
+                        Joined {account?.createdAt ? format(new Date(account.createdAt), "PPP") : "Unknown"}
                       </span>
                     </div>
                   </div>
@@ -330,12 +330,12 @@ export default function AdminAccountDetail() {
                     </div>
                     <div className="text-sm">
                       <span className="font-medium">Last Active:</span>{" "}
-                      {user?.updatedAt ? format(new Date(user.updatedAt), "PPp") : "Never"}
+                      {account?.updatedAt ? format(new Date(account.updatedAt), "PPp") : "Never"}
                     </div>
                     <div className="text-sm">
                       <span className="font-medium">Account Status:</span>{" "}
                       <Badge variant="outline" className="ml-1">
-                        {user?.status || "Active"}
+                        {account?.status || "Active"}
                       </Badge>
                     </div>
                   </div>
