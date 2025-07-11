@@ -81,14 +81,21 @@ export default function CreateUserProfile() {
         position: userData.position || ''
       };
       
-      const response = await apiRequest("/api/user-profiles", {
+      const response = await fetch("/api/user-profiles", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify(profileData),
       });
-      return response;
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to create user profile');
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       // Invalidate and refetch user profiles to update the list
