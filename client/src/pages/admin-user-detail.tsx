@@ -142,6 +142,7 @@ export default function AdminAccountDetail() {
   // Delete account mutation
   const deleteAccountMutation = useMutation({
     mutationFn: async () => {
+      console.log("🗑️ Deleting account:", accountId);
       return await apiRequest(`/api/admin/accounts/${accountId}/delete`, {
         method: "DELETE",
       });

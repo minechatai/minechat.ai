@@ -22,8 +22,11 @@ export function registerAdminRoutes(app: Express) {
 
       // Filter out user profiles (only show actual business owner accounts)
       const businessAccounts = result.accounts.filter((account: any) => {
-        // User profiles have IDs starting with "profile-", exclude them
-        return !account.id.startsWith("profile-");
+        // Exclude user profiles (IDs starting with "profile-") and test accounts
+        return !account.id.startsWith("profile-") && 
+               !account.id.startsWith("user-") &&
+               account.email && 
+               account.email.length > 0;
       });
 
       // Transform users to accounts with business info
@@ -216,6 +219,8 @@ export function registerAdminRoutes(app: Express) {
   // Delete account (super admin only)
   app.delete("/api/admin/accounts/:accountId/delete", ...adminRoute("delete_account", true), async (req: any, res) => {
     try {
+      console.log("🗑️ DELETE ACCOUNT REQUEST:", { accountId: req.params.accountId, adminId: req.admin?.id });
+      
       const { accountId } = req.params;
       
       // Prevent admin from deleting their own account
@@ -225,22 +230,24 @@ export function registerAdminRoutes(app: Express) {
 
       // Get user data before deletion for logging
       const accountToDelete = await storage.getUser(accountId);
+      console.log("🔍 Account to delete:", accountToDelete);
+      
       if (!accountToDelete) {
         return res.status(404).json({ message: "Account not found" });
       }
 
-      // Delete the account and all related data
-      await storage.deleteUser(accountId);
+      console.log("🗑️ Starting permanent deletion process for account:", accountId);
       
-      // Log the deletion
+      // Log the deletion action BEFORE deletion
       await storage.createAdminLog({
         adminId: req.admin.id,
-        action: "delete_account",
+        action: "delete_account_permanently",
         targetUserId: accountId,
         details: { 
           deletedAccount: {
             email: accountToDelete.email,
-            name: `${accountToDelete.firstName} ${accountToDelete.lastName}`,
+            firstName: accountToDelete.firstName || accountToDelete.first_name,
+            lastName: accountToDelete.lastName || accountToDelete.last_name,
             role: accountToDelete.role
           }
         },
@@ -248,10 +255,14 @@ export function registerAdminRoutes(app: Express) {
         userAgent: req.get("User-Agent") || "Unknown",
       });
 
-      res.json({ message: "Account deleted successfully" });
+      // Delete the account and all related data
+      await storage.deleteUser(accountId);
+      
+      console.log("✅ Account deleted successfully:", accountId);
+      res.json({ message: "Account deleted permanently" });
     } catch (error) {
-      console.error("Error deleting account:", error);
-      res.status(500).json({ message: "Failed to delete account" });
+      console.error("❌ Error deleting account:", error);
+      res.status(500).json({ message: "Failed to delete account", error: error.message });
     }
   });
 
