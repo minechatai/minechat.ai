@@ -7,7 +7,7 @@ export function setupAiRoutes(app: Express): void {
   // Get AI Assistant configuration
   app.get('/api/ai-assistant', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.effectiveUserId;
       const assistant = await storage.getAiAssistant(userId);
       res.json(assistant);
     } catch (error) {
@@ -19,7 +19,7 @@ export function setupAiRoutes(app: Express): void {
   // Save AI Assistant configuration
   app.post('/api/ai-assistant', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.effectiveUserId;
       const validatedData = insertAiAssistantSchema.parse(req.body);
       const assistant = await storage.upsertAiAssistant(userId, { ...validatedData, userId });
       res.json(assistant);
@@ -32,7 +32,7 @@ export function setupAiRoutes(app: Express): void {
   // Delete AI Assistant configuration
   app.delete('/api/ai-assistant', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.effectiveUserId;
       await storage.deleteAiAssistant(userId);
       res.json({ message: "AI Assistant settings deleted successfully" });
     } catch (error) {
@@ -44,7 +44,7 @@ export function setupAiRoutes(app: Express): void {
   // Main AI Chat endpoint
   app.post('/api/chat', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.effectiveUserId;
       const { message, conversationId } = req.body;
 
       if (!message) {

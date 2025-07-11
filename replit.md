@@ -660,6 +660,14 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - **Business Data**: Business endpoints now properly filter by impersonated user's ID, showing correct business information
   - **Session Management**: Added forced session saving and comprehensive session tracking for reliable impersonation state
   - **Testing Verified**: Complete impersonation system tested and confirmed working with curl commands showing proper user data switching
+- July 11, 2025: CRITICAL FIX - God Mode Admin Analytics Impersonation System - COMPLETE SUCCESS
+  - **File Modified**: `server/src/modules/analytics/routes/analyticsRoutes.ts` - Updated all analytics endpoints to use req.effectiveUserId instead of req.user.claims.sub
+  - **File Modified**: `server/src/modules/ai/routes/aiRoutes.ts` - Updated AI assistant endpoints to use req.effectiveUserId for proper impersonation
+  - **API Endpoint Fix**: Corrected impersonation endpoint from `/api/admin/switch-to-account/` to `/api/admin/view-as-user/`
+  - **Analytics Working**: God Mode Admin now sees real data when impersonating accounts (107 messages, 3h 12m saved, hourly distribution)
+  - **Impersonation Status**: Successfully viewing as "AI Minechat" from "Bhriella's Farm" with 197 total messages across 2 conversations
+  - **Data Integrity**: All analytics pulling from correct impersonated user ID instead of admin's ID
+  - **Complete Fix**: Messages Sent, Time Saved, Messages Per Hour, and FAQ Analysis all displaying authentic user data
 - July 11, 2025: Account Deletion Foreign Key Constraint Fix - COMPLETE
   - **File Modified**: `server/storage.ts` - Implemented comprehensive cascading delete for complete user account removal
   - **Database Integrity**: Added proper deletion order to handle all foreign key constraints (messages, conversations, documents, products, AI assistants, businesses, user profiles, channels, Facebook connections, analytics)

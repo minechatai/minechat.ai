@@ -13,7 +13,7 @@ export function setupAnalyticsRoutes(app: Express) {
   // Analytics routes
   app.get('/api/analytics', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.effectiveUserId;
       const analytics = await storage.getAnalytics(userId);
 
       // If no analytics exist, return default values
@@ -41,7 +41,7 @@ export function setupAnalyticsRoutes(app: Express) {
   // Time Saved Analytics endpoint
   app.get('/api/analytics/time-saved', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.effectiveUserId;
       const { startDate, endDate, comparisonPeriod } = req.query;
 
       console.log("🔍 Time Saved Debug - User ID:", userId);
@@ -120,7 +120,7 @@ export function setupAnalyticsRoutes(app: Express) {
   // Messages Sent Analytics endpoint
   app.get('/api/analytics/messages-sent', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.effectiveUserId;
       const { startDate, endDate, comparisonPeriod } = req.query;
 
       console.log("🔍 Messages Sent Debug - User ID:", userId);
@@ -210,7 +210,7 @@ export function setupAnalyticsRoutes(app: Express) {
   // Conversations Per Hour Analytics endpoint
   app.get('/api/analytics/conversations-per-hour', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.effectiveUserId;
       const { startDate, endDate, comparisonPeriod } = req.query;
 
       console.log("🔍 Messages Received Per Hour Debug - User ID:", userId);
@@ -308,7 +308,7 @@ export function setupAnalyticsRoutes(app: Express) {
   // FAQ Analysis endpoint
   app.get('/api/faq-analysis', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.effectiveUserId;
       const { startDate, endDate } = req.query;
 
       console.log("🔍 FAQ Analysis Debug - User ID:", userId);

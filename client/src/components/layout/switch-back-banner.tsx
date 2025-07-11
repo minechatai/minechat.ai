@@ -44,7 +44,7 @@ export default function SwitchBackBanner({ userName }: SwitchBackBannerProps) {
     <div className="bg-blue-600 text-white px-4 py-2 flex items-center justify-between shadow-lg">
       <div className="flex items-center space-x-2">
         <div className="text-sm font-medium">
-          Admin Mode: Currently viewing user account
+          🚀 God Mode Admin: Currently viewing user account
         </div>
       </div>
 
