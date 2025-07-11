@@ -41,7 +41,7 @@ export default function SwitchBackBanner({ userName }: SwitchBackBannerProps) {
   });
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 bg-blue-600 text-white px-4 py-2 flex items-center justify-between shadow-lg">
+    <div className="bg-blue-600 text-white px-4 py-2 flex items-center justify-between shadow-lg">
       <div className="flex items-center space-x-2">
         <div className="text-sm font-medium">
           Admin Mode: Currently viewing user account

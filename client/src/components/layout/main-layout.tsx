@@ -38,18 +38,17 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      {/* Show switch back banner if viewing as user */}
-      {isImpersonating && (
-        <SwitchBackBanner 
-          userName={originalUser?.firstName && originalUser?.lastName 
-            ? `${originalUser.firstName} ${originalUser.lastName}` 
-            : originalUser?.email || "Admin"}
-        />
-      )}
-
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header />
+        {/* Show switch back banner if viewing as user - positioned below header */}
+        {isImpersonating && (
+          <SwitchBackBanner 
+            userName={originalUser?.firstName && originalUser?.lastName 
+              ? `${originalUser.firstName} ${originalUser.lastName}` 
+              : originalUser?.email || "Admin"}
+          />
+        )}
         <main className="flex-1 overflow-y-auto p-6">
           {children}
         </main>
