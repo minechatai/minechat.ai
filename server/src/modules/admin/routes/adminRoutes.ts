@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { storage } from "../../../../storage";
-import { isAdmin, isSuperAdmin } from "../../../../adminAuth";
+import { isAdmin, isSuperAdmin, adminRoute } from "../../../../adminAuth";
 import { insertAdminLogSchema } from "@shared/schema";
 import { z } from "zod";
 
