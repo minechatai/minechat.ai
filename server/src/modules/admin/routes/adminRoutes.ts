@@ -147,8 +147,16 @@ export function registerAdminRoutes(app: Express) {
       const { role, status } = req.body;
 
       if (role) {
-        if (!["user", "admin", "super_admin"].includes(role)) {
+        if (!["user", "admin", "super_admin", "god_admin"].includes(role)) {
           return res.status(400).json({ message: "Invalid role" });
+        }
+
+        // Prevent assigning god_admin role to anyone except tech@minechat.ai
+        if (role === "god_admin") {
+          const user = await storage.getUser(accountId);
+          if (user?.email !== "tech@minechat.ai") {
+            return res.status(403).json({ message: "God Mode Admin role is restricted to tech@minechat.ai only" });
+          }
         }
 
         // Prevent super admin from downgrading themselves

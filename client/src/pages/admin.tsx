@@ -294,14 +294,17 @@ export default function AdminPage() {
                           <TableCell>{account.companyName || "Not Set"}</TableCell>
                           <TableCell>{account.email}</TableCell>
                           <TableCell>
-                            <Badge variant={account.role === "super_admin" ? "default" : account.role === "admin" ? "secondary" : "outline"}>
-                              {account.role?.replace("_", " ") || "user"}
+                            <Badge 
+                              variant={account.role === "god_admin" ? "default" : account.role === "super_admin" ? "default" : account.role === "admin" ? "secondary" : "outline"}
+                              className={account.role === "god_admin" ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold" : ""}
+                            >
+                              {account.role === "god_admin" ? "🚀 God Mode Admin" : account.role?.replace("_", " ") || "user"}
                             </Badge>
                           </TableCell>
                           <TableCell>{new Date(account.createdAt).toLocaleDateString()}</TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
-                              {adminCheck.adminInfo.role === "super_admin" && (
+                              {(adminCheck.adminInfo.role === "super_admin" || adminCheck.adminInfo.role === "god_admin") && (
                                 <>
                                   <Select
                                     value={account.role || "user"}

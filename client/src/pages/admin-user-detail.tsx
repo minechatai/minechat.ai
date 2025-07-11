@@ -421,8 +421,10 @@ export default function AdminAccountDetail() {
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
+      case "god_admin":
+        return "bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold";
       case "super_admin":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
       case "admin":
         return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
       default:
@@ -487,7 +489,7 @@ export default function AdminAccountDetail() {
                 <div className="flex items-center space-x-2 mt-2">
                   <Badge className={getRoleBadgeColor(account?.role || "user")}>
                     <Shield className="w-3 h-3 mr-1" />
-                    {(account?.role || "user").replace("_", " ").toUpperCase()}
+                    {account?.role === "god_admin" ? "🚀 GOD MODE ADMIN" : (account?.role || "user").replace("_", " ").toUpperCase()}
                   </Badge>
                   <Badge variant="outline">
                     {account?.status || "Active"}
