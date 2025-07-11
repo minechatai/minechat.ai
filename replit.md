@@ -718,6 +718,16 @@ The deployment uses port 5000 internally, mapped to port 80 externally, with pro
   - **AI Testing Panel**: Fixed position at top-right with proper height calculation accounting for header and banner
   - **Layout Management**: Added margin-right to main content when AI panel is visible to prevent overlap
   - **User Experience**: Both elements remain accessible while scrolling, maintaining professional appearance
+- July 11, 2025: Dashboard Layout Fix and FAQ Widget Business Intelligence Enhancement - COMPLETE
+  - **File Modified**: `client/src/pages/dashboard.tsx` - Removed extra p-6 padding that was misaligning dashboard content with sidebar
+  - **File Modified**: `server/src/modules/analytics/routes/analyticsRoutes.ts` - Enhanced FAQ analysis with comprehensive business intelligence filtering
+  - **File Modified**: `server/src/modules/facebook/routes/facebookRoutes.ts` - Fixed Facebook webhook to use consistent "customer" senderType
+  - **File Modified**: `server/storage.ts` - Enhanced FAQ analysis to detect both "customer" and "user" senderTypes for backwards compatibility
+  - **Dashboard Fix**: Removed unwanted padding around dashboard content that was causing misalignment with sidebar navigation
+  - **FAQ Intelligence**: Added smart filtering to exclude non-business questions ("What's your name", greetings, small talk)
+  - **Business Focus**: FAQ widget now only shows legitimate business inquiries about products, pricing, services, hours, delivery, etc.
+  - **Facebook Integration**: Fixed message detection inconsistency between "user" and "customer" senderTypes in database
+  - **User Experience**: Dashboard now properly aligns with sidebar and FAQ widget shows only actionable business intelligence
 
 # User Preferences
 

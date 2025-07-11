@@ -331,17 +331,68 @@ export function setupAnalyticsRoutes(app: Express) {
 
       // Use actual customer questions instead of AI-generated ones
       const actualQuestions = messages.map(msg => msg.content).filter(content => {
-        // Filter for actual questions
-        return content.includes('?') || 
-               content.toLowerCase().startsWith('what') ||
-               content.toLowerCase().startsWith('how') ||
-               content.toLowerCase().startsWith('when') ||
-               content.toLowerCase().startsWith('where') ||
-               content.toLowerCase().startsWith('why') ||
-               content.toLowerCase().startsWith('can') ||
-               content.toLowerCase().startsWith('do you') ||
-               content.toLowerCase().startsWith('does') ||
-               content.toLowerCase().startsWith('tell me');
+        const lowerContent = content.toLowerCase();
+        
+        // Filter OUT non-business questions first
+        const isNonBusinessQuestion = 
+          lowerContent.includes("what's your name") ||
+          lowerContent.includes("what is your name") ||
+          lowerContent.includes("who are you") ||
+          lowerContent.includes("hi") ||
+          lowerContent.includes("hello") ||
+          lowerContent.includes("hey") ||
+          lowerContent.includes("good morning") ||
+          lowerContent.includes("good afternoon") ||
+          lowerContent.includes("good evening") ||
+          lowerContent.includes("thank you") ||
+          lowerContent.includes("thanks") ||
+          lowerContent.includes("okay") ||
+          lowerContent.includes("ok") ||
+          lowerContent.includes("bye") ||
+          lowerContent.includes("goodbye") ||
+          content.length < 3;
+        
+        if (isNonBusinessQuestion) return false;
+        
+        // Then check if it's a business-relevant question
+        const isBusinessQuestion = 
+          lowerContent.includes("price") ||
+          lowerContent.includes("cost") ||
+          lowerContent.includes("expensive") ||
+          lowerContent.includes("cheap") ||
+          lowerContent.includes("discount") ||
+          lowerContent.includes("product") ||
+          lowerContent.includes("service") ||
+          lowerContent.includes("hours") ||
+          lowerContent.includes("open") ||
+          lowerContent.includes("location") ||
+          lowerContent.includes("address") ||
+          lowerContent.includes("delivery") ||
+          lowerContent.includes("shipping") ||
+          lowerContent.includes("order") ||
+          lowerContent.includes("buy") ||
+          lowerContent.includes("purchase") ||
+          lowerContent.includes("available") ||
+          lowerContent.includes("stock") ||
+          lowerContent.includes("warranty") ||
+          lowerContent.includes("return") ||
+          lowerContent.includes("refund");
+        
+        // Filter for actual questions that are business-relevant
+        return isBusinessQuestion && (
+          content.includes('?') || 
+          lowerContent.startsWith('what') ||
+          lowerContent.startsWith('how') ||
+          lowerContent.startsWith('when') ||
+          lowerContent.startsWith('where') ||
+          lowerContent.startsWith('why') ||
+          lowerContent.startsWith('can') ||
+          lowerContent.startsWith('do you') ||
+          lowerContent.startsWith('does') ||
+          lowerContent.startsWith('tell me') ||
+          lowerContent.startsWith('is there') ||
+          lowerContent.startsWith('are there')
+        );
       });
 
       console.log("🔍 FAQ Analysis Debug - Actual customer questions:", actualQuestions);
