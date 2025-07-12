@@ -120,7 +120,6 @@ export function setupGoogleAuth(app: Express) {
     passport.authenticate("google", {
       scope: ["profile", "email"],
       prompt: "select_account consent", // Force account selection and consent every time
-      prompt: "consent", // Force consent screen (replaces approvalPrompt)
       accessType: "offline",
       state: Date.now().toString(), // Add unique state parameter to prevent caching
     })
