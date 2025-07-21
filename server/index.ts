@@ -1,6 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
+import { setupVite, log } from "./vite";
 import session from 'express-session';
 
 const app = express();
@@ -75,10 +75,20 @@ app.use((req, res, next) => {
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
   if (app.get("env") === "development") {
-    await setupVite(app, server);
-  } else {
-    serveStatic(app);
-  }
+  await setupVite(app, server);
+} else {
+  // Simple static file serving in production
+  const express = require('express');
+  const path = require('path');
+  
+  // Serve static files from dist directory
+  app.use(express.static(path.join(process.cwd(), 'dist')));
+  
+  // Catch-all handler for SPA
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(process.cwd(), 'dist', 'index.html'));
+  });
+}
 
   // ALWAYS serve the app on port 5000
   // this serves both the API and the client.
